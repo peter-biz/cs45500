@@ -1,0 +1,134 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CS 45500 / CS 51580 - Homework 1</title>
+  <meta name="description" content="CS 45500 Homework 1">
+  <meta name="author" content="Roger L. Kraft">
+  <link rel="stylesheet" href="http://math.pnw.edu/~rlkraft/roger-v2.css">
+  <!--[if lt IE 9]>
+    <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+</head>
+
+<body>
+<!--
+<header>
+  <a href="http://math.pnw.edu/~rlkraft/" title="Roger L. Kraft">Roger L. Kraft</a>
+</header>
+ -->
+<nav>
+  <ul class="nav-list" role="navigation">
+    <li><a href="../cs45500.html">CS 45500</a></li>
+    <li><a href="../syllabus.html">Syllabus</a></li>
+    <li><a href="../class.html">Lectures and Readings</a></li>
+    <li><a href="../homework.html">Homework Assignments</a></li>
+  </ul>
+  <ul class="nav-list" role="navigation">
+    <li><a href="http://math.pnw.edu/~rlkraft/roger.html">Roger Kraft</a></li>
+    <li><a href="https://pnw.edu/computer-science/">Computer Science Department</a></li>
+    <li><a href="https://pnw.edu/engineering/">School of Engineering</a></li>
+    <li><a href="https://pnw.edu/college-of-engineering-sciences/">College of Engineering & Sciences</a></li>
+    <li><a href="https://pnw.edu/">Purdue University Northwest</a></li>
+  </ul>
+</nav>
+
+<section id="Content">
+<h1>
+Programming Assignment 1<br>
+CS 45500 / CS 51580<br>
+Computer Graphics<br>
+Fall, 2024
+</h1>
+
+<p>
+This assignment makes use of the files contained in this <a href="hw1.zip">zip file</a>.
+This assignment is due Tuesday, September 10.
+</p>
+
+<p>
+This assignment and your next assignment are about the data structures used at the two ends of the 3D graphics rendering pipeline; what goes into the beginning of the pipeline and what comes out of the end of the pipeline. Roughly, what goes into the pipeline is the <code>Scene</code> data structure which describes the geometry of what the renderer should draw. What comes out of the pipeline is the <code>FrameBuffer</code> data structure which holds the image of the scene drawn by the renderer. This assignment is about what comes out of the graphics pipeline, the <code>FrameBuffer</code> data structure. Assignment 2 will be about what goes into the rendering pipeline, the <code>Scene</code> data structure.
+</p>
+
+<p>
+A <code><a href="https://en.wikipedia.org/wiki/Framebuffer">FrameBuffer</a></code> object simulates a two-dimensional array of <a href="https://en.wikipedia.org/wiki/Pixel">pixel</a> data that represents an image that can be displayed on a computer's screen. For each pixel in the image, the FrameBuffer holds <a href="https://www.w3schools.com/colors/colors_rgb.asp">three bytes</a>, one byte that represents the red component of the pixel's color, one byte that represents the green component, and one byte that represents the blue component of the pixel's color. Each of these three bytes is only eight bits in size, so each of the three colors has only 256 shades, but there are 256^3 = 16,777,216 distinct pixel colors. If a framebuffer has dimensions of <code>n</code> rows of pixels by <code>m</code> columns of pixels, then the framebuffer's array holds <code>n*m</code> integers and each integer holds the three bytes for one pixel (with one unused byte in each integer). The pixel data is NOT stored as a "two-dimensional" (or "three-dimensional") array. It is stored as a one-dimensional integer array of length <code>n*m</code>. This one-dimensional array is in <a href="https://en.wikipedia.org/wiki/Row-_and_column-major_order">row major</a> form, meaning that the first <code>m</code> integers in the array are the pixels from the image's first (top) row. The next <code>m</code> integers from the array are the pixels from the image's second row, etc. Finally, the last <code>m</code> integers in the array are the pixels from the image's last (bottom) row of pixels as displayed on the computer's screen.
+</p>
+
+<p>
+In this assignment you are to write a program that creates a <code>FrameBuffer</code> object and then fills it with pixel data so that the resulting image looks like the image in the file <code>Hw1_demo.png</code> from the zip file. In the zip file there is a file <code>Hw1.java</code> that you need to complete. In <code>Hw1.java</code> there is a brief outline of what you need to do.
+</p>
+
+<p>
+Your program should produce an image that looks exactly like <code>Hw1_demo.png</code>. There are a number of facts about the image in <code>Hw1_demo.png</code> that you need to find out (like, what are the exact colors, what are the dimensions of the little squares?). Use <a href="https://www.irfanview.com/">Irfanview</a> and the tools from <a href="http://math.pnw.edu/~rlkraft/cs45500/for-class/pixel-utilities.zip">pixel-utilities.zip</a> to determine these details about <code>Hw1_demo.png</code>.
+</p>
+
+<p>
+when you write your code, you should make as much use of the <code>FrameBuffer</code> interface as possible. To learn about the <code>FrameBuffer</code> class's interface (that is, all the methods in the <code>FrameBuffer</code> class), look at its source code in the <code>framebuffer</code> sub folder of the zip file. You should also build and read the <a href="https://books.trinket.io/thinkjava2/appendix-b.html">Javadoc</A> html file for the <code>FrameBuffer</code> class. The <code>FrameBuffer.java</code> class file also contains a <code>main()</code> method that tests the code in the class. Read that <code>main()</code> method carefully because it is a good demonstration of how to write code that uses the <code>FrameBuffer</code> class and its <code>Viewport</code> nested class.
+</p>
+
+<p>
+Notice that the program <code>Hw1.java</code> uses a Java <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/Properties.html">Properties</a> file, called <code>assets.properties</code>, which is located in the zip file. The <code>assets.properties</code> file holds the names of the two image files that need to be imbedded into the final picture. Your program should refer to these two images using the values extracted from the properties file (you should not hard-code the image file names into your source code). This abstracts your program from the exact location of the two image files. When you are writing your solution, the two image files are in the <code>assets</code> subfolder of the zip file. When I grade your assignment, the two image files will be in a folder that I use for grading (and I will change the contents of the <code>assets.properties</code> file when I grade the assignments).
+</p>
+
+<p>
+Your program should not read or write any files other than the two input files given by the properties file and the output file <code>Hw1.ppm</code>.
+</p>
+
+<p>
+The framebuffer that will hold the final image should be 1,100-by-700 pixels. You can think of the framebuffer as being made up of a checkerboard with 60 squares that are 100-by-100 pixels and the 6-by-10 checkerboard has a border around it that is 50 pixels wide. When you draw the checkerboard pattern, you do not need to draw all 60 squares. You only need to draw 30 squares, because the other 30 squares get their color from the background color.
+</p>
+
+<p>
+There are many ways to implement the striped pattern. Notice that every row of the pattern is the same as the row above it, just shifted to the right by one pixel. Each stripe is 30 pixels wide.
+</p>
+
+<p>
+When you write the code to implement the striped disk, use the <a href="https://www.google.com/search?q=distance%20formula">distance formula</a> from geometry. For each pixel in the disk's viewport, compute the distance from that pixel to the center of the viewport. Use the distance value to choose the pixel's color. Each ring in the disk is 30 pixels wide.
+</p>
+
+<p>
+When you copy pixel data from the <code>RebelTrooper.ppm</code> framebuffer into the main framebuffer, you should only copy a pixel if it is not a background pixel. For the most part, the background pixels are white (the color with (r, g, b) = (255, 255, 255)). But some of the background pixels near the image are not quite exactly white. For example, a background pixel very near the image might be (253, 252, 254). In order to get a good sharp "cutout" of the image, it helps to not copy any pixel that is "nearly" white. You need to come up with a logical test for "nearly white".
+<p>
+
+<p>
+After you place the two copies of <code>RebelTrooper.ppm</code> into the framebuffer, you need to create the gray bordered cutout of six checkerboard squares. The easiest way to copy pixels from one place in the framebuffer (the source) to another place in the framebufer (the destination) is to make the source rectangle into a viewport and then make the destination rectangle into another viewport that is initialized with the data from the source viewport (see the FrameBuffer API to see which Viewport constructors you should use).
+</p>
+
+<p>
+The last step of creating the <code>Hw1.ppm</code> image it to add Dumbledore's "ghost". Load the Dumbledore pixel data into its own <code>FrameBuffer</code> object. Then create a <code>Viewport</code> object the covers the background area where Dumbledore should appear. Use two nested for-loops to simultaneously step through the pixels of the Dumbledore framebuffer and the background viewport. For each pixel from the Dumbledore framebuffer, if that pixel is not white (or not almost white) then <a href="https://en.wikipedia.org/wiki/Alpha_compositing">blend</a> that pixel from the Dumbledore framebuffer with the corresponding background pixel from the viewport. Blend each pixel with 60% weight on the Dumbledore (framebuffer) pixel and 40% weight on the background (viewport) pixel. So if <code>c1</code> is the pixel color from the framebuffer and <code>c2</code> is the color from the viewport, then blend them (more or less) like this (for the red component, similarly for the green and blue components),
+</p>
+<pre>
+<code>
+      new_red = 0.6 * c1.getRed() + 0.4 * c2.getRed()
+</code>
+</pre>
+<p>
+After you compute the new blended color components, you write that new color into the viewport's pixel. By averaging Dumbledore's pixels with the background pixels already in the viewport, you create the effect of a "see-through" ghost of Dumbledore superimposed on the framebuffer's contents.
+</p>
+
+<p>
+In the zip file there are two image files, <code>Hw1_demo_viewports.png</code> and <code>Hw1_demo_without_images.png</code>, that you can use to help figure out exactly where the upper left-hand corner of each viewport is located in the framebuffer. If you open any image file in <a href="https://www.irfanview.com/">IrfanView</a> and you click on any pixel in the image, IrfanView will show you, on the left end of its title-bar, the <code>(x,y)</code>-coordinates of the pixel and also the pixels (r,g,b) color values.
+</p>
+
+<p>
+<a href="http://math.pnw.edu/~rlkraft/cs45500/handin.html">Turn in</a> a zip file called <code>CS455Hw1Surname.zip</code> (where <code>Surname</code> is your last name) containing your version of <code>Hw1.java</code>.</p>
+
+<p>
+This assignment is due Tuesday, September 10.
+</p>
+
+</section>
+
+<footer>
+  <script language="JavaScript" type="text/javascript">
+    document.write("<font size=\"-2\"><i>Last modified on " + document.lastModified + ".<\/i><\/font>");
+  </script>
+  <br>
+  <a href="mailto:rlkraft@pnw.edu"><font size="-2"><i>compliments and criticisms</i></font></a>
+</footer>
+
+</body>
+</html>
