@@ -16,6 +16,7 @@ import java.io.IOException;
 */
 public class Hw1
 {
+   
    public static void main(String[] args)
    {
       // Use a properties file to find out
@@ -60,13 +61,22 @@ public class Hw1
       // 14. Blend Dumbledore from its framebuffer into the viewport.
 
       //1
-      Color bg = new Color(192,56,14); //off red orange
-      final FrameBuffer fb = new FrameBuffer(1100,700, bg); // You need to construct an appropriate FrameBuffer object.
+      Color bg = new Color(192,56,14); //off red orange, backround color
+      final FrameBuffer fb = new FrameBuffer(1100,700, bg); 
+
 
       //2
+      //checkerboard & border color: 255,189,96
+      Color checker = new Color(255,189,96);
+      //100x100, 50 off of border
 
-
-
+      //test --works
+      for(int i =20; i< 500; i++) {
+         for (int j = 20; j <500; j++) {
+            fb.setPixelFB(i,j,checker);
+         }
+      }
+      
 
 
 
