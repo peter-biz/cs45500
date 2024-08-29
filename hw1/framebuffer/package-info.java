@@ -8,4 +8,4 @@
    Provides the renderer with an output data structure
    to hold the pixel values computed by the renderer.
 */
-package renderer.framebuffer;
+package framebuffer;  //was renderer.framebuffer; if it breaks

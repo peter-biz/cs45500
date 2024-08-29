@@ -26,7 +26,7 @@ public class Hw1
       {
          properties.load(
             new FileInputStream(
-               new File("assets.properties")));
+               new File("assets.properties")));  //TODO: this is broken for some reason?
       }
       catch (IOException e)
       {
@@ -57,25 +57,30 @@ public class Hw1
       // 11. Create another viewport within the last, gray viewport, and initialize
       //     it to hold a copy of the viewport from step 9.
       // 12. Load Dumbledore (the 2nd ppm file) into another FrameBuffer.
-      // 13. Create a viewport to hold Dumbledore's ghost.
+      // 13. Create a viewport to hold Dumbledore's ghost. --blending
       // 14. Blend Dumbledore from its framebuffer into the viewport.
 
-      //1
+      //1 1100x700 fb
       Color bg = new Color(192,56,14); //off red orange, backround color
       final FrameBuffer fb = new FrameBuffer(1100,700, bg); 
 
 
-      //2
-      //checkerboard & border color: 255,189,96
-      Color checker = new Color(255,189,96);
-      //100x100, 50 off of border
+      //2 checkerboard, 100x100 squares, 50 off border
+      Color checker = new Color(255,189,96); //yellowy tan oragne, checkerboard & border color
 
-      //test --works
-      for(int i =20; i< 500; i++) {
-         for (int j = 20; j <500; j++) {
-            fb.setPixelFB(i,j,checker);
+      //test --worksz
+      for(int h =50; h < 951; h+=50) {
+         for(int v = 50; v<551; v+=50) {
+            for(int i = 50; i < h+100; i++) {
+               for (int j =50; j < v+100; j++) {
+                  fb.setPixelFB(i,j,checker);
+                  
+               }
+            }
          }
       }
+
+      //3   50px from edge
       
 
 
