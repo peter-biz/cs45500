@@ -68,14 +68,11 @@ public class Hw1
       //2 checkerboard, 100x100 squares, 50 off border
       Color checker = new Color(255,189,96); //yellowy tan oragne, checkerboard & border color
 
-      //test --worksz
-      for(int h =50; h < 951; h+=50) {
-         for(int v = 50; v<551; v+=50) {
-            for(int i = 50; i < h+100; i++) {
-               for (int j =50; j < v+100; j++) {
-                  fb.setPixelFB(i,j,checker);
-                  
-               }
+      //using fb.setPixelFB(x,y,color), 50pixels from border, 100x100 squares
+      for(int i = 50; i < 1050; i++){
+         for(int j = 50; j < 650; j++){
+            if((i/100 + j/100) % 2 == 0){
+               fb.setPixelFB(i,j,checker);
             }
          }
       }
