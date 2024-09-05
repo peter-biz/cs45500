@@ -67,17 +67,52 @@ public class Hw1
 
       //2 checkerboard, 100x100 squares, 50 off border
       Color checker = new Color(255,189,96); //yellowy tan oragne, checkerboard & border color
+      Color test = new Color(0,255,255); //test color for new shapes so i can see them :) //TODO: get rid of
 
-      //using fb.setPixelFB(x,y,color), 50pixels from border, 100x100 squares
-      for(int i = 50; i < 1050; i++){
-         for(int j = 50; j < 650; j++){
-            if((i/100 + j/100) % 2 == 0){
-               fb.setPixelFB(i,j,checker);
-            }
-         }
-      }
+      // for(int i = 50; i<150; i++) {
+      //    for(int j = 50; j<150; j++) {
+      //       fb.setPixelFB(i,j,test);
+      //    }
+      // }
+
+      // for(int h = 50; h < 1050; h++) {
+      //    for(int v = 50; v < 650; v++) {
+      //       if(h!=50 && h%50 == 0 && v!=50 && v%50 == 0) {
+      //          fb.setPixelFB(h, v, test);
+      //       }
+      //    }
+      // }
 
       //3   50px from edge
+      for(int h = 50; h < 1050; h++) { //top & bottom line
+         fb.setPixelFB(h,49,checker); //top
+         fb.setPixelFB(h,650,checker); //bottom
+      }
+      for(int v = 50; v < 650; v++) { //left & right line
+         fb.setPixelFB(49,v,checker); //left
+         fb.setPixelFB(1050,v+1,checker); //right
+      }
+      
+      //4 diagonals
+      for(int i = 50; i > 0; i--) { //top left
+         fb.setPixelFB(50-i,50-i,test);
+      }
+      
+      for(int i = 0; i < 50; i++) { //bottom left
+         fb.setPixelFB(49-i,650+i,test);
+      }
+
+      for(int i = 0; i < 50; i++) { //top right
+         fb.setPixelFB(1050+i,50-i,test);
+      }
+      
+      for(int i = 49; i > 0; i--) { //bottom right
+         fb.setPixelFB(1050+i,650+i,test);
+      }
+
+
+      //5 viewport striped pattern
+
       
 
 
