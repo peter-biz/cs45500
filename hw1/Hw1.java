@@ -6,6 +6,7 @@
 import framebuffer.FrameBuffer;
 
 import java.awt.Color;
+import java.awt.Frame;
 import java.util.Properties;
 import java.io.FileInputStream;
 import java.io.File;
@@ -16,6 +17,27 @@ import java.io.IOException;
 */
 public class Hw1
 {
+
+
+   
+   private static void stripePattern(int h, int v, Color c, FrameBuffer fb) {
+ 
+      /* diagonal stripes leaning right ward
+       * //general rectange coordinates are topL = 650,475, botL = 650,605, topR = 1050,475, botR = 1050,605
+      //3 of each stripe, they're filled in bettwen any two stripes
+       */
+     
+      int x = 0;
+      while(x<3) {
+         for(int i = 0; i < 100; i++) {
+            fb.setPixelFB(h+i,v+i,c);
+         }
+         h += 90;
+         x++;
+      }
+
+   
+   }
    
    public static void main(String[] args)
    {
@@ -26,7 +48,7 @@ public class Hw1
       {
          properties.load(
             new FileInputStream(
-               new File("assets.properties")));  //TODO: this is broken for some reason?
+               new File("assets.properties")));
       }
       catch (IOException e)
       {
@@ -69,21 +91,20 @@ public class Hw1
       Color checker = new Color(255,189,96); //yellowy tan oragne, checkerboard & border color
       Color test = new Color(0,255,255); //test color for new shapes so i can see them :) //TODO: get rid of
 
-      // for(int i = 50; i<150; i++) {
-      //    for(int j = 50; j<150; j++) {
-      //       fb.setPixelFB(i,j,test);
-      //    }
-      // }
-
-      // for(int h = 50; h < 1050; h++) {
-      //    for(int v = 50; v < 650; v++) {
-      //       if(h!=50 && h%50 == 0 && v!=50 && v%50 == 0) {
-      //          fb.setPixelFB(h, v, test);
+      // FIXME: doesn't work, squares are in border and it has a TON of bad pixel coordinates
+      // for (int i = 0; i < 11; i++) {
+      //    for (int j = 0; j < 7; j++) {
+      //       if ((i + j) % 2 == 0) {
+      //          for (int h = 50 + i * 100; h < 150 + i * 100; h++) {
+      //             for (int v = 50 + j * 100; v < 150 + j * 100; v++) {
+      //                fb.setPixelFB(h, v, test);
+      //             }
+      //          }
       //       }
       //    }
       // }
 
-      //3   50px from edge
+      //3   50px from edge border
       for(int h = 50; h < 1050; h++) { //top & bottom line
          fb.setPixelFB(h,49,checker); //top
          fb.setPixelFB(h,650,checker); //bottom
@@ -93,7 +114,7 @@ public class Hw1
          fb.setPixelFB(1050,v+1,checker); //right
       }
       
-      //4 diagonals
+      //4 diagonals at corners 1px wide
       for(int i = 50; i > 0; i--) { //top left
          fb.setPixelFB(50-i,50-i,test);
       }
@@ -102,7 +123,7 @@ public class Hw1
          fb.setPixelFB(49-i,650+i,test);
       }
 
-      for(int i = 0; i < 50; i++) { //top right
+      for(int i = 0; i < 50; i++) { //top right ---KINDA GOOFY BUT HIS WAS TOO SO IDK
          fb.setPixelFB(1050+i,50-i,test);
       }
       
@@ -112,6 +133,48 @@ public class Hw1
 
 
       //5 viewport striped pattern
+      Color lightRed = new Color(241,95,116);
+      Color lightGreen = new Color(152,203,74);
+      Color lightBlue = new Color(84,139,230);
+
+      //general rectange coordinates are topL = 650,475, botL = 650,605, topR = 1050,475, botR = 1050,605
+      //3 of each stripe
+
+      //top left is 650,475, goes down to y=605 //red
+      //top left is 680,475, goes down to y=605 //green
+   //top left is 710,475, goes down to y=605 //blue
+
+      stripePattern(650,475,lightRed,fb);
+      stripePattern(680,475,lightGreen,fb);
+      stripePattern(710,475,lightBlue,fb);
+
+      //6 viewport striped disk pattern
+
+
+      //7 viewport flipped copy of 1st ppm file
+
+
+      //8 viewport another flipped copy of 1st ppm file
+
+
+      //9 viewport that covers the 6 checkerboard squares that need to be copied
+
+
+      //10 viewport that holds a "framed" copy of the previous viewport
+
+
+      //11 viewport within the last, gray viewport, and initialize it to hold a copy of the viewport from step 9
+
+
+      //12 load Dumbledore (2nd ppm file) into another FrameBuffer
+      //FrameBuffer dumbledore = new FrameBuffer(file_2);
+
+
+      //13 viewport to hold Dumbledore's ghost
+
+
+      //14 blend Dumbledore from its framebuffer into the viewport
+
 
       
 
