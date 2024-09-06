@@ -116,19 +116,19 @@ public class Hw1
       
       //4 diagonals at corners 1px wide
       for(int i = 50; i > 0; i--) { //top left
-         fb.setPixelFB(50-i,50-i,test);
+         fb.setPixelFB(50-i,50-i,checker);
       }
       
       for(int i = 0; i < 50; i++) { //bottom left
-         fb.setPixelFB(49-i,650+i,test);
+         fb.setPixelFB(49-i,650+i,checker);
       }
 
       for(int i = 0; i < 50; i++) { //top right ---KINDA GOOFY BUT HIS WAS TOO SO IDK
-         fb.setPixelFB(1050+i,50-i,test);
+         fb.setPixelFB(1050+i,50-i,checker);
       }
       
       for(int i = 49; i > 0; i--) { //bottom right
-         fb.setPixelFB(1050+i,650+i,test);
+         fb.setPixelFB(1050+i,650+i,checker);
       }
 
 
@@ -137,21 +137,24 @@ public class Hw1
       Color lightGreen = new Color(152,203,74);
       Color lightBlue = new Color(84,139,230);
 
-      //general rectange coordinates are topL = 650,475, botL = 650,605, topR = 1050,475, botR = 1050,605
       //3 of each stripe
-
       //top left is 650,475, goes down to y=605 //red
       //top left is 680,475, goes down to y=605 //green
-   //top left is 710,475, goes down to y=605 //blue
+      //top left is 710,475, goes down to y=605 //blue
 
       stripePattern(650,475,lightRed,fb);
       stripePattern(680,475,lightGreen,fb);
       stripePattern(710,475,lightBlue,fb);
 
       //6 viewport striped disk pattern
+      //TODO: saving for later cuase i think this is hard
 
 
       //7 viewport flipped copy of 1st ppm file
+      //topleft = 125,175
+      //botrihgt = 380,430 //256x256 image size 
+      FrameBuffer.Viewport vp1 = fb.new Viewport(125,175,256,256);
+      
 
 
       //8 viewport another flipped copy of 1st ppm file
