@@ -25,7 +25,6 @@ public class Hw1
  * @param c, color
  * @param fb, framebuffer
  */
-   
    private static void stripePattern(int h, int v, Color c, FrameBuffer fb) {
       int x = 0;
       while(x<3) {
@@ -34,12 +33,9 @@ public class Hw1
                fb.setPixelFB(j+i,v+i,c);
             }
          }
-         
          h+=90;
          x++;
       }
-
-   
    }
    
    public static void main(String[] args)
@@ -92,20 +88,21 @@ public class Hw1
 
       //2 checkerboard, 100x100 squares, 50 off border
       Color checker = new Color(255,189,96); //yellowy tan oragne, checkerboard & border color
-      Color test = new Color(0,255,255); //test color for new shapes so i can see them :) //TODO: get rid of
 
-      // FIXME: doesn't work, squares are in border and it has a TON of bad pixel coordinates
-      // for (int i = 0; i < 11; i++) {
-      //    for (int j = 0; j < 7; j++) {
-      //       if ((i + j) % 2 == 0) {
-      //          for (int h = 50 + i * 100; h < 150 + i * 100; h++) {
-      //             for (int v = 50 + j * 100; v < 150 + j * 100; v++) {
-      //                fb.setPixelFB(h, v, test);
-      //             }
-      //          }
-      //       }
-      //    }
-      // }
+         for (int i = 0; i < 10; i++) { //horizontal
+          for (int j = 0; j < 6; j++) { //vertical
+              int x = 50 + i * 100; //x-coordinate
+              int y = 50 + j * 100; //y-coordinate
+      
+              for (int k = 0; k < 100; k++) { //width
+                  for (int l = 0; l < 100; l++) { //height
+                      if ((i + j) % 2 == 0) {
+                          fb.setPixelFB(x + k, y + l, checker);
+                      }
+                  }
+              }
+          }
+      }
 
       //3   50px from edge border
       for(int h = 50; h < 1050; h++) { //top & bottom line
