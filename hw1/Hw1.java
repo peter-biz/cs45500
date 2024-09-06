@@ -18,21 +18,24 @@ import java.io.IOException;
 public class Hw1
 {
 
-
+/**
+ * stripePattern, creates a (3)stripe pattern with given h(x) and v(y) coordinates, color, and framebuffer
+ * @param h, horizontal coordinate
+ * @param v, vertical coordinate
+ * @param c, color
+ * @param fb, framebuffer
+ */
    
    private static void stripePattern(int h, int v, Color c, FrameBuffer fb) {
- 
-      /* diagonal stripes leaning right ward
-       * //general rectange coordinates are topL = 650,475, botL = 650,605, topR = 1050,475, botR = 1050,605
-      //3 of each stripe, they're filled in bettwen any two stripes
-       */
-     
       int x = 0;
       while(x<3) {
-         for(int i = 0; i < 100; i++) {
-            fb.setPixelFB(h+i,v+i,c);
+         for(int j = h; j < h+30; j++) {
+            for(int i = 0; i < 130; i++) {
+               fb.setPixelFB(j+i,v+i,c);
+            }
          }
-         h += 90;
+         
+         h+=90;
          x++;
       }
 
