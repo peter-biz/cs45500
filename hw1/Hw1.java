@@ -179,7 +179,7 @@ public class Hw1
             Color c = fb.getPixelFB(i,j);
             vp1.setPixelVP(i,j,fbEmbedded.getPixelFB(255-i,255-j));
             if(vp1.getPixelVP(i,j).equals(Color.WHITE)) {
-               vp1.setPixelVP(i,j,c); // this is the borken line, i cant get color from fb behind it FIXME:
+               vp1.setPixelVP(i,j,Color.YELLOW); // this is the borken line, i cant get color from fb behind it FIXME:
             }
 
          }
@@ -190,7 +190,7 @@ public class Hw1
             Color c = fb.getPixelFB(i,j);
             vp1.setPixelVP(i,j,fbEmbedded.getPixelFB(i,255-j));
             if(vp1.getPixelVP(i,j).equals(Color.WHITE)) {
-               vp1.setPixelVP(i,j, c); // this is the borken line, i cant get color from fb behind it FIXME:
+               vp1.setPixelVP(i,j, Color.YELLOW); // this is the borken line, i cant get color from fb behind it FIXME:
             }
 
          }
@@ -202,10 +202,12 @@ public class Hw1
       //256x256 image size
       FrameBuffer.Viewport vp2 = fb.new Viewport(381,175,256,256);
 
-      for(int i = 0; i < 256; i++) {  //flip horizontally
+      for(int i = 0; i < 256; i++) {  //flip vertically
          for(int j = 0; j < 256; j++) { 
-            
-            vp2.setPixelVP(i,j,fbEmbedded.getPixelFB(255-i,255-j));
+            vp2.setPixelVP(i,j,fbEmbedded.getPixelFB(255-i,j));
+            if(vp2.getPixelVP(i,j).equals(Color.WHITE)) {
+               vp2.setPixelVP(i,j, Color.YELLOW); // this is the borken line, i cant get color from fb behind it FIXME:
+            }
          }
       }
    
