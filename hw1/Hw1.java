@@ -171,28 +171,20 @@ public class Hw1
 
       //7 viewport flipped copy of 1st ppm file
       //topleft = 125,175
-      //botrihgt = 380,430 //256x256 image size, check if current pixel is white, if so, set to pixel from fbEmbedded
+      //botrihgt = 380,430 //256x256 image size, check if current pixel is white, if so dont copy it
       FrameBuffer.Viewport vp1 = fb.new Viewport(125,175,256,256);
 
-      for(int i = 0; i < 256; i++) {  //flip horizontally
-         for(int j = 0; j < 256; j++) { 
-            Color c = fb.getPixelFB(i,j);
-            vp1.setPixelVP(i,j,fbEmbedded.getPixelFB(255-i,255-j));
-            if(vp1.getPixelVP(i,j).equals(Color.WHITE)) {
-               vp1.setPixelVP(i,j,Color.YELLOW); // this is the borken line, i cant get color from fb behind it FIXME:
+      final int vp1Width = vp1.getWidthVP();
+      final int vp1Height = vp1.getHeightVP();
+
+      for(int i = 0; i < vp1Width; i++) {
+         for(int j = 0; j < vp1Height; j++) {
+            Color c = vp1.getPixelVP(i,j);
+            if(!(c.equals(Color.WHITE))) { //TODO: change this to check for off white pixels too, like >252rgb
+               vp1.setPixelVP(i,j, fbEmbedded.getPixelFB((vp1Width-1)-i,(vp1Height-1)-j)); //flip
+               vp1.setPixelVP(i,j,fbEmbedded.getPixelFB(i,(vp1Height-1)-j)); //mirror
             }
-
-         }
-      }
-
-      for (int i = 0; i < 256; i++) { //flip vertically
-         for (int j = 0; j < 256; j++) {
-            Color c = fb.getPixelFB(i,j);
-            vp1.setPixelVP(i,j,fbEmbedded.getPixelFB(i,255-j));
-            if(vp1.getPixelVP(i,j).equals(Color.WHITE)) {
-               vp1.setPixelVP(i,j, Color.YELLOW); // this is the borken line, i cant get color from fb behind it FIXME:
-            }
-
+       
          }
       }
 
@@ -202,10 +194,13 @@ public class Hw1
       //256x256 image size
       FrameBuffer.Viewport vp2 = fb.new Viewport(381,175,256,256);
 
-      for(int i = 0; i < 256; i++) {  //flip vertically
-         for(int j = 0; j < 256; j++) { 
-            vp2.setPixelVP(i,j,fbEmbedded.getPixelFB(255-i,j));
-            if(vp2.getPixelVP(i,j).equals(Color.WHITE)) {
+      final int vp2Width = vp2.getWidthVP();
+      final int vp2Height = vp2.getHeightVP();
+
+      for(int i = 0; i < vp2Width; i++) {  //flip vertically
+         for(int j = 0; j < vp2Height; j++) { 
+            vp2.setPixelVP(i,j,fbEmbedded.getPixelFB((vp2Width-1)-i,j));
+            if(vp2.getPixelVP(i,j).equals(Color.WHITE)) { //TODO: change this to check for off white pixels too, like >252rgb
                vp2.setPixelVP(i,j, Color.YELLOW); // this is the borken line, i cant get color from fb behind it FIXME:
             }
          }
@@ -220,8 +215,8 @@ public class Hw1
       FrameBuffer.Viewport vp4 = fb.new Viewport(775,75,250,350);
       Color lightGray = new Color(192,192,192);
 
-      for(int i = 0; i < 250; i++) { 
-         for(int j = 0; j < 350; j++) { 
+      for(int i = 0; i < vp4.getWidthVP(); i++) { 
+         for(int j = 0; j < vp4.getHeightVP(); j++) { 
             
 
             if(i <= 25 || i >= 225 || j <= 25 || j >= 325) {
