@@ -154,14 +154,14 @@ public class Hw1
             int x = 200 + i; //x-coordinate
             int y = 400 + j; //y-coordinate
             double distance = Math.sqrt(Math.pow((x-350),2) + Math.pow((y-550),2)); //distance from center
-            if (distance >= 60) {
-               if (distance < 90) {
-                  disk.setPixelVP(i, j, lightGreen);
+            if (distance >= 60) { 
+               if (distance < 90) { 
+                  disk.setPixelVP(i, j, lightGreen); 
                } 
                else if (distance < 120) {
                   disk.setPixelVP(i, j, lightRed);
                } 
-                else if (distance < 150) {
+                else if (distance < 150) { 
                   disk.setPixelVP(i, j, lightBlue);
                }
             }
@@ -173,18 +173,24 @@ public class Hw1
       //botrihgt = 380,430 //256x256 image size 
       FrameBuffer.Viewport vp1 = fb.new Viewport(125,175,256,256);
 
-      for(int i = 0; i < 256; i++) {
-         for(int j = 0; j < 256; j++) {
+      for(int i = 0; i < 256; i++) {  //flip horizontally
+         for(int j = 0; j < 256; j++) { 
             vp1.setPixelVP(i,j,fbEmbedded.getPixelFB(255-i,255-j));
          }
       }
-      
 
+      for (int i = 0; i < 256; i++) { //flip vertically
+         for (int j = 0; j < 256; j++) {
+            vp1.setPixelVP(i,j,fbEmbedded.getPixelFB(i,255-j));
+         }
+      }
 
       //8 viewport another flipped copy of 1st ppm file
+      //topleft = 125,450
 
 
       //9 viewport that covers the 6 checkerboard squares that need to be copied
+      
 
 
       //10 viewport that holds a "framed" copy of the previous viewport
