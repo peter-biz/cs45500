@@ -220,7 +220,14 @@ public class Hw1
 
       for(int i = 0; i < 250; i++) { 
          for(int j = 0; j < 350; j++) { 
-            vp3.setPixelVP(i,j,Color.GRAY);
+            vp3.setPixelVP(i,j,Color.WHITE);
+
+            if(i < 25 || i > 225 || j < 25 || j > 325) {
+               vp3.setPixelVP(i,j,Color.GRAY);
+            }
+            else {
+               vp3.setPixelVP(i,j,fb.getPixelFB(i+775,j+75));
+            }
          }
       }
 
