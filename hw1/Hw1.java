@@ -214,26 +214,26 @@ public class Hw1
 
 
       //9 viewport that covers the 6 checkerboard squares that need to be copied
-      //top left = 775, 75
-      //has a 25 thick border
-      FrameBuffer.Viewport vp3 = fb.new Viewport(775,75,250,350);
+      FrameBuffer.Viewport vp3 = fb.new Viewport(550,250,600,600);
 
-      for(int i = 0; i < 250; i++) { 
-         for(int j = 0; j < 350; j++) { 
-            vp3.setPixelVP(i,j,Color.WHITE);
-
-            if(i < 25 || i > 225 || j < 25 || j > 325) {
-               vp3.setPixelVP(i,j,Color.GRAY);
-            }
-            else {
-               vp3.setPixelVP(i,j,fb.getPixelFB(i+775,j+75));
-            }
-         }
-      }
 
 
       //10 viewport that holds a "framed" copy of the previous viewport
+      FrameBuffer.Viewport vp4 = fb.new Viewport(775,75,250,350);
+      Color lightGray = new Color(192,192,192);
 
+      for(int i = 0; i < 250; i++) { 
+         for(int j = 0; j < 350; j++) { 
+            
+
+            if(i <= 25 || i >= 225 || j <= 25 || j >= 325) {
+               vp4.setPixelVP(i,j,lightGray);
+            }
+            else {
+               vp4.setPixelVP(i,j,vp3.getPixelVP(i-25,j-25));
+            }
+         }
+      }
 
       //11 viewport within the last, gray viewport, and initialize it to hold a copy of the viewport from step 9
 
