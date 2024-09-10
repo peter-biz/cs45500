@@ -196,10 +196,6 @@ public class Hw1
          }
       }
 
-      /* if(fbEmbedded.getPixelFB(i,j).equals(Color.WHITE)) {
-               vp1.setPixelVP(i,j, Color.BLACK);
-            } */
-
 
       //8 viewport another flipped copy of 1st ppm file
       //top left = 381, 175
