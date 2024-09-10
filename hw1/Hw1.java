@@ -83,6 +83,7 @@ public class Hw1
 
       //1 1100x700 fb
       Color bg = new Color(192,56,14); //off red orange, backround color
+
       final FrameBuffer fb = new FrameBuffer(1100,700, bg); 
 
 
@@ -170,23 +171,48 @@ public class Hw1
 
       //7 viewport flipped copy of 1st ppm file
       //topleft = 125,175
-      //botrihgt = 380,430 //256x256 image size 
+      //botrihgt = 380,430 //256x256 image size, check if current pixel is white, if so, set to pixel from fbEmbedded
       FrameBuffer.Viewport vp1 = fb.new Viewport(125,175,256,256);
 
       for(int i = 0; i < 256; i++) {  //flip horizontally
          for(int j = 0; j < 256; j++) { 
+            Color c = fb.getPixelFB(i,j);
             vp1.setPixelVP(i,j,fbEmbedded.getPixelFB(255-i,255-j));
+            if(vp1.getPixelVP(i,j).equals(Color.WHITE)) {
+               vp1.setPixelVP(i,j,c);
+            }
+
          }
       }
 
       for (int i = 0; i < 256; i++) { //flip vertically
          for (int j = 0; j < 256; j++) {
+            Color c = fb.getPixelFB(i,j);
             vp1.setPixelVP(i,j,fbEmbedded.getPixelFB(i,255-j));
+            if(vp1.getPixelVP(i,j).equals(Color.WHITE)) {
+               vp1.setPixelVP(i,j, c);
+            }
+
          }
       }
 
+      /* if(fbEmbedded.getPixelFB(i,j).equals(Color.WHITE)) {
+               vp1.setPixelVP(i,j, Color.BLACK);
+            } */
+
+
       //8 viewport another flipped copy of 1st ppm file
-      //topleft = 125,450
+      //top left = 381, 175
+      //256x256 image size
+      FrameBuffer.Viewport vp2 = fb.new Viewport(381,175,256,256);
+
+      for(int i = 0; i < 256; i++) {  //flip horizontally
+         for(int j = 0; j < 256; j++) { 
+            
+            vp2.setPixelVP(i,j,fbEmbedded.getPixelFB(255-i,255-j));
+         }
+      }
+   
 
 
       //9 viewport that covers the 6 checkerboard squares that need to be copied
