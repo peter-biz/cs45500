@@ -177,12 +177,12 @@ public class Hw1
       final int vp1Width = vp1.getWidthVP();
       final int vp1Height = vp1.getHeightVP();
 
-      for(int i = 0; i < vp1Width; i++) {
-         for(int j = 0; j < vp1Height; j++) {
-            Color c = vp1.getPixelVP(i,j);
-            if(!(c.equals(Color.WHITE))) { //TODO: change this to check for off white pixels too, like >252rgb
-               vp1.setPixelVP(i,j, fbEmbedded.getPixelFB((vp1Width-1)-i,(vp1Height-1)-j)); //flip
-               vp1.setPixelVP(i,j,fbEmbedded.getPixelFB(i,(vp1Height-1)-j)); //mirror
+      for(int x = 0; x < vp1Width; x++) {
+         for(int y = 0; y < vp1Height; y++) {
+            Color c = fbEmbedded.getPixelFB(x,y);
+            
+            if(!(c.getRed() > 250 && c.getBlue() > 250 && c.getGreen() > 250)) { //TODO: change this to check for off white pixels too, like >250rgb
+               vp1.setPixelVP(x,(vp1Height-1)-y,fbEmbedded.getPixelFB(x,y)); //flip
             }
        
          }
@@ -197,12 +197,12 @@ public class Hw1
       final int vp2Width = vp2.getWidthVP();
       final int vp2Height = vp2.getHeightVP();
 
-      for(int i = 0; i < vp2Width; i++) {  //flip vertically
-         for(int j = 0; j < vp2Height; j++) { 
-            vp2.setPixelVP(i,j,fbEmbedded.getPixelFB((vp2Width-1)-i,j));
-            if(vp2.getPixelVP(i,j).equals(Color.WHITE)) { //TODO: change this to check for off white pixels too, like >252rgb
-               vp2.setPixelVP(i,j, Color.YELLOW); // this is the borken line, i cant get color from fb behind it FIXME:
-            }
+      for(int x = 0; x < vp2Width; x++) {  //flip vertically
+         for(int y = 0; y < vp2Height; y++) { 
+           Color c = fbEmbedded.getPixelFB(x,y);
+           if(!(c.getRed() > 250 && c.getBlue() > 250 && c.getGreen() > 250)) { //TODO: change this to check for off white pixels too, like >250rgb
+              vp2.setPixelVP((vp2Width-1)-x,y,fbEmbedded.getPixelFB(x,y)); //flip
+           }
          }
       }
    
@@ -230,34 +230,31 @@ public class Hw1
 
       //11 viewport within the last, gray viewport, and initialize it to hold a copy of the viewport from step 9
 
-      //TODO: idk what this means, i think i did it above ? 
+      //TODO: idk what this means, i think i did it above ?  MEANS you need to make a new viewport for the step 9, doing it weird
 
       //12 load Dumbledore (2nd ppm file) into another FrameBuffer
       //dumbledore is 500x500
       FrameBuffer dumbledore = new FrameBuffer(file_2);
 
-      //13 viewport to hold Dumbledore's ghost
+      //13 viewport to hold Dumbledore's ghost & 14(blend)
       //topleft is 450, 150
       FrameBuffer.Viewport vp5 = fb.new Viewport(450,150,500,500);
+      final int dumbleWidth = vp5.getWidthVP();
+      final int dumbleHeight = vp5.getHeightVP();
 
-      for(int i = 0; i < 500; i++) { 
-         for(int j = 0; j < 500; j++) { 
-            Color c = dumbledore.getPixelFB(i,j);
-            if(c.equals(Color.WHITE)) {
-               vp5.setPixelVP(i,j,Color.BLACK); //fb.getPixelFB(i,j) FIXME: same issues as the other fixme
-            }
-            else {
-               vp5.setPixelVP(i,j,c);
+      for(int x = 0; x < dumbleWidth; x++) { 
+         for(int y = 0; y < dumbleHeight; y++) { 
+            Color dumbleColor = dumbledore.getPixelFB(x,y);
+            Color vpColor = vp5.getPixelVP(x,y);
+            if(!(dumbleColor.getRed() > 250 && dumbleColor.getBlue() > 250 && dumbleColor.getGreen()>250)) {
+               int new_red = (int) (0.6 * dumbleColor.getRed() + 0.4 * vpColor.getRed());
+               int new_green = (int) (0.6 * dumbleColor.getGreen() + 0.4 * vpColor.getGreen());
+               int new_blue =(int) (0.6 * dumbleColor.getBlue() + 0.4 * vpColor.getBlue());
+               Color newColor = new Color(new_red,new_green,new_blue);
+               vp5.setPixelVP(x,y,newColor);
             }
          }
       }
-
-
-      //14 blend Dumbledore from its framebuffer into the viewport
-
-
-      
-
 
 
       /******************************************/
