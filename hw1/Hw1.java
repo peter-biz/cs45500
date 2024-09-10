@@ -181,7 +181,7 @@ public class Hw1
          for(int y = 0; y < vp1Height; y++) {
             Color c = fbEmbedded.getPixelFB(x,y);
             
-            if(!(c.getRed() > 250 && c.getBlue() > 250 && c.getGreen() > 250)) { //TODO: change this to check for off white pixels too, like >250rgb
+            if(!(c.getRed() > 250 && c.getBlue() > 250 && c.getGreen() > 250)) { 
                vp1.setPixelVP(x,(vp1Height-1)-y,fbEmbedded.getPixelFB(x,y)); //flip
             }
        
@@ -197,11 +197,11 @@ public class Hw1
       final int vp2Width = vp2.getWidthVP();
       final int vp2Height = vp2.getHeightVP();
 
-      for(int x = 0; x < vp2Width; x++) {  //flip vertically
+      for(int x = 0; x < vp2Width; x++) {  
          for(int y = 0; y < vp2Height; y++) { 
            Color c = fbEmbedded.getPixelFB(x,y);
-           if(!(c.getRed() > 250 && c.getBlue() > 250 && c.getGreen() > 250)) { //TODO: change this to check for off white pixels too, like >250rgb
-              vp2.setPixelVP((vp2Width-1)-x,y,fbEmbedded.getPixelFB(x,y)); //flip
+           if(!(c.getRed() > 250 && c.getBlue() > 250 && c.getGreen() > 250)) { 
+              vp2.setPixelVP((vp2Width-1)-x,y,fbEmbedded.getPixelFB(x,y)); //mirror
            }
          }
       }
@@ -211,26 +211,24 @@ public class Hw1
       //9 viewport that covers the 6 checkerboard squares that need to be copied
       FrameBuffer.Viewport vp3 = fb.new Viewport(550,250,600,600);
 
-      //10 viewport that holds a "framed" copy of the previous viewport
+      //10 viewport that creates a "frame"
       FrameBuffer.Viewport vp4 = fb.new Viewport(775,75,250,350);
       Color lightGray = new Color(192,192,192);
 
-      for(int i = 0; i < vp4.getWidthVP(); i++) { 
-         for(int j = 0; j < vp4.getHeightVP(); j++) { 
-            
-
-            if(i <= 25 || i >= 225 || j <= 25 || j >= 325) {
-               vp4.setPixelVP(i,j,lightGray);
-            }
-            else {
-               vp4.setPixelVP(i,j,vp3.getPixelVP(i-25,j-25));
-            }
+      for(int x = 0; x < vp4.getWidthVP(); x++) { 
+         for(int y = 0; y < vp4.getHeightVP(); y++) { 
+            vp4.setPixelVP(x,y,lightGray);
          }
       }
 
-      //11 viewport within the last, gray viewport, and initialize it to hold a copy of the viewport from step 9
+      //11 viewport within the last, gray viewport, and initialize it to hold a copy of the viewport from step 9, framed image
+      FrameBuffer.Viewport framedVP = fb.new Viewport(800, 100, 200, 300);
 
-      //TODO: idk what this means, i think i did it above ?  MEANS you need to make a new viewport for the step 9, doing it weird
+      for(int x = 0; x < framedVP.getWidthVP(); x++) {
+         for(int y = 0; y < framedVP.getHeightVP(); y++) {
+            framedVP.setPixelVP(x, y, vp3.getPixelVP(x, y));
+         }
+      }
 
       //12 load Dumbledore (2nd ppm file) into another FrameBuffer
       //dumbledore is 500x500
