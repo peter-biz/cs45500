@@ -179,7 +179,7 @@ public class Hw1
             Color c = fb.getPixelFB(i,j);
             vp1.setPixelVP(i,j,fbEmbedded.getPixelFB(255-i,255-j));
             if(vp1.getPixelVP(i,j).equals(Color.WHITE)) {
-               vp1.setPixelVP(i,j,c);
+               vp1.setPixelVP(i,j,c); // this is the borken line, i cant get color from fb behind it FIXME:
             }
 
          }
@@ -190,7 +190,7 @@ public class Hw1
             Color c = fb.getPixelFB(i,j);
             vp1.setPixelVP(i,j,fbEmbedded.getPixelFB(i,255-j));
             if(vp1.getPixelVP(i,j).equals(Color.WHITE)) {
-               vp1.setPixelVP(i,j, c);
+               vp1.setPixelVP(i,j, c); // this is the borken line, i cant get color from fb behind it FIXME:
             }
 
          }
