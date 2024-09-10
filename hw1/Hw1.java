@@ -216,8 +216,6 @@ public class Hw1
       //9 viewport that covers the 6 checkerboard squares that need to be copied
       FrameBuffer.Viewport vp3 = fb.new Viewport(550,250,600,600);
 
-
-
       //10 viewport that holds a "framed" copy of the previous viewport
       FrameBuffer.Viewport vp4 = fb.new Viewport(775,75,250,350);
       Color lightGray = new Color(192,192,192);
@@ -237,12 +235,27 @@ public class Hw1
 
       //11 viewport within the last, gray viewport, and initialize it to hold a copy of the viewport from step 9
 
+      //TODO: idk what this means, i think i did it above ? 
 
       //12 load Dumbledore (2nd ppm file) into another FrameBuffer
-      //FrameBuffer dumbledore = new FrameBuffer(file_2);
-
+      //dumbledore is 500x500
+      FrameBuffer dumbledore = new FrameBuffer(file_2);
 
       //13 viewport to hold Dumbledore's ghost
+      //topleft is 450, 150
+      FrameBuffer.Viewport vp5 = fb.new Viewport(450,150,500,500);
+
+      for(int i = 0; i < 500; i++) { 
+         for(int j = 0; j < 500; j++) { 
+            Color c = dumbledore.getPixelFB(i,j);
+            if(c.equals(Color.WHITE)) {
+               vp5.setPixelVP(i,j,Color.BLACK); //fb.getPixelFB(i,j) FIXME: same issues as the other fixme
+            }
+            else {
+               vp5.setPixelVP(i,j,c);
+            }
+         }
+      }
 
 
       //14 blend Dumbledore from its framebuffer into the viewport
