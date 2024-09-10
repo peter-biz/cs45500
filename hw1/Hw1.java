@@ -147,13 +147,37 @@ public class Hw1
       stripePattern(710,475,lightBlue,fb);
 
       //6 viewport striped disk pattern
-      //TODO: saving for later cuase i think this is hard
+      FrameBuffer.Viewport disk = fb.new Viewport(200,400,300,300); //centered at 350,550
 
+      for(int i = 0; i < 300; i++) { //horizontal
+         for(int j = 0; j < 300; j++) { //vertical
+            int x = 200 + i; //x-coordinate
+            int y = 400 + j; //y-coordinate
+            double distance = Math.sqrt(Math.pow((x-350),2) + Math.pow((y-550),2)); //distance from center
+            if (distance >= 60) {
+               if (distance < 90) {
+                  disk.setPixelVP(i, j, lightGreen);
+               } 
+               else if (distance < 120) {
+                  disk.setPixelVP(i, j, lightRed);
+               } 
+                else if (distance < 150) {
+                  disk.setPixelVP(i, j, lightBlue);
+               }
+            }
+         }
+      }
 
       //7 viewport flipped copy of 1st ppm file
       //topleft = 125,175
       //botrihgt = 380,430 //256x256 image size 
       FrameBuffer.Viewport vp1 = fb.new Viewport(125,175,256,256);
+
+      for(int i = 0; i < 256; i++) {
+         for(int j = 0; j < 256; j++) {
+            vp1.setPixelVP(i,j,fbEmbedded.getPixelFB(255-i,255-j));
+         }
+      }
       
 
 
