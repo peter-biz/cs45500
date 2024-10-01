@@ -1,0 +1,12 @@
+strict digraph {
+graph [ordering="out"];
+graph [fontname="helvetica"];
+node  [fontname="helvetica"];
+edge  [fontname="helvetica"];
+scene [label="Scene: "];
+Camera [label="Camera: 
+perspective = true"];
+scene -> Camera;
+positionList [label="List<Position>"];
+scene -> positionList;
+}

@@ -1,0 +1,10 @@
+{
+    "java.project.sourcePaths": [
+        ".",
+        "assets",
+        "clients_r4"
+    ],
+    "java.project.referencedLibraries": [
+        "renderer_4.jar"
+    ]
+}

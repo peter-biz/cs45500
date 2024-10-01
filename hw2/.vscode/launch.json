@@ -1,0 +1,210 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "AntiAliasingDemo_1",
+            "request": "launch",
+            "mainClass": "AntiAliasingDemo_1",
+            "projectName": "hw2_8193d2b4"
+        },
+        {
+            "type": "java",
+            "name": "AntiAliasingDemo_2",
+            "request": "launch",
+            "mainClass": "AntiAliasingDemo_2",
+            "projectName": "hw2_8193d2b4"
+        },
+        {
+            "type": "java",
+            "name": "AntiAliasingDemo_JavaAPI_1",
+            "request": "launch",
+            "mainClass": "AntiAliasingDemo_JavaAPI_1",
+            "projectName": "hw2_8193d2b4"
+        },
+        {
+            "type": "java",
+            "name": "AntiAliasingDemo_JavaAPI_2",
+            "request": "launch",
+            "mainClass": "AntiAliasingDemo_JavaAPI_2",
+            "projectName": "hw2_8193d2b4"
+        },
+        {
+            "type": "java",
+            "name": "Clipping_and_AntiAliasing_R4",
+            "request": "launch",
+            "mainClass": "Clipping_and_AntiAliasing_R4",
+            "projectName": "hw2_8193d2b4"
+        },
+        {
+            "type": "java",
+            "name": "Hw2",
+            "request": "launch",
+            "mainClass": "Hw2",
+            "projectName": "hw2_8193d2b4"
+        },
+        {
+            "type": "java",
+            "name": "InteractiveCube_R4",
+            "request": "launch",
+            "mainClass": "InteractiveCube_R4",
+            "projectName": "hw2_8193d2b4"
+        },
+        {
+            "type": "java",
+            "name": "InteractiveGRSModels_R4",
+            "request": "launch",
+            "mainClass": "InteractiveGRSModels_R4",
+            "projectName": "hw2_8193d2b4"
+        },
+        {
+            "type": "java",
+            "name": "InteractiveModelsAll_R4",
+            "request": "launch",
+            "mainClass": "InteractiveModelsAll_R4",
+            "projectName": "hw2_8193d2b4"
+        },
+        {
+            "type": "java",
+            "name": "InteractiveModels_R4",
+            "request": "launch",
+            "mainClass": "InteractiveModels_R4",
+            "projectName": "hw2_8193d2b4"
+        },
+        {
+            "type": "java",
+            "name": "InteractiveTriangle_R4",
+            "request": "launch",
+            "mainClass": "InteractiveTriangle_R4",
+            "projectName": "hw2_8193d2b4"
+        },
+        {
+            "type": "java",
+            "name": "InteractiveTurtleModels_R4",
+            "request": "launch",
+            "mainClass": "InteractiveTurtleModels_R4",
+            "projectName": "hw2_8193d2b4"
+        },
+        {
+            "type": "java",
+            "name": "LinesInTwoViewports_R4",
+            "request": "launch",
+            "mainClass": "LinesInTwoViewports_R4",
+            "projectName": "hw2_8193d2b4"
+        },
+        {
+            "type": "java",
+            "name": "Position_Model_Vertex_Color_LineSegment_ver1",
+            "request": "launch",
+            "mainClass": "Position_Model_Vertex_Color_LineSegment.Position_Model_Vertex_Color_LineSegment_ver1",
+            "projectName": "hw2_8193d2b4"
+        },
+        {
+            "type": "java",
+            "name": "Position_Model_Vertex_Color_LineSegment_ver2",
+            "request": "launch",
+            "mainClass": "Position_Model_Vertex_Color_LineSegment.Position_Model_Vertex_Color_LineSegment_ver2",
+            "projectName": "hw2_8193d2b4"
+        },
+        {
+            "type": "java",
+            "name": "Position_Model_Vertex_Color_LineSegment_ver2_Pipeline2",
+            "request": "launch",
+            "mainClass": "Position_Model_Vertex_Color_LineSegment.Position_Model_Vertex_Color_LineSegment_ver2_Pipeline2",
+            "projectName": "hw2_8193d2b4"
+        },
+        {
+            "type": "java",
+            "name": "Position_Model_Vertex_Color_LineSegment_ver3",
+            "request": "launch",
+            "mainClass": "Position_Model_Vertex_Color_LineSegment.Position_Model_Vertex_Color_LineSegment_ver3",
+            "projectName": "hw2_8193d2b4"
+        },
+        {
+            "type": "java",
+            "name": "Position_Model_Vertex_Color_LineSegment_ver3_Pipeline2",
+            "request": "launch",
+            "mainClass": "Position_Model_Vertex_Color_LineSegment.Position_Model_Vertex_Color_LineSegment_ver3_Pipeline2",
+            "projectName": "hw2_8193d2b4"
+        },
+        {
+            "type": "java",
+            "name": "ScaleOBJ",
+            "request": "launch",
+            "mainClass": "ScaleOBJ",
+            "projectName": "hw2_8193d2b4"
+        },
+        {
+            "type": "java",
+            "name": "ThreeDimensionalScene_R4",
+            "request": "launch",
+            "mainClass": "ThreeDimensionalScene_R4",
+            "projectName": "hw2_8193d2b4"
+        },
+        {
+            "type": "java",
+            "name": "ThreeLines_R4",
+            "request": "launch",
+            "mainClass": "ThreeLines_R4",
+            "projectName": "hw2_8193d2b4"
+        },
+        {
+            "type": "java",
+            "name": "TranslateOBJ",
+            "request": "launch",
+            "mainClass": "TranslateOBJ",
+            "projectName": "hw2_8193d2b4"
+        },
+        {
+            "type": "java",
+            "name": "TwoInteractiveModels_R4",
+            "request": "launch",
+            "mainClass": "TwoInteractiveModels_R4",
+            "projectName": "hw2_8193d2b4"
+        },
+        {
+            "type": "java",
+            "name": "TwoSlopes_R4",
+            "request": "launch",
+            "mainClass": "TwoSlopes_R4",
+            "projectName": "hw2_8193d2b4"
+        },
+        {
+            "type": "java",
+            "name": "UnitizeOBJ",
+            "request": "launch",
+            "mainClass": "UnitizeOBJ",
+            "projectName": "hw2_8193d2b4"
+        },
+        {
+            "type": "java",
+            "name": "TranslateGRS",
+            "request": "launch",
+            "mainClass": "grs.TranslateGRS",
+            "projectName": "hw2_8193d2b4"
+        },
+        {
+            "type": "java",
+            "name": "kochcurve",
+            "request": "launch",
+            "mainClass": "grs.kochcurve",
+            "projectName": "hw2_8193d2b4"
+        },
+        {
+            "type": "java",
+            "name": "monkeytree",
+            "request": "launch",
+            "mainClass": "grs.monkeytree",
+            "projectName": "hw2_8193d2b4"
+        }
+    ]
+}
