@@ -1,0 +1,939 @@
+<html>
+<body>
+This is the second in a sequence of educational 3D graphics renderers.
+<p>
+This version connects the {@link renderer.framebuffer.FrameBuffer} with the Java GUI system and allows us to write interactive 3D applications.
+
+<h1>Basic Renderer</h1>
+
+<p>
+A "renderer" is a collection of algorithms that takes as its input a
+{@link renderer.scene.Scene} data structure and produces as its output a
+{@link renderer.framebuffer.FrameBuffer} data structure.
+</p>
+<pre>{@code
+                           Renderer
+                       +--------------+
+       Scene           |              |         FrameBuffer
+       data     ====>  |  Rendering   |  ====>     data
+     structure         |  algorithms  |          structure
+                       |              |
+                       +--------------+
+}</pre>
+<p>
+A {@link renderer.scene.Scene} data structure contains information that describes a "virtual scene"
+that we want to take a "picture" of. The renderer is kind of like a digital
+camera that takes a picture of the scene and stores the picture's data in
+the FrameBuffer data structure. The FrameBuffer holds the actual pixel
+information that describes the picture of the scene.
+</p>
+<p>
+The rendering algorithms can be implemented in hardware (a graphics card
+or GPU) or in software. In this class we will write a software renderer
+using the Java programming language.
+</p>
+<p>
+Our software renderer is made up of four "packages" of Java classes.
+Each package is contained in its own directory. The name of the directory
+is the name of the package.
+</p>
+<p>
+The first package is the collection of input data structures. This is called
+the {@link renderer.scene} package. The data structure files in the scene package are:
+</p>
+<ul>
+<li>Scene.java</li>
+<li>Camera.java</li>
+<li>Model.java</li>
+<li>Vertex.java</li>
+<li>LineSegment.java</li>
+</ul>
+<p>
+The second package is the output data structure. It is called the
+{@link renderer.framebuffer} package and contains the files
+</p>
+<ul>
+<li>FrameBuffer.java.</li>
+<li>FrameBufferPanel.java.</li>
+</ul>
+<p>
+The third package is a collection of algorithms that manipulate the
+data structures from the other two packages. This package is called
+the {@link renderer.pipeline} package. The algorithm files are:
+</p>
+<ul>
+<li>Pipeline.java</li>
+<li>Projection.java</li>
+<li>Rasterize.java</li>
+</ul>
+<p>
+The fourth package is a library of geometric models. This package is
+called the {@link renderer.models_L} package. It contains a number of
+files for geometric shapes such as {@link renderer.models_L.Sphere},
+{@link renderer.models_L.Cylinder}, {@link renderer.models_L.Cube},
+{@link renderer.models_L.Cone}, {@link renderer.models_L.Pyramid},
+{@link renderer.models_L.Tetrahedron}, {@link renderer.models_L.Dodecahedron},
+and mathematical curves and surfaces.
+</p>
+<p>
+There is also a fifth collection of source files, a collection of
+client programs that use the renderer. These files are in the top
+level directory of the renderer.
+</p>
+<p>
+Here is a brief description of the data structures from the
+{@link renderer.scene} package and {@link renderer.framebuffer} packages.
+</p>
+<ul>
+<li>A {@link renderer.scene.Scene} object has a {@link renderer.scene.Camera} object and a {@link java.util.List} of {@link renderer.scene.Model} objects.</li>
+<li>A {@link renderer.scene.Camera} object has boolean which determines if the camera is a perspective camera or an orthographic camera.</li>
+<li>A {@link renderer.scene.Model} object has a {@link java.util.List} of {@link renderer.scene.Vertex} objects and a {@link java.util.List} of {@link renderer.scene.primitives.LineSegment} objects.</li>
+<li>A {@link renderer.scene.Vertex} object has three doubles, the x, y, z coordinates of a point in 3-dimensional space.</li>
+<li>A {@link renderer.scene.primitives.LineSegment} object has a list of two integers. The two integers are indices into the {@link renderer.scene.Model}'s list of vertices. This lets a {@link renderer.scene.primitives.LineSegment} object represent the two endpoints of a line segment in 3-dimensional space.</li>
+<li>A {@link renderer.framebuffer.FrameBuffer} object represents a two-dimensional array of pixel data. Pixel data represents the red, green, and blue color of each pixel in the image that the render produces. The {@link renderer.framebuffer.FrameBuffer} also defines a sub-array of pixel data called a {@link renderer.framebuffer.FrameBuffer.Viewport}.</li>
+<li>A {@link renderer.framebuffer.FrameBufferPanel} object is the link between a {@link renderer.framebuffer.FrameBuffer} object and the Java GUI system. A {@link renderer.framebuffer.FrameBufferPanel} is a {@link javax.swing.JComponent} that can be added to a GUI {@link java.awt.Container}. We can use GUI event handlers to tie GUI {@link java.awt.AWTEvent} objects to the 3D scene we are displaying in a {@link renderer.framebuffer.FrameBufferPanel}'s {@link renderer.framebuffer.FrameBuffer}.</li>
+</ul>
+
+
+<h1>Scene</h1>
+<p>
+A {@link renderer.scene.Scene} object represents a collection of geometric models positioned
+in the three dimensional space. The models are in front of a {@link renderer.scene.Camera} which
+is located at the origin and looks down the negative z-axis. Each {@link renderer.scene.Model}
+object in a {@link renderer.scene.Scene} object represents a distinct geometric shape in the scene.
+A {@link renderer.scene.Model} object is a list of {@link renderer.scene.Vertex} objects and a list of {@link renderer.scene.primitives.LineSegment} objects.
+Each {@link renderer.scene.primitives.LineSegment} object refers to two of the Model's {@link renderer.scene.Vertex} objects. The
+{@link renderer.scene.Vertex} objects represent points in the camera's coordinate system. The
+model's line segments represent the geometric object as a "wire-frame",
+that is, the geometric object is drawn as a collection of "edges". This
+is a fairly simplistic way of doing 3D graphics and we will improve this
+in later renderers.
+</p>
+<a href="http://en.wikipedia.org/wiki/Wire-frame_model" target="_top">
+         http://en.wikipedia.org/wiki/Wire-frame_model</a>
+<br>
+<a href="https://www.google.com/search?q=computer+graphics+wireframe&amp;tbm=isch" target="_top">
+         https://www.google.com/search?q=computer+graphics+wireframe&amp;tbm=isch</a>
+
+
+<h1>Camera</h1>
+<p>
+The {@link renderer.scene.Camera} data structure represents a camera located at the origin,
+looking down the negative z-axis. A {@link renderer.scene.Camera} has associated to it a
+"view volume" that determines what part of space the camera "sees" when
+we use the camera to take a picture (that is, when we render a {@link renderer.scene.Scene}).
+</p>
+<p>
+A camera can "take a picture" two ways, using a perspective projection
+or a parallel (orthographic) projection. Each way of taking a picture has
+a different shape for its view volume.
+</p>
+<p>
+For the perspective projection, the view volume is an infinitely long pyramid
+that is formed by the pyramid with its apex at the origin and its base in the
+plane {@code z = -1} with edges {@code x = -1}, {@code x = +1}, {@code y = -1},
+and {@code y = +1}.
+</p>
+<a href="http://math.hws.edu/graphicsbook/c3/projection-frustum.png" target="_top">
+         http://math.hws.edu/graphicsbook/c3/projection-frustum.png</a>
+<p>
+For the orthographic projection, the view volume is an infinitely long
+rectangular cylinder parallel to the z-axis and with sides {@code x = -1},
+{@code x = +1}, {@code y = -1}, and {@code y = +1} (an infinite parallelepiped).
+</p>
+<a href="http://math.hws.edu/graphicsbook/c3/projection-parallelepiped.png" target="_top">
+         http://math.hws.edu/graphicsbook/c3/projection-parallelepiped.png</a>
+<p>
+When the graphics rendering pipeline uses a {@link renderer.scene.Camera} to
+render a {@link renderer.scene.Scene}, the renderer "sees" only the geometry
+from the scene that is contained in the camera's view volume. (Notice that
+this means the orthographic camera will see geometry that is behind the camera.
+In fact, the perspective camera also sees geometry that is behind the camera.)
+</p>
+<p>
+The plane {@code z = -1} is the camera's image plane. The rectangle in the image
+plane with corners {@code (-1, -1, -1)} and {@code (+1, +1, -1)} is the camera's
+view rectangle. The view rectangle is like the film in a real camera, it is
+where the camera's image appears when you take a picture. The contents
+of the camera's view rectangle is what gets rasterized, by the renderer's
+{@link renderer.pipeline.Rasterize_Clip_AntiAlias_Line} pipeline stage, into a
+{@link renderer.framebuffer.FrameBuffer}'s viewport.
+</p>
+<a href="https://webglfundamentals.org/webgl/frustum-diagram.html" target="_top">
+         https://webglfundamentals.org/webgl/frustum-diagram.html</a>
+<br>
+<a href="https://threejs.org/examples/#webgl_camera" target="_top">
+         https://threejs.org/examples/#webgl_camera</a>
+<br>
+<a href="http://math.hws.edu/graphicsbook/demos/c3/transform-equivalence-3d.html" target="_top">
+         http://math.hws.edu/graphicsbook/demos/c3/transform-equivalence-3d.html</a>
+
+
+<h1>Model, LineSegment and Vertex</h1>
+<p>
+A {@link renderer.scene.Model} object represents a distinct geometric
+object in a {@link renderer.scene.Scene}. A {@link renderer.scene.Model}
+data structure is mainly a {@link java.util.List} of {@link renderer.scene.Vertex}
+objects and another {@link java.util.List} of {@link renderer.scene.primitives.LineSegment}
+objects.
+</p>
+<p>
+The {@link renderer.scene.Vertex} objects represents points from the
+geometric object that we are modeling. In the real world, a geometric
+object has an infinite number of points. In 3D graphics, we "approximate"
+a geometric object by listing just enough points to adequately describe
+the object. For example, in the real world, a rectangle contains an
+infinite number of points, but it can be adequately modeled by just its
+four corner points. (Think about a circle. How many points does it take
+to adequately model a circle? Look at the {@link renderer.models_L.Circle}
+model.)
+</p>
+<p>
+Each {@link renderer.scene.primitives.LineSegment} object contains two integers that
+are the indices of two {@link renderer.scene.Vertex} objects from the
+{@code renderer.scene.Model}'s vertex list. Each {@link renderer.scene.Vertex}
+object contains the xyz-coordinates, in the camera coordinate system, for
+one of the line segment's two endpoints.
+</p>
+<p>
+We use the {@link renderer.scene.primitives.LineSegment} objects to "fill in" some of
+the space between the model's vertices. For example, while a rectangle can
+be approximated by its four corner points, those same four points could also
+represent just two parallel line segments. By using four line segments that
+connect around the four points, we get a good representation of a rectangle.
+</p>
+<p>
+If we modeled a circle using just points, we would probably need to draw
+hundreds of points. But if we connect every two adjacent points with a
+short line segment, we can get a good model of a circle with just a few
+dozen points.
+</p>
+<p>
+Our {@code Model}'s represent geometric objects as a "wire-frame" of line
+segments, that is, a geometric object is drawn as a collection of "edges".
+This is a fairly simplistic way of doing 3D graphics and we will improve
+this in later renderers.
+</p>
+
+<a href="http://en.wikipedia.org/wiki/Wire-frame_model" target="_top">
+         http://en.wikipedia.org/wiki/Wire-frame_model</a>
+<br>
+<a href="https://www.google.com/search?q=computer+graphics+wireframe&amp;tbm=isch" target="_top">
+         https://www.google.com/search?q=computer+graphics+wireframe&amp;tbm=isch</a>
+
+
+<h1>Scene Tree Data Structure</h1>
+<p>
+When you put all of the above information together, you see that
+a {@link renderer.scene.Scene} object is the root of a simple tree data structure.
+</p>
+<pre>{@code
+            Scene
+           /     \
+          /       \
+    Camera         List<Model>
+                  /     |     \
+                 /      |      \
+            Model     Model     Model
+                     /     \
+                    /       \
+        List<Vertex>         List<LineSegment>
+          /      \                   /       \
+         /        \                 /         \
+    Vertex        Vertex      LineSegment    LineSegment
+    /  |  \       /  |  \          |             |
+   /   |   \     /   |   \         |             |
+  x    y    z   x    y    z      int[2]        int[2]
+}</pre>
+
+
+<h1>FrameBuffer</h1>
+<p>
+A {@link renderer.framebuffer.FrameBuffer} object holds an array of pixel data that represents an image
+that can be displayed on a computer's screen. For each pixel in the image,
+the framebuffer's array holds three byte values, one byte that represents
+the red component of the pixel's color, one byte that represents the green
+component, and one byte that represents the blue component of the pixel's
+color. Each of these three bytes is only eight bits in size, so each of the
+three colors has only 256 shades (but there are 256^3 = 16,777,216 distinct
+colors). The three bytes of color for each pixel are packed into one Java
+integer (which has four bytes, so one of the integer's bytes is not used).
+If a FrameBuffer has dimensions {@code n} rows of pixels by {@code m} columns of pixels,
+then the FrameBuffer holds {@code n*m} integers. The pixel data is NOT stored as
+a "two-dimensional" {@code n} by {@code m} array of integers nor is it stored as a
+"three-dimensional" {@code n} by {@code m} by 3 array of bytes. It is stored as a
+one-dimensional array of integers of length {@code n*m}. This array is in "row
+major" form, meaning that the first {@code m} integers in the array are the
+pixels from the image's first row. The next {@code m} integers are the pixels
+from the image's second row, etc. Finally, the first row of pixels is
+the top row of the image when it is displayed on the computer's screen.
+</p>
+<p>
+The FrameBuffer data structure also defines a Viewport which is a
+rectangular sub-array of the pixel data in the framebuffer. The viewport
+is the active part of the framebuffer, the part of the framebuffer that
+the renderer is actually writing into. The viewport has width and height
+dimensions, {@code w} and {@code h}, with {@code w <= m} and {@code h <= n}.
+Quite often the viewport will be the whole framebuffer. But the viewport idea
+makes it easy for us to implement effects like "split screen" (two independent images in the
+FrameBuffer), or "picture in a picture" (a smaller picture superimposed on
+a larger picture). In future renderers (starting with renderer 7), another
+use of a viewport that is smaller than the whole FrameBuffer is when we
+want the viewport to have the same aspect ratio as the Camera&lsquo;s view
+rectangle.
+</p>
+
+<a href="https://en.wikipedia.org/wiki/Split_screen_(computer_graphics)" target="_top">
+         https://en.wikipedia.org/wiki/Split_screen_(computer_graphics)</a>
+<br>
+<a href="https://en.wikipedia.org/wiki/Picture-in-picture" target="_top">
+         https://en.wikipedia.org/wiki/Picture-in-picture</a>
+
+
+<h1>Renderer</h1>
+<p>
+Here is a brief overview of how the renderer algorithms process a Scene
+data structure to produce a filled in viewport within the FrameBuffer object.
+</p>
+<p>
+First of all, remember that:
+</p>
+<ul>
+<li>A {@link renderer.scene.Scene} object contains a {@link renderer.scene.Camera} and a list of {@link renderer.scene.Model} objects.</li>
+<li>A {@link renderer.scene.Model} object contains lists of {@link renderer.scene.Vertex} and {@link renderer.scene.primitives.Primitive} objects.</li>
+<li>A {@link renderer.scene.primitives.LineSegment} object refers to two of the {@link renderer.scene.Vertex} objects.</li>
+<li>A {@link renderer.scene.Vertex} object contains three coordinate that are relative to the Camera.</li>
+</ul>
+<p>
+The main job of the renderer is to "draw" in the FrameBuffer's viewport
+appropriate pixels for each LineSgement in each Model from the Scene. The
+"appropriate pixels" are the pixels "seen" by the camera. At its top level,
+the renderer iterates through the Scene object's list of Model objects, and
+for each Model object the renderer iterates through the Model object's list
+of LineSegment objects. When the renderer has drilled down to a LineSegment
+object, then it can render the line segment into the framebuffer's viewport.
+So the renderer really renders line segments.
+</p>
+<p>
+The renderer does its work on a {@link renderer.scene.primitives.LineSegment} object in
+a "pipeline" of stages. This simple renderer has just two pipeline stages.
+The stages that a {@link renderer.scene.primitives.LineSegment} object passes through
+in this renderer are
+</p>
+<ul>
+<li>{@link renderer.pipeline.Projection} (of the model's vertices),</li>
+<li>{@link renderer.pipeline.Rasterize} (the model's line segments).</li>
+</ul>
+<p>
+To understand the algorithms used in the "project then rasterize" process,
+we need to trace through the rendering pipeline what happens to each
+{@link renderer.scene.Vertex} and {@link renderer.scene.primitives.LineSegment}
+object from a {@link renderer.scene.Model}.
+</p>
+<p>
+Start with a Model's list of vertices.
+</p>
+<pre>{@code
+        v0 ...  vn     A Model's list of Vertex objects
+         \     /
+          \   /
+            |
+            | camera coordinates (of v0 ... vn)
+            |
+        +-------+
+        |       |
+        |   P1  |    Projection (of the vertices)
+        |       |
+        +-------+
+            |
+            | image plane coordinates (of v0 ... vn)
+            |
+           / \
+          /   \
+         /     \
+        |   P2  |   Rasterization &amp; clipping (of each line segment)
+         \     /
+          \   /
+           \ /
+            |
+            |  pixels (for each clipped line segment)
+            |
+           \|/
+    FrameBuffer.ViewPort
+}</pre>
+
+
+<h1>Vertex Projection</h1>
+<p>
+The {@link renderer.pipeline.Projection} stage takes the model's list of vertices
+in three dimensional (camera) space and computes the two-dimensional coordinates
+of where each vertex "projects" onto the camera's image plane (the plane
+with equation {@code z = -1}). The projection stage takes the vertices inside of
+the camera's view volume and projects them into the camera's view rectangle
+(and points outside of the camera's view volume will, of course, project
+to points outside of the view rectangle).
+</p>
+<p>
+Let us derive the formulas for the perspective projection transformation
+(the formulas for the parallel projection transformation are pretty obvious).
+We will derive the x-coordinate formula; the y-coordinate formula is similar.
+</p>
+<p>
+Let {@code (x_c, y_c, z_c)} denote a point in the 3-dimensional camera coordinate
+system. Let {@code (x_p, y_p, -1)} denote the point's perspective projection into
+the image plane, {@code z = -1}. Here is a "picture" of just the xz-plane from
+camera space. This picture shows the point {@code (x_c, z_c)} and its projection to
+the point {@code (x_p, -1)} in the image plane.
+</p>
+<pre>{@code
+
+           x                  /
+           |                 /
+       x_c +                + (x_c, z_c)
+           |               /|
+           |              / |
+           |             /  |
+           |            /   |
+           |           /    |
+           |          /     |
+           |         /      |
+           |        /       |
+       x_p +       +        |
+           |      /|        |
+           |     / |        |
+           |    /  |        |
+           |   /   |        |
+           |  /    |        |
+           | /     |        |
+           +-------+--------+------------> -z
+        (0,0)     -1       z_c
+}</pre>
+<p>
+We are looking for a formula that computes {@code x_p} in terms of {@code x_c} and {@code z_c}.
+There are two similar triangles in this picture that share a vertex at the
+origin. Using the properties of similar triangles we have the following
+ratios. (Remember that these are ratios of positive lengths, so we write
+{@code -z_c}, since {@code z_c} is on the negative z-axis).
+</p>
+<pre>{@code
+              x_p       x_c
+             -----  =  -----
+               1       -z_c
+}</pre>
+<p>
+If we solve this ratio for the unknown, {@code x_p}, we get the projection formula,
+</p>
+<pre>{@code
+              x_p = -x_c / z_c.
+}</pre>
+<p>
+The equivalent formula for the y-coordinate is
+</p>
+<pre>{@code
+              y_p = -y_c / z_c.
+
+}</pre>
+
+
+<h1>Line Rasterization</h1>
+<p>
+The {@link renderer.pipeline.Rasterize_Clip_AntiAlias_Line} stage first takes the two-dimensional
+coordinates of a vertex in the camera's image plane and computes that vertex's
+location in a "logical pixel plane". This is referred to as the "viewport transformation".
+The purpose of the logical pixel plane and the viewport transformation is to make
+the rasterization stage easier to implement.
+</p>
+<p>
+The camera's image plane contains a view rectangle with edges {@code x = +1,
+x = -1, y = +1}, and {@code y = -1}. The pixel plane contains a logical
+viewport rectangle with edges {@code x = 0.5, x = w+0.5, y = 0.5}, and
+{@code y = h+0.5} (where {@code h} and {@code w} are the height and width of
+the framebuffer's viewport).
+</p>
+<p>
+Recall that the role of the camera's view rectangle is to determine what part
+of a scene is visible to the camera. Vertices inside of the camera's view
+rectangle should end up as pixels in the framebuffer's viewport. Another way
+to say this is that we want only that part of each projected line segment
+contained in the view rectangle to be visible to our renderer and rasterized
+into the framebuffer's viewport.
+</p>
+<p>
+Any point inside of the image plane's view rectangle should be transformed to
+a point inside of the pixel plane's logical viewport. Any vertex outside of
+the image plane's view rectangle should be transformed to a point outside of
+the pixel plane's logical viewport.
+</p>
+<pre>{@code
+                      View Rectangle
+                (in the Camera's image plane)
+
+                          y-axis
+                            |
+                            |       (+1,+1)
+                  +---------|---------+
+                  |         |         |
+                  |         |         |
+                  |         |         |
+                  |         |         |
+                  |         |         |
+               -------------+---------------- x-axis
+                  |         |         |
+                  |         |         |
+                  |         |         |
+                  |         |         |
+                  |         |         |
+                  +---------|---------+
+              (-1,-1)       |
+                            |
+                            |
+
+                            ||
+                            ||
+                            ||  Viewport Transformation
+                            ||
+                            ||
+                            \/
+
+                      Logical Viewport
+                                               (w+0.5, h+0.5)
+      +----------------------------------------------+
+      | . . . . . . . . . . . . . . . . . . . . . . .|
+      | . . . . . . . . . . . . . . . . . . . . . . .|
+      | . . . . . . . . . . . . . . . . . . . . . . .|
+      | . . . . . . . . . . . . . . . . . . . . . . .|
+      | . . . . . . . . . . . . . . . . . . . . . . .|   The logical pixels
+      | . . . . . . . . . . . . . . . . . . . . . . .|   are the points in the
+      | . . . . . . . . . . . . . . . . . . . . . . .|   logical viewport with
+      | . . . . . . . . . . . . . . . . . . . . . . .|   integer coordinates.
+      | . . . . . . . . . . . . . . . . . . . . . . .|
+      | . . . . . . . . . . . . . . . . . . . . . . .|
+      | . . . . . . . . . . . . . . . . . . . . . . .|
+      | . . . . . . . . . . . . . . . . . . . . . . .|
+      | . . . . . . . . . . . . . . . . . . . . . . .|
+      +----------------------------------------------+
+ (0.5, 0.5)
+
+                            ||
+                            ||
+                            ||  Rasterizer
+                            ||
+                            ||
+                            \/
+
+                         Viewport
+                    (in the FrameBuffer)
+      (0,0)
+        +-------------------------------------------+
+        |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|
+        |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|
+        |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|
+        |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|   The physical pixels
+        |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|   are the entries in
+        |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|   the FrameBuffer
+        |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|   array.
+        |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|
+        |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|
+        |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|
+        |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|
+        |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|
+        |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|
+        +-------------------------------------------+
+                                                (w-1,h-1)
+}</pre>
+<p>
+After the viewport transformation of the two endpoints of a line segment, the
+rasterization stage will convert the given line segment in the pixel plane
+into pixels in the framebuffer's viewport. The rasterization stage computes
+all the pixels in the framebuffer's viewport that are on the line segment
+connecting the transformed vertices v0 and v1. Any point inside the logical
+viewport that is on this line segment is rasterized to a pixel inside the
+framebuffer's viewport. Any point on this line segment that is outside the
+logical viewport should not be rasterized to a pixel in the framebuffer.
+</p>
+
+
+<h1>View Rectangle to Logical Viewport Transformation</h1>
+<p>
+The view rectangle in the camera's view plane has
+</p>
+<pre>{@code
+       -1 <= x <= 1,
+       -1 <= y <= 1.
+}</pre>
+<p>
+The logical viewport in the pixel plane has
+</p>
+<pre>{@code
+       0.5 <= x < w + 0.5,
+       0.5 <= y < h + 0.5,
+}</pre>
+<p>
+where
+</p>
+<ul>
+<li>{@code w} = number of horizontal pixels in the framebuffer's viewport,</li>
+<li>{@code h} = number of vertical pixels in the framebuffer's viewport.</li>
+</ul>
+<p>
+We want a transformation (formulas) that sends points from the camera's
+view rectangle to proportional points in the pixel plane's logical viewport.
+</p>
+<p>
+The goal of this transformation is to put a logical pixel with integer
+coordinates at the center of each square physical pixel. The logical pixel
+with integer coordinates {@code (m, n)} represents the square physical pixel with
+</p>
+<pre>{@code
+  m - 0.5 <= x < m + 0.5,
+  n - 0.5 <= y < n + 0.5.
+}</pre>
+<p>
+Notice that logical pixels have integer coordinates {@code (m,n)} with
+</p>
+<pre>{@code
+  1 <= m <= w
+  1 <= n <= h.
+}</pre>
+<p>
+Let us derive the formulas for the viewport transformation (we will derive
+the x-coordinate formula; the y-coordinate formula is similar).
+</p>
+<p>
+Let {@code x_p} denote an x-coordinate in the image plane and let {@code x_vp} denote an
+x-coordinate in the viewport. If a vertex is on the left edge of the view
+rectangle (with {@code x_p = -1}), then it should be transformed to the left edge of
+the viewport (with {@code x_vp = 0.5}). And if a vertex is on the right edge of the
+view rectangle (with {@code x_p = 1}), then it should be transformed to the right
+edge of the viewport (with {@code x_vp =  w + 0.5}). These two facts are all we need
+to know to find the linear function for the transformation of the x-coordinate.
+</p>
+<p>
+We need to calculate the slope {@code m} and intercept {@code b} of a linear function
+</p>
+<pre>{@code
+          x_vp = m * x_p + b
+}</pre>
+<p>
+that converts image plane coordinates into viewport coordinates. We know,
+from what we said above about the left and right edges of the view rectangle,
+that
+</p>
+<pre>{@code
+           0.5 = (m * -1) + b,
+       w + 0.5 = (m *  1) + b.
+}</pre>
+<p>
+If we add these last two equations together we get
+</p>
+<pre>{@code
+         w + 1 = 2*b
+}</pre>
+or
+<pre>{@code
+         b = (w + 1)/2.
+}</pre>
+<p>
+If we use {@code b} to solve for {@code m} we have
+</p>
+<pre>{@code
+           0.5 = (m * -1) + (w + 1)/2
+             1 = -2*m + w + 1
+           2*m = w
+             m = w/2.
+}</pre>
+<p>
+So the linear transformation of the x-coordinate is
+</p>
+<pre>{@code
+       x_vp = (w/2) * x_p + (w+1)/2
+            = 0.5 + w/2 * (x_p + 1).
+}</pre>
+<p>
+The equivalent formula for the y-coordinate is
+</p>
+<pre>{@code
+       y_vp = 0.5 + h/2 * (y_p + 1).
+}</pre>
+
+
+<h1>Rasterizing a LineSegment</h1>
+<p>
+Now we want to discuss the precise algorithm for how the rasterizer
+converts a line segment in the pixel-plane into a specific choice of
+pixels in the viewport.
+</p>
+<p>
+Here is a picture of part of a line segment in the pixel-plane with
+logical pixel x-coordinates between {@code i} and {@code i+3} and
+with logical pixel y-coordinates between {@code j} and {@code j+6}.
+</p>
+<pre>{@code
+     +-------+-------+-------+------/+
+     |       |       |       |     / |
+ j+6 |   .   |   .   |   .   |   ./  |
+     |       |       |       |   /   |
+     +-------+-------+-------+--/----+
+     |       |       |       | /     |
+ j+5 |   .   |   .   |   .   |/  .   |
+     |       |       |       /       |
+     +-------+-------+------/+-------+
+     |       |       |     / |       |
+ j+4 |   .   |   .   |   ./  |   .   |
+     |       |       |   /   |       |
+     +-------+-------+--/----+-------+
+     |       |       | /     |       |
+ j+3 |   .   |   .   |/  .   |   .   |
+     |       |       /       |       |
+     +-------+------/+-------+-------+
+     |       |     / |       |       |
+ j+2 |   .   |   ./  |   .   |   .   |
+     |       |   /   |       |       |
+     +-------+--/----+-------+-------+
+     |       | /     |       |       |
+ j+1 |   .   |/  .   |   .   |   .   |
+     |       /       |       |       |
+     +------/+-------+-------+-------+
+     |     / |       |       |       |
+  j  |   ./  |   .   |   .   |   .   |
+     |   /   |       |       |       |
+     +--/----+-------+-------+-------+
+        i       i+1     i+2     i+3     logical pixel coordinates
+}</pre>
+<p>
+The rasterizing algorithm can "walk" this line segment along either
+the x-coordinate axis from {@code i} to {@code i+3} or along the
+y-coordinate axis from {@code j} to {@code j+6}. In either case,
+for each logical pixel coordinate along the chosen axis, the algorithm
+should pick the logical pixel closest to the line segment and turn on
+the associated physical pixel.
+</p>
+<p>
+If our line has the equation {@code y = m*x + b}, with slope {@code m}
+and y-intercept {@code b} (in pixel-plane coordinates), then walking the
+line along the x-coordinate axis means that for each logical pixel
+x-coordinate {@code i}, we compute the logical pixel y-coordinate
+</p>
+<pre>{@code
+     Math.round( m*i + b ).
+}</pre>
+<p>
+On the other hand, walking the line along the y-coordinate axis means we
+should use the linear equation {@code x = (y - b)/m} and for each logical
+pixel y-coordinate {@code j}, we compute the logical pixel x-coordinate
+</p>
+<pre>{@code
+    Math.round( (y - b)/m ).
+}</pre>
+<p>
+Let us try this algorithm in the above picture along each of the two
+logical pixel coordinate axes.
+</p>
+<p>
+If we rasterize this line segment along the x-coordinate axis, then we
+need to chose a logical pixel for each {@code x} equal to
+{@code i, i+1, i+2}, and {@code i+3}. Always choosing the logical pixel
+(vertically) closest to the line, we get these pixels.
+</p>
+<pre>{@code
+     +-------+-------+-------+------/+
+     |       |       |       |#####/#|
+ j+6 |   .   |   .   |   .   |###./##|
+     |       |       |       |###/###|
+     +-------+-------+-------+--/----+
+     |       |       |       | /     |
+ j+5 |   .   |   .   |   .   |/  .   |
+     |       |       |       /       |
+     +-------+-------+------/+-------+
+     |       |       |#####/#|       |
+ j+4 |   .   |   .   |###./##|   .   |
+     |       |       |###/###|       |
+     +-------+-------+--/----+-------+
+     |       |       | /     |       |
+ j+3 |   .   |   .   |/  .   |   .   |
+     |       |       /       |       |
+     +-------+------/+-------+-------+
+     |       |#####/#|       |       |
+ j+2 |   .   |###./##|   .   |   .   |
+     |       |###/###|       |       |
+     +-------+--/----+-------+-------+
+     |       | /     |       |       |
+ j+1 |   .   |/  .   |   .   |   .   |
+     |       /       |       |       |
+     +------/+-------+-------+-------+
+     |#####/#|       |       |       |
+  j  |###./##|   .   |   .   |   .   |
+     |###/###|       |       |       |
+     +--/----+-------+-------+-------+
+        i       i+1     i+2     i+3     logical pixel coordinates
+}</pre>
+<p>
+Make sure you agree that these are the correctly chosen pixels. Notice
+that our rasterized line has "holes" in it. This line has slope strictly
+greater than 1. Every time we move one step to the right, we move more
+that one step up because the slope is greater than 1, so
+</p>
+<pre>{@code
+   rise/run > 1,
+}</pre>
+<p>
+so
+</p>
+<pre>{@code
+   rise > run,
+}</pre>
+<p>
+but {@code run = 1}, so we always have {@code rise > 1}, which causes us
+to skip over a pixel when we round our y-coordinate to the nearest logical
+pixel.
+</p>
+<p>
+If we rasterize this line segment along the y-coordinate axis, then we
+need to chose a logical pixel for each {@code y} equal to
+{@code j, j+1, j+2, j+3, j+4, j+5} and {@code j+6}. Always choosing the
+logical pixel (horizontally) closest to the line, we get these pixels.
+</p>
+<pre>{@code
+     +-------+-------+-------+------/+
+     |       |       |       |#####/#|
+ j+6 |   .   |   .   |   .   |###./##|
+     |       |       |       |###/###|
+     +-------+-------+-------+--/----+
+     |       |       |       |#/#####|
+ j+5 |   .   |   .   |   .   |/##.###|
+     |       |       |       /#######|
+     +-------+-------+------/+-------+
+     |       |       |#####/#|       |
+ j+4 |   .   |   .   |###./##|   .   |
+     |       |       |###/###|       |
+     +-------+-------+--/----+-------+
+     |       |       |#/#####|       |
+ j+3 |   .   |   .   |/##.###|   .   |
+     |       |       /#######|       |
+     +-------+------/+-------+-------+
+     |       |#####/#|       |       |
+ j+2 |   .   |###./##|   .   |   .   |
+     |       |###/###|       |       |
+     +-------+--/----+-------+-------+
+     |       |#/#####|       |       |
+ j+1 |   .   |/##.###|   .   |   .   |
+     |       /#######|       |       |
+     +------/+-------+-------+-------+
+     |#####/#|       |       |       |
+  j  |###./##|   .   |   .   |   .   |
+     |###/###|       |       |       |
+     +--/----+-------+-------+-------+
+        i       i+1     i+2     i+3     logical pixel coordinates
+}</pre>
+<p>
+Make sure you agree that these are the correctly chosen pixels. In
+each row of logical pixels, we should choose the logical pixel that
+is closest (horizontally) to the line.
+</p>
+<p>
+We see that while we can rasterize a line in either the x-direction or
+the y-direction, we should chose the direction based on the slope of the
+line. Lines with slope between -1 and +1 should be rasterized in the
+x-direction. Lines with slope less than -1 or greater than +1 should be
+rasterized in the y-direction.
+</p>
+<p>
+Here is a pseudo-code summary of the rasterization algorithm. Suppose we are
+rasterizing a line from logical pixel {@code (x0, y0)} to logical pixel
+{@code (x1, y1)} (so {@code x0, y0, x1, y1} are all integer values). If the
+line has slope less than 1, we use the following loop.
+</p>
+<pre>{@code
+    double y = y0;
+    for (int x = x0; x <= x1; x += 1, y += m)
+    {
+       int x_vp = x - 1;                    // viewport coordinate
+       int y_vp = h - (int)Math.round(y);   // viewport coordinate
+       vp.setPixelVP(x_vp, y_vp, Color.white);
+    }
+}</pre>
+<p>
+Notice how {@code x} is always incremented by 1 so that it moves from one,
+integer valued, logical pixel coordinate to the next, integer valued, logical
+pixel coordinate. On the other hand, the slope {@code m} need not be an integer.
+As we increment {@code x} by 1, we increment {@code y} by {@code m} (since
+"over 1, up {@code m}" means {@code slope = m}), so the values of {@code y}
+need not be integer values, so we need to round each {@code y} value to its
+nearest logical pixel integer coordinate.
+</p>
+<p>
+If the line has slope greater than 1, we use the following loop.
+</p>
+<pre>{@code
+    double x = x0;
+    for (int y = y0; y <= y1; y += 1, x += m)
+    {
+       int x_vp = (int)Math.round(x) - 1;   // viewport coordinate
+       int y_vp = h - y;                    // viewport coordinate
+       vp.setPixelVP(x_vp, y_vp, Color.white);
+    }
+}</pre>
+<p>
+The above code has a slight simplification in it. When the slope of the line
+is greater than 1, we recompute the slope as slope in the y-direction with
+</p>
+<pre>{@code
+    change-in-x / change-in-y
+}</pre>
+<p>
+so that the slope becomes less than 1.
+</p>
+
+
+<h1>Clipping in the Rasterizer</h1>
+<p>
+When part (or all) of a line segment is outside of the camera's view
+volume, we should clip off the part of the line segment that is not
+in the view volume.
+</p>
+<p>
+We have several choices of when (and how) we can clip line segments.
+</p>
+<ol>
+  <li>before projection (in camera coordinates),</li>
+  <li>after projection (in the view plane),</li>
+  <li>during rasterization.</li>
+</ol>
+<p>
+In this renderer we clip line segments during rasterization. (In the
+next renderer we will clip line segments in the view plane, after
+projection but before rasterization.)
+</p>
+<p>
+We clip line segments during rasterization by not putting into the
+framebuffer any line segment fragment that is out of the framebuffer's
+viewport. This works, but it is not such a great technique because it
+requires that we compute every fragment of every line segment and then
+check if it fits in the viewport. This could be a big waste of CPU
+time. If a line segment extends from within the viewport to millions
+of pixels outside the viewport, then we would be needlessly computing
+a lot of pixels just to discard them. Even worse, if no part of the line
+segment is in the view rectangle, we would still be rasterizing the whole
+line segment.
+</p>
+<p>
+In this renderer, line clipping is optional and can be turned on and off.
+Notice that when line clipping is turned off, if a model moves off the
+left or right side of the window it "wraps around" to the other side of
+the window. But if a model moves off the top or bottom of the window there
+are a number of error messages reported in the console window by the
+framebuffer. The cause of this is that the FrameBuffer stores its pixel data
+as a one dimensional array in "row major" form. Also, the setPixel() methods
+in FrameBuffer do not do any bounds checking. So if setPixel() is asked to
+set a pixel that is a little bit off the right edge of a row of pixels, then
+the method will just compute the appropriate array entry in the one-dimensional
+"array of rows" and set a pixel that is just a bit to the right of the left
+edge of the window and one row down from the row it was supposed to be in!
+If you let a model move to the right for a very long time, you will notice
+that it is slowly moving down the screen (and if you move a model to the
+left for a very long time, you will notice that it is slowly moving up the
+screen).
+</p>
+
+</body>
+</html>
