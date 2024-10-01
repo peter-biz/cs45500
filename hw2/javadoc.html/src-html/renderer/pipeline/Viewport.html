@@ -1,0 +1,147 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<main role="main">
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span><a id="line.1">/*</a>
+<span class="sourceLineNo">002</span><a id="line.2"> * Renderer 4. The MIT License.</a>
+<span class="sourceLineNo">003</span><a id="line.3"> * Copyright (c) 2022 rlkraft@pnw.edu</a>
+<span class="sourceLineNo">004</span><a id="line.4"> * See LICENSE for details.</a>
+<span class="sourceLineNo">005</span><a id="line.5">*/</a>
+<span class="sourceLineNo">006</span><a id="line.6"></a>
+<span class="sourceLineNo">007</span><a id="line.7">package renderer.pipeline;</a>
+<span class="sourceLineNo">008</span><a id="line.8"></a>
+<span class="sourceLineNo">009</span><a id="line.9">import renderer.scene.*;</a>
+<span class="sourceLineNo">010</span><a id="line.10">import renderer.framebuffer.*;</a>
+<span class="sourceLineNo">011</span><a id="line.11"></a>
+<span class="sourceLineNo">012</span><a id="line.12">import java.util.List;</a>
+<span class="sourceLineNo">013</span><a id="line.13">import java.util.ArrayList;</a>
+<span class="sourceLineNo">014</span><a id="line.14"></a>
+<span class="sourceLineNo">015</span><a id="line.15">/**</a>
+<span class="sourceLineNo">016</span><a id="line.16">   Transform each (projected) {@link Vertex} of a {@link Model}</a>
+<span class="sourceLineNo">017</span><a id="line.17">   from the camera's image-plane to the logical pixel-plane.</a>
+<span class="sourceLineNo">018</span><a id="line.18">&lt;p&gt;</a>
+<span class="sourceLineNo">019</span><a id="line.19">   Return a new {@code Model} object, which contains all the</a>
+<span class="sourceLineNo">020</span><a id="line.20">   transformed vertices from the original model, to the renderer.</a>
+<span class="sourceLineNo">021</span><a id="line.21">*/</a>
+<span class="sourceLineNo">022</span><a id="line.22">public class Viewport</a>
+<span class="sourceLineNo">023</span><a id="line.23">{</a>
+<span class="sourceLineNo">024</span><a id="line.24">   /**</a>
+<span class="sourceLineNo">025</span><a id="line.25">      Use the dimensions of a {@link FrameBuffer.Viewport} to transform</a>
+<span class="sourceLineNo">026</span><a id="line.26">      each {@link Vertex} from the camera's image-plane to the logical</a>
+<span class="sourceLineNo">027</span><a id="line.27">      pixel-plane.</a>
+<span class="sourceLineNo">028</span><a id="line.28"></a>
+<span class="sourceLineNo">029</span><a id="line.29">      @param model     {@link Model} whose {@link Vertex} objects are in the camera's image-plane</a>
+<span class="sourceLineNo">030</span><a id="line.30">      @param viewport  a reference to a {@link FrameBuffer.Viewport} in a {@link FrameBuffer}</a>
+<span class="sourceLineNo">031</span><a id="line.31">      @return a new {@link Model} with {@link Vertex} objects in the logical pixel-plane</a>
+<span class="sourceLineNo">032</span><a id="line.32">   */</a>
+<span class="sourceLineNo">033</span><a id="line.33">   public static Model imagePlane2pixelPlane(final Model model,</a>
+<span class="sourceLineNo">034</span><a id="line.34">                                             final FrameBuffer.Viewport viewport)</a>
+<span class="sourceLineNo">035</span><a id="line.35">   {</a>
+<span class="sourceLineNo">036</span><a id="line.36">      final int w = viewport.getWidthVP();</a>
+<span class="sourceLineNo">037</span><a id="line.37">      final int h = viewport.getHeightVP();</a>
+<span class="sourceLineNo">038</span><a id="line.38"></a>
+<span class="sourceLineNo">039</span><a id="line.39">      // A new vertex list to hold the transformed vertices.</a>
+<span class="sourceLineNo">040</span><a id="line.40">      final List&lt;Vertex&gt; newVertexList =</a>
+<span class="sourceLineNo">041</span><a id="line.41">                            new ArrayList&lt;&gt;(model.vertexList.size());</a>
+<span class="sourceLineNo">042</span><a id="line.42"></a>
+<span class="sourceLineNo">043</span><a id="line.43">      // Replace each Vertex object with one that</a>
+<span class="sourceLineNo">044</span><a id="line.44">      // lies in the logical pixel-plane.</a>
+<span class="sourceLineNo">045</span><a id="line.45">      for (final Vertex v : model.vertexList)</a>
+<span class="sourceLineNo">046</span><a id="line.46">      {</a>
+<span class="sourceLineNo">047</span><a id="line.47">         // Transform the vertex to the pixel-plane coordinate system.</a>
+<span class="sourceLineNo">048</span><a id="line.48">         final double x = 0.5 + w/2.001 * (v.x + 1); // x_pp = 0.5 + w/2 * (x_p+1)</a>
+<span class="sourceLineNo">049</span><a id="line.49">         final double y = 0.5 + h/2.001 * (v.y + 1); // y_pp = 0.5 + h/2 * (y_p+1)</a>
+<span class="sourceLineNo">050</span><a id="line.50">         // NOTE: Notice the 2.001 fudge factor in the last two equations.</a>
+<span class="sourceLineNo">051</span><a id="line.51">         // This is explained on page 142 of</a>
+<span class="sourceLineNo">052</span><a id="line.52">         //    "Jim Blinn's Corner: A Trip Down The Graphics Pipeline"</a>
+<span class="sourceLineNo">053</span><a id="line.53">         //     by Jim Blinn, 1996, Morgan Kaufmann Publishers.</a>
+<span class="sourceLineNo">054</span><a id="line.54"></a>
+<span class="sourceLineNo">055</span><a id="line.55">         newVertexList.add( new Vertex(x, y, 0.0) );</a>
+<span class="sourceLineNo">056</span><a id="line.56">      }</a>
+<span class="sourceLineNo">057</span><a id="line.57"></a>
+<span class="sourceLineNo">058</span><a id="line.58">      // Return to the renderer a modified model.</a>
+<span class="sourceLineNo">059</span><a id="line.59">      return new Model(newVertexList,</a>
+<span class="sourceLineNo">060</span><a id="line.60">                       model.primitiveList,</a>
+<span class="sourceLineNo">061</span><a id="line.61">                       model.colorList,</a>
+<span class="sourceLineNo">062</span><a id="line.62">                       model.name,</a>
+<span class="sourceLineNo">063</span><a id="line.63">                       model.visible);</a>
+<span class="sourceLineNo">064</span><a id="line.64">   }</a>
+<span class="sourceLineNo">065</span><a id="line.65"></a>
+<span class="sourceLineNo">066</span><a id="line.66"></a>
+<span class="sourceLineNo">067</span><a id="line.67"></a>
+<span class="sourceLineNo">068</span><a id="line.68">   // Private default constructor to enforce noninstantiable class.</a>
+<span class="sourceLineNo">069</span><a id="line.69">   // See Item 4 in "Effective Java", 3rd Ed, Joshua Bloch.</a>
+<span class="sourceLineNo">070</span><a id="line.70">   private Viewport() {</a>
+<span class="sourceLineNo">071</span><a id="line.71">      throw new AssertionError();</a>
+<span class="sourceLineNo">072</span><a id="line.72">   }</a>
+<span class="sourceLineNo">073</span><a id="line.73">}</a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</main>
+</body>
+</html>

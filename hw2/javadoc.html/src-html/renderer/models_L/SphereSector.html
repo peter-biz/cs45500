@@ -1,0 +1,337 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<main role="main">
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span><a id="line.1">/*</a>
+<span class="sourceLineNo">002</span><a id="line.2"> * Renderer Models. The MIT License.</a>
+<span class="sourceLineNo">003</span><a id="line.3"> * Copyright (c) 2022 rlkraft@pnw.edu</a>
+<span class="sourceLineNo">004</span><a id="line.4"> * See LICENSE for details.</a>
+<span class="sourceLineNo">005</span><a id="line.5">*/</a>
+<span class="sourceLineNo">006</span><a id="line.6"></a>
+<span class="sourceLineNo">007</span><a id="line.7">package renderer.models_L;</a>
+<span class="sourceLineNo">008</span><a id="line.8"></a>
+<span class="sourceLineNo">009</span><a id="line.9">import renderer.scene.*;</a>
+<span class="sourceLineNo">010</span><a id="line.10">import renderer.scene.primitives.*;</a>
+<span class="sourceLineNo">011</span><a id="line.11">import renderer.scene.util.MeshMaker;</a>
+<span class="sourceLineNo">012</span><a id="line.12"></a>
+<span class="sourceLineNo">013</span><a id="line.13">/**</a>
+<span class="sourceLineNo">014</span><a id="line.14">   Create a wireframe model of a partial sphere centered at the origin</a>
+<span class="sourceLineNo">015</span><a id="line.15">&lt;p&gt;</a>
+<span class="sourceLineNo">016</span><a id="line.16">   See &lt;a href="https://en.wikipedia.org/wiki/Sphere" target="_top"&gt;</a>
+<span class="sourceLineNo">017</span><a id="line.17">                https://en.wikipedia.org/wiki/Sphere&lt;/a&gt;</a>
+<span class="sourceLineNo">018</span><a id="line.18">&lt;p&gt;</a>
+<span class="sourceLineNo">019</span><a id="line.19">   By a partial sphere we mean cutting a hole in the sphere around</a>
+<span class="sourceLineNo">020</span><a id="line.20">   either the north or the south pole (that is, removing a spherical</a>
+<span class="sourceLineNo">021</span><a id="line.21">   cap from either the top or bottom of the sphere) and also cutting</a>
+<span class="sourceLineNo">022</span><a id="line.22">   from the sphere a spherical wedge between two lines of longitude.</a>
+<span class="sourceLineNo">023</span><a id="line.23">&lt;p&gt;</a>
+<span class="sourceLineNo">024</span><a id="line.24">   Notice that we can use this model to both model a spherical wedge</a>
+<span class="sourceLineNo">025</span><a id="line.25">   and to model a sphere with a spherical wedge removed from it.</a>
+<span class="sourceLineNo">026</span><a id="line.26">&lt;p&gt;</a>
+<span class="sourceLineNo">027</span><a id="line.27">   Similarly, we can use this model to both model a spherical cap</a>
+<span class="sourceLineNo">028</span><a id="line.28">   and to model a sphere with a spherical cap removed from it.</a>
+<span class="sourceLineNo">029</span><a id="line.29">&lt;p&gt;</a>
+<span class="sourceLineNo">030</span><a id="line.30">   See &lt;a href="https://en.wikipedia.org/wiki/Spherical_cap" target="_top"&gt;</a>
+<span class="sourceLineNo">031</span><a id="line.31">                https://en.wikipedia.org/wiki/Spherical_cap&lt;/a&gt;</a>
+<span class="sourceLineNo">032</span><a id="line.32">&lt;p&gt;</a>
+<span class="sourceLineNo">033</span><a id="line.33">   See &lt;a href="https://en.wikipedia.org/wiki/Spherical_segment" target="_top"&gt;</a>
+<span class="sourceLineNo">034</span><a id="line.34">                https://en.wikipedia.org/wiki/Spherical_segment&lt;/a&gt;</a>
+<span class="sourceLineNo">035</span><a id="line.35">&lt;p&gt;</a>
+<span class="sourceLineNo">036</span><a id="line.36">   See &lt;a href="https://en.wikipedia.org/wiki/Spherical_wedge" target="_top"&gt;</a>
+<span class="sourceLineNo">037</span><a id="line.37">                https://en.wikipedia.org/wiki/Spherical_wedge&lt;/a&gt;</a>
+<span class="sourceLineNo">038</span><a id="line.38">&lt;p&gt;</a>
+<span class="sourceLineNo">039</span><a id="line.39">   The whole sphere of radius {@code r} is the surface of revolution generated</a>
+<span class="sourceLineNo">040</span><a id="line.40">   by revolving the right half-circle in the xy-plane with radius {@code r} and</a>
+<span class="sourceLineNo">041</span><a id="line.41">   center {@code (0,0,0)} all the way around the y-axis.</a>
+<span class="sourceLineNo">042</span><a id="line.42">&lt;p&gt;</a>
+<span class="sourceLineNo">043</span><a id="line.43">   Here are parametric equations for the right half-circle in the xy-plane with</a>
+<span class="sourceLineNo">044</span><a id="line.44">   radius {@code r} and center {@code (0,0,0)}, parameterized from the top down.</a>
+<span class="sourceLineNo">045</span><a id="line.45">   &lt;pre&gt;{@code</a>
+<span class="sourceLineNo">046</span><a id="line.46">      x(phi) = r * sin(phi)  \</a>
+<span class="sourceLineNo">047</span><a id="line.47">      y(phi) = r * cos(phi)   |-  0 &lt;= phi &lt;= PI</a>
+<span class="sourceLineNo">048</span><a id="line.48">      z(phi) = 0             /</a>
+<span class="sourceLineNo">049</span><a id="line.49">   }&lt;/pre&gt;</a>
+<span class="sourceLineNo">050</span><a id="line.50">   Here is the 3D rotation matrix that rotates around the y-axis</a>
+<span class="sourceLineNo">051</span><a id="line.51">   by {@code theta} radians, {@code 0 &lt;= theta &lt;= 2*PI}</a>
+<span class="sourceLineNo">052</span><a id="line.52">   &lt;pre&gt;{@code</a>
+<span class="sourceLineNo">053</span><a id="line.53">      [ cos(theta)   0   sin(theta)]</a>
+<span class="sourceLineNo">054</span><a id="line.54">      [     0        1       0     ]</a>
+<span class="sourceLineNo">055</span><a id="line.55">      [-sin(theta)   0   cos(theta)]</a>
+<span class="sourceLineNo">056</span><a id="line.56">   }&lt;/pre&gt;</a>
+<span class="sourceLineNo">057</span><a id="line.57">   If we multiply the rotation matrix with the half-circle</a>
+<span class="sourceLineNo">058</span><a id="line.58">   parameterization, we get a parameterization of the sphere.</a>
+<span class="sourceLineNo">059</span><a id="line.59">   &lt;pre&gt;{@code</a>
+<span class="sourceLineNo">060</span><a id="line.60">      [ cos(theta)   0   sin(theta)]   [r * sin(phi)]</a>
+<span class="sourceLineNo">061</span><a id="line.61">      [     0        1       0     ] * [r * cos(phi)]</a>
+<span class="sourceLineNo">062</span><a id="line.62">      [-sin(theta)   0   cos(theta)]   [     0      ]</a>
+<span class="sourceLineNo">063</span><a id="line.63"></a>
+<span class="sourceLineNo">064</span><a id="line.64">      = ( r * sin(phi) * cos(theta).    \</a>
+<span class="sourceLineNo">065</span><a id="line.65">          r * cos(phi),                  |- 0&lt;=theta&lt;=2*PI,  0&lt;=phi&lt;=PI</a>
+<span class="sourceLineNo">066</span><a id="line.66">         -r * sin(phi) * sin(theta) )   /</a>
+<span class="sourceLineNo">067</span><a id="line.67">   }&lt;/pre&gt;</a>
+<span class="sourceLineNo">068</span><a id="line.68">   See</a>
+<span class="sourceLineNo">069</span><a id="line.69">     &lt;a href="https://en.wikipedia.org/wiki/Sphere#Equations_in_three-dimensional_space" target="_top"&gt;</a>
+<span class="sourceLineNo">070</span><a id="line.70">              https://en.wikipedia.org/wiki/Sphere#Equations_in_three-dimensional_space&lt;/a&gt;</a>
+<span class="sourceLineNo">071</span><a id="line.71"></a>
+<span class="sourceLineNo">072</span><a id="line.72">   @see Sphere</a>
+<span class="sourceLineNo">073</span><a id="line.73">   @see CircleSector</a>
+<span class="sourceLineNo">074</span><a id="line.74">   @see DiskSector</a>
+<span class="sourceLineNo">075</span><a id="line.75">   @see RingSector</a>
+<span class="sourceLineNo">076</span><a id="line.76">   @see ConeSector</a>
+<span class="sourceLineNo">077</span><a id="line.77">   @see CylinderSector</a>
+<span class="sourceLineNo">078</span><a id="line.78">   @see TorusSector</a>
+<span class="sourceLineNo">079</span><a id="line.79">*/</a>
+<span class="sourceLineNo">080</span><a id="line.80">public class SphereSector extends Model implements MeshMaker</a>
+<span class="sourceLineNo">081</span><a id="line.81">{</a>
+<span class="sourceLineNo">082</span><a id="line.82">   public final double r;</a>
+<span class="sourceLineNo">083</span><a id="line.83">   public final double theta1;</a>
+<span class="sourceLineNo">084</span><a id="line.84">   public final double theta2;</a>
+<span class="sourceLineNo">085</span><a id="line.85">   public final double phi1;</a>
+<span class="sourceLineNo">086</span><a id="line.86">   public final double phi2;</a>
+<span class="sourceLineNo">087</span><a id="line.87">   public final int n;</a>
+<span class="sourceLineNo">088</span><a id="line.88">   public final int k;</a>
+<span class="sourceLineNo">089</span><a id="line.89"></a>
+<span class="sourceLineNo">090</span><a id="line.90">   /**</a>
+<span class="sourceLineNo">091</span><a id="line.91">      Create half of a sphere of radius 1 centered at the origin.</a>
+<span class="sourceLineNo">092</span><a id="line.92">   */</a>
+<span class="sourceLineNo">093</span><a id="line.93">   public SphereSector()</a>
+<span class="sourceLineNo">094</span><a id="line.94">   {</a>
+<span class="sourceLineNo">095</span><a id="line.95">      this(1, Math.PI/2, 3*Math.PI/2, 15, 8);</a>
+<span class="sourceLineNo">096</span><a id="line.96">   }</a>
+<span class="sourceLineNo">097</span><a id="line.97"></a>
+<span class="sourceLineNo">098</span><a id="line.98"></a>
+<span class="sourceLineNo">099</span><a id="line.99">   /**</a>
+<span class="sourceLineNo">100</span><a id="line.100">      Create a part of the sphere of radius r centered at the origin.</a>
+<span class="sourceLineNo">101</span><a id="line.101">   &lt;p&gt;</a>
+<span class="sourceLineNo">102</span><a id="line.102">      If {@code theta1 &gt; 0} and {@code theta1 &lt; theta2 &lt; 2*PI}, then a</a>
+<span class="sourceLineNo">103</span><a id="line.103">      spherical wedge is removed from the model. In other words, the</a>
+<span class="sourceLineNo">104</span><a id="line.104">      (partial) circles of latitude in the model extend from angle</a>
+<span class="sourceLineNo">105</span><a id="line.105">      {@code theta1} to angle {@code theta2}.</a>
+<span class="sourceLineNo">106</span><a id="line.106">   &lt;p&gt;</a>
+<span class="sourceLineNo">107</span><a id="line.107">      The last two parameters determine the number of half circles of</a>
+<span class="sourceLineNo">108</span><a id="line.108">      longitude and the number of (partial) circles of latitude in the model.</a>
+<span class="sourceLineNo">109</span><a id="line.109">   &lt;p&gt;</a>
+<span class="sourceLineNo">110</span><a id="line.110">      If there are {@code k} half circles of longitude, then each (partial)</a>
+<span class="sourceLineNo">111</span><a id="line.111">      circle of latitude will have {@code k-1} line segments.</a>
+<span class="sourceLineNo">112</span><a id="line.112">      If there are {@code n} circles of latitude, then each half circle</a>
+<span class="sourceLineNo">113</span><a id="line.113">      of longitude will have {@code n+1} line segments.</a>
+<span class="sourceLineNo">114</span><a id="line.114">   &lt;p&gt;</a>
+<span class="sourceLineNo">115</span><a id="line.115">      There must be at least four half circles of longitude and</a>
+<span class="sourceLineNo">116</span><a id="line.116">      at least one circle of latitude.</a>
+<span class="sourceLineNo">117</span><a id="line.117"></a>
+<span class="sourceLineNo">118</span><a id="line.118">      @param r       radius of the sphere</a>
+<span class="sourceLineNo">119</span><a id="line.119">      @param theta1  beginning longitude angle (in radians) of the spherical wedge</a>
+<span class="sourceLineNo">120</span><a id="line.120">      @param theta2  ending longitude angle (in radians) of the spherical wedge</a>
+<span class="sourceLineNo">121</span><a id="line.121">      @param n       number of circles of latitude</a>
+<span class="sourceLineNo">122</span><a id="line.122">      @param k       number of lines of longitude, not counting the edges of a spherical wedge</a>
+<span class="sourceLineNo">123</span><a id="line.123">      @throws IllegalArgumentException if {@code n} is less than 3</a>
+<span class="sourceLineNo">124</span><a id="line.124">      @throws IllegalArgumentException if {@code k} is less than 4</a>
+<span class="sourceLineNo">125</span><a id="line.125">   */</a>
+<span class="sourceLineNo">126</span><a id="line.126">   public SphereSector(final double r,</a>
+<span class="sourceLineNo">127</span><a id="line.127">                       final double theta1, final double theta2,</a>
+<span class="sourceLineNo">128</span><a id="line.128">                       final int n, final int k)</a>
+<span class="sourceLineNo">129</span><a id="line.129">   {</a>
+<span class="sourceLineNo">130</span><a id="line.130">      this(r, theta1, theta2, 0, Math.PI, n+2, k);</a>
+<span class="sourceLineNo">131</span><a id="line.131">   }</a>
+<span class="sourceLineNo">132</span><a id="line.132"></a>
+<span class="sourceLineNo">133</span><a id="line.133"></a>
+<span class="sourceLineNo">134</span><a id="line.134">   /**</a>
+<span class="sourceLineNo">135</span><a id="line.135">      Create a part of the sphere of radius r centered at the origin.</a>
+<span class="sourceLineNo">136</span><a id="line.136">   &lt;p&gt;</a>
+<span class="sourceLineNo">137</span><a id="line.137">      If {@code phi1 &gt; 0}, then there is hole in the sphere around its</a>
+<span class="sourceLineNo">138</span><a id="line.138">      north pole. Similarly, if {@code phi2 &lt; PI}, then there is a hole</a>
+<span class="sourceLineNo">139</span><a id="line.139">      in the sphere around its south pole. In other words, in spherical</a>
+<span class="sourceLineNo">140</span><a id="line.140">      coordinates, lines of longitude in the model extend from angle</a>
+<span class="sourceLineNo">141</span><a id="line.141">      {@code phi1} to angle {@code phi2}.</a>
+<span class="sourceLineNo">142</span><a id="line.142">   &lt;p&gt;</a>
+<span class="sourceLineNo">143</span><a id="line.143">      If {@code theta1 &gt; 0} and {@code theta1 &lt; theta2 &lt; 2*PI}, then a</a>
+<span class="sourceLineNo">144</span><a id="line.144">      spherical wedge is removed from the model. In other words, the</a>
+<span class="sourceLineNo">145</span><a id="line.145">      (partial) circles of latitude in the model extend from angle</a>
+<span class="sourceLineNo">146</span><a id="line.146">      {@code theta1} to angle {@code theta2}.</a>
+<span class="sourceLineNo">147</span><a id="line.147">   &lt;p&gt;</a>
+<span class="sourceLineNo">148</span><a id="line.148">      The last two parameters determine the number of lines of longitude</a>
+<span class="sourceLineNo">149</span><a id="line.149">      and the number of (partial) circles of latitude in the model.</a>
+<span class="sourceLineNo">150</span><a id="line.150">   &lt;p&gt;</a>
+<span class="sourceLineNo">151</span><a id="line.151">      If there are {@code k} lines of longitude, then each (partial)</a>
+<span class="sourceLineNo">152</span><a id="line.152">      circle of latitude will have {@code k-1} line segments.</a>
+<span class="sourceLineNo">153</span><a id="line.153">      If there are {@code n} circles of latitude (including the edges</a>
+<span class="sourceLineNo">154</span><a id="line.154">      of the removed spherical caps), then each line of longitude will</a>
+<span class="sourceLineNo">155</span><a id="line.155">      have {@code n-1} line segments.</a>
+<span class="sourceLineNo">156</span><a id="line.156">   &lt;p&gt;</a>
+<span class="sourceLineNo">157</span><a id="line.157">      There must be at least four lines of longitude and at least</a>
+<span class="sourceLineNo">158</span><a id="line.158">      three circles of latitude.</a>
+<span class="sourceLineNo">159</span><a id="line.159"></a>
+<span class="sourceLineNo">160</span><a id="line.160">      @param r       radius of the sphere</a>
+<span class="sourceLineNo">161</span><a id="line.161">      @param theta1  beginning longitude angle (in radians) of the spherical wedge</a>
+<span class="sourceLineNo">162</span><a id="line.162">      @param theta2  ending longitude angle (in radians) of the spherical wedge</a>
+<span class="sourceLineNo">163</span><a id="line.163">      @param phi1    beginning latitude angle (in radians) of the spherical segment</a>
+<span class="sourceLineNo">164</span><a id="line.164">      @param phi2    ending latitude angle (in radians) of the spherical segment</a>
+<span class="sourceLineNo">165</span><a id="line.165">      @param n       number of circles of latitude, not counting the edges of a spherical segment</a>
+<span class="sourceLineNo">166</span><a id="line.166">      @param k       number of lines of longitude, not counting one edge of a spherical wedge</a>
+<span class="sourceLineNo">167</span><a id="line.167">      @throws IllegalArgumentException if {@code n} is less than 3</a>
+<span class="sourceLineNo">168</span><a id="line.168">      @throws IllegalArgumentException if {@code k} is less than 4</a>
+<span class="sourceLineNo">169</span><a id="line.169">   */</a>
+<span class="sourceLineNo">170</span><a id="line.170">   public SphereSector(final double r,</a>
+<span class="sourceLineNo">171</span><a id="line.171">                       double theta1, double theta2,</a>
+<span class="sourceLineNo">172</span><a id="line.172">                       final double phi1, final double phi2,</a>
+<span class="sourceLineNo">173</span><a id="line.173">                       final int n, final int k)</a>
+<span class="sourceLineNo">174</span><a id="line.174">   {</a>
+<span class="sourceLineNo">175</span><a id="line.175">      super(String.format("Sphere Sector(%.2f,%.2f,%.2f,%.2f,%.2f,%d,%d)",</a>
+<span class="sourceLineNo">176</span><a id="line.176">                                        r, theta1, theta2, phi1, phi2, n, k));</a>
+<span class="sourceLineNo">177</span><a id="line.177"></a>
+<span class="sourceLineNo">178</span><a id="line.178">      if (n &lt; 3)</a>
+<span class="sourceLineNo">179</span><a id="line.179">         throw new IllegalArgumentException("n must be greater than 2");</a>
+<span class="sourceLineNo">180</span><a id="line.180">      if (k &lt; 4)</a>
+<span class="sourceLineNo">181</span><a id="line.181">         throw new IllegalArgumentException("k must be greater than 3");</a>
+<span class="sourceLineNo">182</span><a id="line.182"></a>
+<span class="sourceLineNo">183</span><a id="line.183">      theta1 = theta1 % (2*Math.PI);</a>
+<span class="sourceLineNo">184</span><a id="line.184">      theta2 = theta2 % (2*Math.PI);</a>
+<span class="sourceLineNo">185</span><a id="line.185">      if (theta1 &lt; 0) theta1 = 2*Math.PI + theta1;</a>
+<span class="sourceLineNo">186</span><a id="line.186">      if (theta2 &lt; 0) theta2 = 2*Math.PI + theta2;</a>
+<span class="sourceLineNo">187</span><a id="line.187">      if (theta2 &lt;= theta1) theta2 = theta2 + 2*Math.PI;</a>
+<span class="sourceLineNo">188</span><a id="line.188"></a>
+<span class="sourceLineNo">189</span><a id="line.189">      this.r = r;</a>
+<span class="sourceLineNo">190</span><a id="line.190">      this.theta1 = theta1;</a>
+<span class="sourceLineNo">191</span><a id="line.191">      this.theta2 = theta2;</a>
+<span class="sourceLineNo">192</span><a id="line.192">      this.phi1 = phi1;</a>
+<span class="sourceLineNo">193</span><a id="line.193">      this.phi2 = phi2;</a>
+<span class="sourceLineNo">194</span><a id="line.194">      this.n = n;</a>
+<span class="sourceLineNo">195</span><a id="line.195">      this.k = k;</a>
+<span class="sourceLineNo">196</span><a id="line.196"></a>
+<span class="sourceLineNo">197</span><a id="line.197">      // Create the sphere section's geometry.</a>
+<span class="sourceLineNo">198</span><a id="line.198"></a>
+<span class="sourceLineNo">199</span><a id="line.199">      final double deltaPhi = (phi2 - phi1) / (n - 1),</a>
+<span class="sourceLineNo">200</span><a id="line.200">                   deltaTheta = (theta2 - theta1) / (k - 1);</a>
+<span class="sourceLineNo">201</span><a id="line.201"></a>
+<span class="sourceLineNo">202</span><a id="line.202">      // An array of vertices to be used to create line segments.</a>
+<span class="sourceLineNo">203</span><a id="line.203">      final Vertex[][] v = new Vertex[n][k];</a>
+<span class="sourceLineNo">204</span><a id="line.204"></a>
+<span class="sourceLineNo">205</span><a id="line.205">      // Create all the vertices.</a>
+<span class="sourceLineNo">206</span><a id="line.206">      for (int j = 0; j &lt; k; ++j) // choose an angle of longitude</a>
+<span class="sourceLineNo">207</span><a id="line.207">      {</a>
+<span class="sourceLineNo">208</span><a id="line.208">         final double c1 = Math.cos(theta1 + j * deltaTheta),</a>
+<span class="sourceLineNo">209</span><a id="line.209">                      s1 = Math.sin(theta1 + j * deltaTheta);</a>
+<span class="sourceLineNo">210</span><a id="line.210">         for (int i = 0; i &lt; n; ++i) // choose an angle of latitude</a>
+<span class="sourceLineNo">211</span><a id="line.211">         {</a>
+<span class="sourceLineNo">212</span><a id="line.212">            final double c2 = Math.cos(phi1 + i * deltaPhi),</a>
+<span class="sourceLineNo">213</span><a id="line.213">                         s2 = Math.sin(phi1 + i * deltaPhi);</a>
+<span class="sourceLineNo">214</span><a id="line.214">            v[i][j] = new Vertex( r * s2 * c1,</a>
+<span class="sourceLineNo">215</span><a id="line.215">                                  r * c2,</a>
+<span class="sourceLineNo">216</span><a id="line.216">                                 -r * s2 * s1 );</a>
+<span class="sourceLineNo">217</span><a id="line.217">         }</a>
+<span class="sourceLineNo">218</span><a id="line.218">      }</a>
+<span class="sourceLineNo">219</span><a id="line.219"></a>
+<span class="sourceLineNo">220</span><a id="line.220">      // Add all of the vertices to this model.</a>
+<span class="sourceLineNo">221</span><a id="line.221">      for (int i = 0; i &lt; n; ++i)</a>
+<span class="sourceLineNo">222</span><a id="line.222">      {</a>
+<span class="sourceLineNo">223</span><a id="line.223">         for (int j = 0; j &lt; k; ++j)</a>
+<span class="sourceLineNo">224</span><a id="line.224">         {</a>
+<span class="sourceLineNo">225</span><a id="line.225">            addVertex( v[i][j] );</a>
+<span class="sourceLineNo">226</span><a id="line.226">         }</a>
+<span class="sourceLineNo">227</span><a id="line.227">      }</a>
+<span class="sourceLineNo">228</span><a id="line.228"></a>
+<span class="sourceLineNo">229</span><a id="line.229">      // Create the horizontal (partial) circles of latitude around the sphere.</a>
+<span class="sourceLineNo">230</span><a id="line.230">      for (int i = 0; i &lt; n; ++i)</a>
+<span class="sourceLineNo">231</span><a id="line.231">      {</a>
+<span class="sourceLineNo">232</span><a id="line.232">         for (int j = 0; j &lt; k - 1; ++j)</a>
+<span class="sourceLineNo">233</span><a id="line.233">         {  //                                v[i][j]        v[i][j+1]</a>
+<span class="sourceLineNo">234</span><a id="line.234">            addPrimitive(new LineSegment( (i * k) + j,  (i * k) + (j+1) ));</a>
+<span class="sourceLineNo">235</span><a id="line.235">         }</a>
+<span class="sourceLineNo">236</span><a id="line.236">      }</a>
+<span class="sourceLineNo">237</span><a id="line.237"></a>
+<span class="sourceLineNo">238</span><a id="line.238">      // Create the vertical lines of longitude from the top edge to the bottom edge.</a>
+<span class="sourceLineNo">239</span><a id="line.239">      for (int j = 0; j &lt; k; ++j)</a>
+<span class="sourceLineNo">240</span><a id="line.240">      {</a>
+<span class="sourceLineNo">241</span><a id="line.241">         for (int i = 0; i &lt; n - 1; ++i)</a>
+<span class="sourceLineNo">242</span><a id="line.242">         {  //                                v[i][j]        v[i+1][j]</a>
+<span class="sourceLineNo">243</span><a id="line.243">            addPrimitive(new LineSegment( (i * k) + j, ((i+1) * k) + j ));</a>
+<span class="sourceLineNo">244</span><a id="line.244">         }</a>
+<span class="sourceLineNo">245</span><a id="line.245">      }</a>
+<span class="sourceLineNo">246</span><a id="line.246">   }</a>
+<span class="sourceLineNo">247</span><a id="line.247"></a>
+<span class="sourceLineNo">248</span><a id="line.248"></a>
+<span class="sourceLineNo">249</span><a id="line.249"></a>
+<span class="sourceLineNo">250</span><a id="line.250">   // Implement the MeshMaker interface (three methods).</a>
+<span class="sourceLineNo">251</span><a id="line.251">   @Override public int getHorzCount() {return n;}</a>
+<span class="sourceLineNo">252</span><a id="line.252"></a>
+<span class="sourceLineNo">253</span><a id="line.253">   @Override public int getVertCount() {return k;}</a>
+<span class="sourceLineNo">254</span><a id="line.254"></a>
+<span class="sourceLineNo">255</span><a id="line.255">   @Override</a>
+<span class="sourceLineNo">256</span><a id="line.256">   public SphereSector remake(final int n, final int k)</a>
+<span class="sourceLineNo">257</span><a id="line.257">   {</a>
+<span class="sourceLineNo">258</span><a id="line.258">      return new SphereSector(this.r,</a>
+<span class="sourceLineNo">259</span><a id="line.259">                              this.theta1, this.theta2,</a>
+<span class="sourceLineNo">260</span><a id="line.260">                              this.phi1, this.phi2,</a>
+<span class="sourceLineNo">261</span><a id="line.261">                              n, k);</a>
+<span class="sourceLineNo">262</span><a id="line.262">   }</a>
+<span class="sourceLineNo">263</span><a id="line.263">}//SphereSector</a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</main>
+</body>
+</html>

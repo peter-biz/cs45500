@@ -1,0 +1,232 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<main role="main">
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span><a id="line.1">/*</a>
+<span class="sourceLineNo">002</span><a id="line.2"> * Renderer Models. The MIT License.</a>
+<span class="sourceLineNo">003</span><a id="line.3"> * Copyright (c) 2022 rlkraft@pnw.edu</a>
+<span class="sourceLineNo">004</span><a id="line.4"> * See LICENSE for details.</a>
+<span class="sourceLineNo">005</span><a id="line.5">*/</a>
+<span class="sourceLineNo">006</span><a id="line.6"></a>
+<span class="sourceLineNo">007</span><a id="line.7">package renderer.models_L;</a>
+<span class="sourceLineNo">008</span><a id="line.8"></a>
+<span class="sourceLineNo">009</span><a id="line.9">import renderer.scene.*;</a>
+<span class="sourceLineNo">010</span><a id="line.10">import renderer.scene.primitives.*;</a>
+<span class="sourceLineNo">011</span><a id="line.11"></a>
+<span class="sourceLineNo">012</span><a id="line.12">import java.awt.Color;</a>
+<span class="sourceLineNo">013</span><a id="line.13"></a>
+<span class="sourceLineNo">014</span><a id="line.14">/**</a>
+<span class="sourceLineNo">015</span><a id="line.15">   Create a positive x, y, and z axis in 3-dimensional space.</a>
+<span class="sourceLineNo">016</span><a id="line.16">*/</a>
+<span class="sourceLineNo">017</span><a id="line.17">public class Axes3D extends Model</a>
+<span class="sourceLineNo">018</span><a id="line.18">{</a>
+<span class="sourceLineNo">019</span><a id="line.19">   /**</a>
+<span class="sourceLineNo">020</span><a id="line.20">      Create a positive x, y, and z axis</a>
+<span class="sourceLineNo">021</span><a id="line.21">      with one unit length for each axis.</a>
+<span class="sourceLineNo">022</span><a id="line.22">      The default {@link Color} is white.</a>
+<span class="sourceLineNo">023</span><a id="line.23">   */</a>
+<span class="sourceLineNo">024</span><a id="line.24">   public Axes3D( )</a>
+<span class="sourceLineNo">025</span><a id="line.25">   {</a>
+<span class="sourceLineNo">026</span><a id="line.26">      this(1.0, 1.0, 1.0);</a>
+<span class="sourceLineNo">027</span><a id="line.27">   }</a>
+<span class="sourceLineNo">028</span><a id="line.28"></a>
+<span class="sourceLineNo">029</span><a id="line.29"></a>
+<span class="sourceLineNo">030</span><a id="line.30">   /**</a>
+<span class="sourceLineNo">031</span><a id="line.31">      Create a positive x, y, and z axis</a>
+<span class="sourceLineNo">032</span><a id="line.32">      with the given length for each axis.</a>
+<span class="sourceLineNo">033</span><a id="line.33">      The default {@link Color} is white.</a>
+<span class="sourceLineNo">034</span><a id="line.34"></a>
+<span class="sourceLineNo">035</span><a id="line.35">      @param xMax  length of the x-axis</a>
+<span class="sourceLineNo">036</span><a id="line.36">      @param yMax  length of the y-axis</a>
+<span class="sourceLineNo">037</span><a id="line.37">      @param zMax  length of the z-axis</a>
+<span class="sourceLineNo">038</span><a id="line.38">   */</a>
+<span class="sourceLineNo">039</span><a id="line.39">   public Axes3D(final double xMax, final double yMax, final double zMax)</a>
+<span class="sourceLineNo">040</span><a id="line.40">   {</a>
+<span class="sourceLineNo">041</span><a id="line.41">      this(xMax, yMax, zMax, Color.white);</a>
+<span class="sourceLineNo">042</span><a id="line.42">   }</a>
+<span class="sourceLineNo">043</span><a id="line.43"></a>
+<span class="sourceLineNo">044</span><a id="line.44"></a>
+<span class="sourceLineNo">045</span><a id="line.45">   /**</a>
+<span class="sourceLineNo">046</span><a id="line.46">      Create a positive x, y, and z axis</a>
+<span class="sourceLineNo">047</span><a id="line.47">      with the given length for each axis.</a>
+<span class="sourceLineNo">048</span><a id="line.48">      Use the given {@link Color} for all three axes.</a>
+<span class="sourceLineNo">049</span><a id="line.49"></a>
+<span class="sourceLineNo">050</span><a id="line.50">      @param xMax  length of the x-axis</a>
+<span class="sourceLineNo">051</span><a id="line.51">      @param yMax  length of the y-axis</a>
+<span class="sourceLineNo">052</span><a id="line.52">      @param zMax  length of the z-axis</a>
+<span class="sourceLineNo">053</span><a id="line.53">      @param c     {@link Color} for all three axes</a>
+<span class="sourceLineNo">054</span><a id="line.54">   */</a>
+<span class="sourceLineNo">055</span><a id="line.55">   public Axes3D(final double xMax, final double yMax, final double zMax,</a>
+<span class="sourceLineNo">056</span><a id="line.56">                 final Color c)</a>
+<span class="sourceLineNo">057</span><a id="line.57">   {</a>
+<span class="sourceLineNo">058</span><a id="line.58">      this(xMax, yMax, zMax, c, c, c);</a>
+<span class="sourceLineNo">059</span><a id="line.59">   }</a>
+<span class="sourceLineNo">060</span><a id="line.60"></a>
+<span class="sourceLineNo">061</span><a id="line.61"></a>
+<span class="sourceLineNo">062</span><a id="line.62">   /**</a>
+<span class="sourceLineNo">063</span><a id="line.63">      Create a positive x, y, and z axis</a>
+<span class="sourceLineNo">064</span><a id="line.64">      with the given length for each axis.</a>
+<span class="sourceLineNo">065</span><a id="line.65">      Use the given {@link Color} for each axis.</a>
+<span class="sourceLineNo">066</span><a id="line.66"></a>
+<span class="sourceLineNo">067</span><a id="line.67">      @param xMax  length of the x-axis</a>
+<span class="sourceLineNo">068</span><a id="line.68">      @param yMax  length of the y-axis</a>
+<span class="sourceLineNo">069</span><a id="line.69">      @param zMax  length of the z-axis</a>
+<span class="sourceLineNo">070</span><a id="line.70">      @param cX    {@link Color} for the x-axis</a>
+<span class="sourceLineNo">071</span><a id="line.71">      @param cY    {@link Color} for the y-axis</a>
+<span class="sourceLineNo">072</span><a id="line.72">      @param cZ    {@link Color} for the z-axis</a>
+<span class="sourceLineNo">073</span><a id="line.73">   */</a>
+<span class="sourceLineNo">074</span><a id="line.74">   public Axes3D(final double xMax, final double yMax, final double zMax,</a>
+<span class="sourceLineNo">075</span><a id="line.75">                 final Color cX,    final Color cY,    final Color cZ)</a>
+<span class="sourceLineNo">076</span><a id="line.76">   {</a>
+<span class="sourceLineNo">077</span><a id="line.77">      this(0.0, xMax, 0.0, yMax, 0.0, zMax, cX, cY, cZ);</a>
+<span class="sourceLineNo">078</span><a id="line.78">   }</a>
+<span class="sourceLineNo">079</span><a id="line.79"></a>
+<span class="sourceLineNo">080</span><a id="line.80"></a>
+<span class="sourceLineNo">081</span><a id="line.81">   /**</a>
+<span class="sourceLineNo">082</span><a id="line.82">      Create an x, y, and z axis with the</a>
+<span class="sourceLineNo">083</span><a id="line.83">      given endpoints for each axis.</a>
+<span class="sourceLineNo">084</span><a id="line.84">      The default {@link Color} is black.</a>
+<span class="sourceLineNo">085</span><a id="line.85"></a>
+<span class="sourceLineNo">086</span><a id="line.86">      @param xMin  left endpoint of the x-axis</a>
+<span class="sourceLineNo">087</span><a id="line.87">      @param xMax  right endpoint of the x-axis</a>
+<span class="sourceLineNo">088</span><a id="line.88">      @param yMin  bottom endpoint of the y-axis</a>
+<span class="sourceLineNo">089</span><a id="line.89">      @param yMax  top endpoint of the y-axis</a>
+<span class="sourceLineNo">090</span><a id="line.90">      @param zMin  back endpoint of the z-axis</a>
+<span class="sourceLineNo">091</span><a id="line.91">      @param zMax  front endpoint of the z-axis</a>
+<span class="sourceLineNo">092</span><a id="line.92">   */</a>
+<span class="sourceLineNo">093</span><a id="line.93">   public Axes3D(final double xMin, final double xMax,</a>
+<span class="sourceLineNo">094</span><a id="line.94">                 final double yMin, final double yMax,</a>
+<span class="sourceLineNo">095</span><a id="line.95">                 final double zMin, final double zMax)</a>
+<span class="sourceLineNo">096</span><a id="line.96">   {</a>
+<span class="sourceLineNo">097</span><a id="line.97">      this(xMin, xMax, yMin, yMax, zMin, zMax, Color.black);</a>
+<span class="sourceLineNo">098</span><a id="line.98">   }</a>
+<span class="sourceLineNo">099</span><a id="line.99"></a>
+<span class="sourceLineNo">100</span><a id="line.100"></a>
+<span class="sourceLineNo">101</span><a id="line.101">   /**</a>
+<span class="sourceLineNo">102</span><a id="line.102">      Create an x, y, and z axis with the</a>
+<span class="sourceLineNo">103</span><a id="line.103">      given endpoints for each axis.</a>
+<span class="sourceLineNo">104</span><a id="line.104">      Use the given {@link Color} for all three axes.</a>
+<span class="sourceLineNo">105</span><a id="line.105"></a>
+<span class="sourceLineNo">106</span><a id="line.106">      @param xMin  left endpoint of the x-axis</a>
+<span class="sourceLineNo">107</span><a id="line.107">      @param xMax  right endpoint of the x-axis</a>
+<span class="sourceLineNo">108</span><a id="line.108">      @param yMin  bottom endpoint of the y-axis</a>
+<span class="sourceLineNo">109</span><a id="line.109">      @param yMax  top endpoint of the y-axis</a>
+<span class="sourceLineNo">110</span><a id="line.110">      @param zMin  back endpoint of the z-axis</a>
+<span class="sourceLineNo">111</span><a id="line.111">      @param zMax  front endpoint of the z-axis</a>
+<span class="sourceLineNo">112</span><a id="line.112">      @param c     {@link Color} for all three axes</a>
+<span class="sourceLineNo">113</span><a id="line.113">   */</a>
+<span class="sourceLineNo">114</span><a id="line.114">   public Axes3D(final double xMin, final double xMax,</a>
+<span class="sourceLineNo">115</span><a id="line.115">                 final double yMin, final double yMax,</a>
+<span class="sourceLineNo">116</span><a id="line.116">                 final double zMin, final double zMax,</a>
+<span class="sourceLineNo">117</span><a id="line.117">                 final Color c)</a>
+<span class="sourceLineNo">118</span><a id="line.118">   {</a>
+<span class="sourceLineNo">119</span><a id="line.119">      this(xMin, xMax, yMin, yMax, zMin, zMax, c, c, c);</a>
+<span class="sourceLineNo">120</span><a id="line.120">   }</a>
+<span class="sourceLineNo">121</span><a id="line.121"></a>
+<span class="sourceLineNo">122</span><a id="line.122"></a>
+<span class="sourceLineNo">123</span><a id="line.123">   /**</a>
+<span class="sourceLineNo">124</span><a id="line.124">      Create an x, y, and z axis with the</a>
+<span class="sourceLineNo">125</span><a id="line.125">      given endpoints for each axis.</a>
+<span class="sourceLineNo">126</span><a id="line.126">      Use the given {@link Color} for each axis.</a>
+<span class="sourceLineNo">127</span><a id="line.127"></a>
+<span class="sourceLineNo">128</span><a id="line.128">      @param xMin  left endpoint of the x-axis</a>
+<span class="sourceLineNo">129</span><a id="line.129">      @param xMax  right endpoint of the x-axis</a>
+<span class="sourceLineNo">130</span><a id="line.130">      @param yMin  bottom endpoint of the y-axis</a>
+<span class="sourceLineNo">131</span><a id="line.131">      @param yMax  top endpoint of the y-axis</a>
+<span class="sourceLineNo">132</span><a id="line.132">      @param zMin  back endpoint of the z-axis</a>
+<span class="sourceLineNo">133</span><a id="line.133">      @param zMax  front endpoint of the z-axis</a>
+<span class="sourceLineNo">134</span><a id="line.134">      @param cX    {@link Color} for the x-axis</a>
+<span class="sourceLineNo">135</span><a id="line.135">      @param cY    {@link Color} for the y-axis</a>
+<span class="sourceLineNo">136</span><a id="line.136">      @param cZ    {@link Color} for the z-axis</a>
+<span class="sourceLineNo">137</span><a id="line.137">   */</a>
+<span class="sourceLineNo">138</span><a id="line.138">   public Axes3D(final double xMin, final double xMax,</a>
+<span class="sourceLineNo">139</span><a id="line.139">                 final double yMin, final double yMax,</a>
+<span class="sourceLineNo">140</span><a id="line.140">                 final double zMin, final double zMax,</a>
+<span class="sourceLineNo">141</span><a id="line.141">                 final Color cX, final Color cY, final Color cZ)</a>
+<span class="sourceLineNo">142</span><a id="line.142">   {</a>
+<span class="sourceLineNo">143</span><a id="line.143">      super("Axes 3D");</a>
+<span class="sourceLineNo">144</span><a id="line.144"></a>
+<span class="sourceLineNo">145</span><a id="line.145">      addVertex(new Vertex(xMin, 0,    0),</a>
+<span class="sourceLineNo">146</span><a id="line.146">                new Vertex(xMax, 0,    0),</a>
+<span class="sourceLineNo">147</span><a id="line.147">                new Vertex( 0,  yMin,  0),</a>
+<span class="sourceLineNo">148</span><a id="line.148">                new Vertex( 0,  yMax,  0),</a>
+<span class="sourceLineNo">149</span><a id="line.149">                new Vertex( 0,   0,   zMin),</a>
+<span class="sourceLineNo">150</span><a id="line.150">                new Vertex( 0,   0,   zMax));</a>
+<span class="sourceLineNo">151</span><a id="line.151"></a>
+<span class="sourceLineNo">152</span><a id="line.152">      addColor(cX, cY, cZ);</a>
+<span class="sourceLineNo">153</span><a id="line.153"></a>
+<span class="sourceLineNo">154</span><a id="line.154">      addPrimitive(new LineSegment(0, 1, 0),  // use color cX</a>
+<span class="sourceLineNo">155</span><a id="line.155">                   new LineSegment(2, 3, 1),  // use color cY</a>
+<span class="sourceLineNo">156</span><a id="line.156">                   new LineSegment(4, 5, 2)); // use color cZ</a>
+<span class="sourceLineNo">157</span><a id="line.157">   }</a>
+<span class="sourceLineNo">158</span><a id="line.158">}//Axes3D</a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</main>
+</body>
+</html>

@@ -1,0 +1,228 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<main role="main">
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span><a id="line.1">/*</a>
+<span class="sourceLineNo">002</span><a id="line.2"> * Renderer Models. The MIT License.</a>
+<span class="sourceLineNo">003</span><a id="line.3"> * Copyright (c) 2022 rlkraft@pnw.edu</a>
+<span class="sourceLineNo">004</span><a id="line.4"> * See LICENSE for details.</a>
+<span class="sourceLineNo">005</span><a id="line.5">*/</a>
+<span class="sourceLineNo">006</span><a id="line.6"></a>
+<span class="sourceLineNo">007</span><a id="line.7">package renderer.models_L;</a>
+<span class="sourceLineNo">008</span><a id="line.8"></a>
+<span class="sourceLineNo">009</span><a id="line.9">import renderer.scene.*;</a>
+<span class="sourceLineNo">010</span><a id="line.10">import renderer.scene.primitives.*;</a>
+<span class="sourceLineNo">011</span><a id="line.11">import renderer.scene.util.MeshMaker;</a>
+<span class="sourceLineNo">012</span><a id="line.12"></a>
+<span class="sourceLineNo">013</span><a id="line.13">/**</a>
+<span class="sourceLineNo">014</span><a id="line.14">   Create a wireframe model of a disk</a>
+<span class="sourceLineNo">015</span><a id="line.15">   in the xy-plane centered at the origin.</a>
+<span class="sourceLineNo">016</span><a id="line.16">&lt;p&gt;</a>
+<span class="sourceLineNo">017</span><a id="line.17">   See &lt;a href="https://en.wikipedia.org/wiki/Disk_(mathematics)" target="_top"&gt;</a>
+<span class="sourceLineNo">018</span><a id="line.18">                https://en.wikipedia.org/wiki/Disk_(mathematics)&lt;/a&gt;</a>
+<span class="sourceLineNo">019</span><a id="line.19"></a>
+<span class="sourceLineNo">020</span><a id="line.20">   @see DiskSector</a>
+<span class="sourceLineNo">021</span><a id="line.21">*/</a>
+<span class="sourceLineNo">022</span><a id="line.22">public class Disk extends Model implements MeshMaker</a>
+<span class="sourceLineNo">023</span><a id="line.23">{</a>
+<span class="sourceLineNo">024</span><a id="line.24">   public final double r;</a>
+<span class="sourceLineNo">025</span><a id="line.25">   public final int n;</a>
+<span class="sourceLineNo">026</span><a id="line.26">   public final int k;</a>
+<span class="sourceLineNo">027</span><a id="line.27"></a>
+<span class="sourceLineNo">028</span><a id="line.28">   /**</a>
+<span class="sourceLineNo">029</span><a id="line.29">      Create a disk in the xy-plane with radius 1,</a>
+<span class="sourceLineNo">030</span><a id="line.30">      with 12 spokes coming out of the center, and</a>
+<span class="sourceLineNo">031</span><a id="line.31">      with 6 concentric circles around the disk.</a>
+<span class="sourceLineNo">032</span><a id="line.32">   */</a>
+<span class="sourceLineNo">033</span><a id="line.33">   public Disk( )</a>
+<span class="sourceLineNo">034</span><a id="line.34">   {</a>
+<span class="sourceLineNo">035</span><a id="line.35">      this(1, 6, 12);</a>
+<span class="sourceLineNo">036</span><a id="line.36">   }</a>
+<span class="sourceLineNo">037</span><a id="line.37"></a>
+<span class="sourceLineNo">038</span><a id="line.38"></a>
+<span class="sourceLineNo">039</span><a id="line.39">   /**</a>
+<span class="sourceLineNo">040</span><a id="line.40">      Create a disk in the xy-plane with radius</a>
+<span class="sourceLineNo">041</span><a id="line.41">      {@code r}, with 12 spokes coming out of the</a>
+<span class="sourceLineNo">042</span><a id="line.42">      center, and with 6 concentric circles around</a>
+<span class="sourceLineNo">043</span><a id="line.43">      the disk.</a>
+<span class="sourceLineNo">044</span><a id="line.44"></a>
+<span class="sourceLineNo">045</span><a id="line.45">      @param r  radius of the disk</a>
+<span class="sourceLineNo">046</span><a id="line.46">   */</a>
+<span class="sourceLineNo">047</span><a id="line.47">   public Disk(final double r)</a>
+<span class="sourceLineNo">048</span><a id="line.48">   {</a>
+<span class="sourceLineNo">049</span><a id="line.49">      this(r, 6, 12);</a>
+<span class="sourceLineNo">050</span><a id="line.50">   }</a>
+<span class="sourceLineNo">051</span><a id="line.51"></a>
+<span class="sourceLineNo">052</span><a id="line.52"></a>
+<span class="sourceLineNo">053</span><a id="line.53">   /**</a>
+<span class="sourceLineNo">054</span><a id="line.54">      Create a disk in the xy-plane with radius</a>
+<span class="sourceLineNo">055</span><a id="line.55">      {@code r}, with {@code k} spokes coming out</a>
+<span class="sourceLineNo">056</span><a id="line.56">      of the center, and with {@code n} concentric</a>
+<span class="sourceLineNo">057</span><a id="line.57">      circles around the disk.</a>
+<span class="sourceLineNo">058</span><a id="line.58">   &lt;p&gt;</a>
+<span class="sourceLineNo">059</span><a id="line.59">      If there are {@code k} spokes, then each circle around</a>
+<span class="sourceLineNo">060</span><a id="line.60">      the center will have {@code k} line segments.</a>
+<span class="sourceLineNo">061</span><a id="line.61">      If there are {@code n} concentric circles around the</a>
+<span class="sourceLineNo">062</span><a id="line.62">      center, then each spoke will have {@code n} line segments.</a>
+<span class="sourceLineNo">063</span><a id="line.63">   &lt;p&gt;</a>
+<span class="sourceLineNo">064</span><a id="line.64">      There must be at least three spokes and at least</a>
+<span class="sourceLineNo">065</span><a id="line.65">      one concentric circle.</a>
+<span class="sourceLineNo">066</span><a id="line.66"></a>
+<span class="sourceLineNo">067</span><a id="line.67">      @param r  radius of the disk</a>
+<span class="sourceLineNo">068</span><a id="line.68">      @param n  number of concentric circles</a>
+<span class="sourceLineNo">069</span><a id="line.69">      @param k  number of spokes in the disk</a>
+<span class="sourceLineNo">070</span><a id="line.70">      @throws IllegalArgumentException if {@code n} is less than 1</a>
+<span class="sourceLineNo">071</span><a id="line.71">      @throws IllegalArgumentException if {@code k} is less than 3</a>
+<span class="sourceLineNo">072</span><a id="line.72">   */</a>
+<span class="sourceLineNo">073</span><a id="line.73">   public Disk(final double r, int n, int k)</a>
+<span class="sourceLineNo">074</span><a id="line.74">   {</a>
+<span class="sourceLineNo">075</span><a id="line.75">      super(String.format("Disk(%.2f,%d,%d)", r, n, k));</a>
+<span class="sourceLineNo">076</span><a id="line.76"></a>
+<span class="sourceLineNo">077</span><a id="line.77">      if (n &lt; 1)</a>
+<span class="sourceLineNo">078</span><a id="line.78">         throw new IllegalArgumentException("n must be greater than 0");</a>
+<span class="sourceLineNo">079</span><a id="line.79">      if (k &lt; 3)</a>
+<span class="sourceLineNo">080</span><a id="line.80">         throw new IllegalArgumentException("k must be greater than 2");</a>
+<span class="sourceLineNo">081</span><a id="line.81"></a>
+<span class="sourceLineNo">082</span><a id="line.82">      this.r = r;</a>
+<span class="sourceLineNo">083</span><a id="line.83">      this.n = n;</a>
+<span class="sourceLineNo">084</span><a id="line.84">      this.k = k;</a>
+<span class="sourceLineNo">085</span><a id="line.85"></a>
+<span class="sourceLineNo">086</span><a id="line.86">      // Create the disk's geometry.</a>
+<span class="sourceLineNo">087</span><a id="line.87"></a>
+<span class="sourceLineNo">088</span><a id="line.88">      final double deltaR = r / n,</a>
+<span class="sourceLineNo">089</span><a id="line.89">                   deltaTheta = 2 * Math.PI / k;</a>
+<span class="sourceLineNo">090</span><a id="line.90"></a>
+<span class="sourceLineNo">091</span><a id="line.91">      // An array of vertices to be used to create line segments.</a>
+<span class="sourceLineNo">092</span><a id="line.92">      final Vertex[][] v = new Vertex[n][k];</a>
+<span class="sourceLineNo">093</span><a id="line.93"></a>
+<span class="sourceLineNo">094</span><a id="line.94">      // Create all the vertices.</a>
+<span class="sourceLineNo">095</span><a id="line.95">      for (int j = 0; j &lt; k; ++j) // choose a spoke (an angle)</a>
+<span class="sourceLineNo">096</span><a id="line.96">      {</a>
+<span class="sourceLineNo">097</span><a id="line.97">         final double c = Math.cos(j * deltaTheta),</a>
+<span class="sourceLineNo">098</span><a id="line.98">                      s = Math.sin(j * deltaTheta);</a>
+<span class="sourceLineNo">099</span><a id="line.99">         for (int i = 0; i &lt; n; ++i) // move along the spoke</a>
+<span class="sourceLineNo">100</span><a id="line.100">         {</a>
+<span class="sourceLineNo">101</span><a id="line.101">            final double ri = (i + 1) * deltaR;</a>
+<span class="sourceLineNo">102</span><a id="line.102">            v[i][j] = new Vertex( ri * c,</a>
+<span class="sourceLineNo">103</span><a id="line.103">                                  ri * s,</a>
+<span class="sourceLineNo">104</span><a id="line.104">                                  0 );</a>
+<span class="sourceLineNo">105</span><a id="line.105">         }</a>
+<span class="sourceLineNo">106</span><a id="line.106">      }</a>
+<span class="sourceLineNo">107</span><a id="line.107">      final Vertex center = new Vertex(0,0,0);</a>
+<span class="sourceLineNo">108</span><a id="line.108"></a>
+<span class="sourceLineNo">109</span><a id="line.109">      // Add all of the vertices to this model.</a>
+<span class="sourceLineNo">110</span><a id="line.110">      for (int i = 0; i &lt; n; ++i)</a>
+<span class="sourceLineNo">111</span><a id="line.111">      {</a>
+<span class="sourceLineNo">112</span><a id="line.112">         for (int j = 0; j &lt; k; ++j)</a>
+<span class="sourceLineNo">113</span><a id="line.113">         {</a>
+<span class="sourceLineNo">114</span><a id="line.114">            addVertex( v[i][j] );</a>
+<span class="sourceLineNo">115</span><a id="line.115">         }</a>
+<span class="sourceLineNo">116</span><a id="line.116">      }</a>
+<span class="sourceLineNo">117</span><a id="line.117">      addVertex( center );</a>
+<span class="sourceLineNo">118</span><a id="line.118">      final int centerIndex = n * k;</a>
+<span class="sourceLineNo">119</span><a id="line.119"></a>
+<span class="sourceLineNo">120</span><a id="line.120">      // Create the spokes connecting the center to the outer circle.</a>
+<span class="sourceLineNo">121</span><a id="line.121">      for (int j = 0; j &lt; k; ++j) // choose a spoke</a>
+<span class="sourceLineNo">122</span><a id="line.122">      {  //                                             v[0][j]</a>
+<span class="sourceLineNo">123</span><a id="line.123">         addPrimitive(new LineSegment( centerIndex, (0 * k) + j ));</a>
+<span class="sourceLineNo">124</span><a id="line.124">         for (int i = 0; i &lt; n - 1; ++i)</a>
+<span class="sourceLineNo">125</span><a id="line.125">         {  //                                v[i][j]         v[i+1][j]</a>
+<span class="sourceLineNo">126</span><a id="line.126">            addPrimitive(new LineSegment( (i * k) + j, ((i+1) * k) + j ));</a>
+<span class="sourceLineNo">127</span><a id="line.127">         }</a>
+<span class="sourceLineNo">128</span><a id="line.128">      }</a>
+<span class="sourceLineNo">129</span><a id="line.129"></a>
+<span class="sourceLineNo">130</span><a id="line.130">      // Create the line segments around each concentric circle.</a>
+<span class="sourceLineNo">131</span><a id="line.131">      for (int i = 0; i &lt; n; ++i)  // choose a circle</a>
+<span class="sourceLineNo">132</span><a id="line.132">      {</a>
+<span class="sourceLineNo">133</span><a id="line.133">         for (int j = 0; j &lt; k - 1; ++j)</a>
+<span class="sourceLineNo">134</span><a id="line.134">         {  //                               v[i][j]         v[i][j+1]</a>
+<span class="sourceLineNo">135</span><a id="line.135">            addPrimitive(new LineSegment( (i * k) + j, (i * k) + (j + 1) ));</a>
+<span class="sourceLineNo">136</span><a id="line.136">         }</a>
+<span class="sourceLineNo">137</span><a id="line.137">         // close the circle</a>
+<span class="sourceLineNo">138</span><a id="line.138">         addPrimitive(new LineSegment( (i * k) + (k-1), (i * k) + 0 ));</a>
+<span class="sourceLineNo">139</span><a id="line.139">      }  //                                v[i][k-1]        v[i][0]</a>
+<span class="sourceLineNo">140</span><a id="line.140">   }</a>
+<span class="sourceLineNo">141</span><a id="line.141"></a>
+<span class="sourceLineNo">142</span><a id="line.142"></a>
+<span class="sourceLineNo">143</span><a id="line.143"></a>
+<span class="sourceLineNo">144</span><a id="line.144">   // Implement the MeshMaker interface (three methods).</a>
+<span class="sourceLineNo">145</span><a id="line.145">   @Override public int getHorzCount() {return n;}</a>
+<span class="sourceLineNo">146</span><a id="line.146"></a>
+<span class="sourceLineNo">147</span><a id="line.147">   @Override public int getVertCount() {return k;}</a>
+<span class="sourceLineNo">148</span><a id="line.148"></a>
+<span class="sourceLineNo">149</span><a id="line.149">   @Override</a>
+<span class="sourceLineNo">150</span><a id="line.150">   public Disk remake(final int n, final int k)</a>
+<span class="sourceLineNo">151</span><a id="line.151">   {</a>
+<span class="sourceLineNo">152</span><a id="line.152">      return new Disk(this.r, n, k);</a>
+<span class="sourceLineNo">153</span><a id="line.153">   }</a>
+<span class="sourceLineNo">154</span><a id="line.154">}//Disk</a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</main>
+</body>
+</html>

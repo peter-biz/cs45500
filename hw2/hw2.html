@@ -1,0 +1,169 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CS 45500 / CS 51580 - Homework 2</title>
+  <meta name="description" content="CS 45500 Homework 2">
+  <meta name="author" content="Roger L. Kraft">
+  <link rel="stylesheet" href="http://math.pnw.edu/~rlkraft/roger-v2.css">
+  <!--[if lt IE 9]>
+    <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+</head>
+
+<body>
+<!--
+<header>
+  <a href="http://math.pnw.edu/~rlkraft/" title="Roger L. Kraft">Roger L. Kraft</a>
+</header>
+ -->
+<nav>
+  <ul class="nav-list" role="navigation">
+    <li><a href="../cs45500.html">CS 45500</a></li>
+    <li><a href="../syllabus.html">Syllabus</a></li>
+    <li><a href="../class.html">Lectures and Readings</a></li>
+    <li><a href="../homework.html">Homework Assignments</a></li>
+  </ul>
+  <ul class="nav-list" role="navigation">
+    <li><a href="http://math.pnw.edu/~rlkraft/roger.html">Roger Kraft</a></li>
+    <li><a href="https://pnw.edu/computer-science/">Computer Science Department</a></li>
+    <li><a href="https://pnw.edu/engineering/">School of Engineering</a></li>
+    <li><a href="https://pnw.edu/college-of-engineering-sciences/">College of Engineering & Sciences</a></li>
+    <li><a href="https://pnw.edu/">Purdue University Northwest</a></li>
+  </ul>
+</nav>
+
+<section id="Content">
+<h1>
+Programming Assignment 2<br>
+CS 45500 / CS 51580<br>
+Computer Graphics<br>
+Fall, 2024
+</h1>
+
+<p>
+This assignment makes use of the files contained in this <a href="http://cs.pnw.edu/~rlkraft/cs45500/homework/hw2.zip">zip file</a>.
+This assignment is due Tuesday, October 22.
+</p>
+
+<p>
+This assignment and your previous assignment are about the data structures used at the two ends of the 3D graphics rendering pipeline; what goes into the beginning of the pipeline and what comes out of the end of the pipeline. Roughly, what goes into the pipeline is the <code>Scene</code> data structure which describes the geometry of what the renderer should draw. What comes out of the pipeline is the <code>FrameBuffer</code> data structure which holds the pixel image of the scene drawn by the renderer. The previous assignment was about just the <code>FrameBuffer</code> data structure. This assignment is about what goes into the rendering pipeline, the <code>Scene</code> data structure.
+</p>
+
+<p>
+For this assignment, you will define three <code>Model</code> data structures that can be used to build scenes. Then you will use your models to build a sequence of <code>Scene</code> data structures that can be given to the renderer to create a sequence of <coode>FrameBuffer</code> data structures. You will then use the sequence of framebuffers to create a movie.
+</p>
+
+<p>
+As we have said in class, a <code>Scene</code> is mainly a collection of models positioned in camera space. A <code>Model</code> is a list of vertices in 3-dimensional space (which we call "model space") and a list of line segments. Each <code>Vertex</code> contains three doubles (for the <code>x</code>, <code>y</code>, and <code>z</code> coordinates of a point in the model). Each <code>LineSegment</code> contains the (integer) index for two <code>Vertex</code> objects from the <code>Model</code>'s vertex list. The vertices and line segments combine to form a <a href="https://en.wikipedia.org/wiki/Wire-frame_model">wire-frame</a> shape that we see as a geometric object in the scene. Each Model is combined with a Vector in a Position object. The vector is used by the renderer to translate every vertex in the model from "model space" to "camera space". This positions the model where we want it in front of the camera.
+</p>
+
+<p>
+In this assignment you will be using <a href="http://cs.pnw.edu/~rlkraft/cs45500/for-class/renderer_4.zip">renderer_4</a> which adds colors to the models. Read the <code>Readme_r4_color.txt</code> file from <a href="http://cs.pnw.edu/~rlkraft/cs45500/for-class/renderer_4.zip">renderer_4.zip</a> for an explanation of how colored line segments are added to a model. The main idea is that a <code>Model</code> object contains a List of <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.desktop/java/awt/Color.html">Color</a> objects (in addition to the List of <code>Vertex</code> objects). Each <code>LineSegment</code> object contains four integer indices. Two indices into the Model's <code>Vertex</code> list determine the endpoints of the <code>LineSegment</code> (as before), and two integer indices into the Model's Color list determine the color at each endpoint of the <code>LineSegment</code>.
+
+</p>
+<p>
+Here is a sketch of what a <code>Scene</code> data structure looks like in renderer_4. Notice how a LineSegment object refers to two List<Integer> objects. The first list holds two indices into the Model's Vertex list, and the second list holds two indices into the Model's Color list.
+<pre>
+            Scene
+           /     \
+          /       \
+    Camera        List&lt;Position&gt;
+                          |
+                          |
+                          |
+                       Position
+                      /        \
+                     /          \
+                    /            \
+               Vector             Model
+               /  |  \       /---/  |  \---\
+              /   |   \     /       |       \
+             x    y   z    /        |        \
+                          /         |         \
+                List&lt;Vertex&gt;   List&lt;Color&gt;     List&lt;Primitive&gt;
+                       |             |                  |
+                       |             |                  |
+                       |             |                  |
+                    Vertex         Color             LineSegment
+                    /  |  \        / | \            /           \
+                   /   |   \      /  |  \          /             \
+                  x    y    z    r   g   b    List&lt;Integer&gt;   List&lt;Integer&gt;
+</pre>
+<p>
+When you instantiate a <code>LineSegment</code> object, you give the <code>LineSegment</code> constructor four integer values.
+</p>
+<pre>
+   Primitive ls = new LineSegment(2, 3, 1, 0);
+</pre>
+<p>
+The first two integer parameters are indices into the Model's <code>Vertex</code> list. The last two integer parameters are indices into the Model's <code>Color</code> list.
+</p>
+
+<p>
+In the zip file there are three java source files, <code>P.java</code>, <code>N.java</code>, and <code>W.java</code>. Each of these files defines a sub-class of the <code>Model</code> class (from the <code>scene</code> package). The file <code>P.java</code> is partly done for you. You need to complete it and the other two files so that each one defines a model that represents the letter of the alphabet the file is named after. You need to determine how many <code>Vertex</code>, <code>Color</code>, and <code>LineSegment</code> objects each model needs and then write the code that instantiates those objects and puts them into the model. Make each letter one unit tall (in the y-direction), one unit wide (in the x-direction), and a quarter unit deep (in the z-direction). Each letter should have its base line on the x-axis. The y-axis should touch the left side of each letter. The front face of each letter should be in the plane <code>z = 0</code>. The back face of each letter should be in the plane <code>z = -0.25</code>. Look at the supplied animation to see how each model's line segments should be colored.
+</p>
+
+<p>
+If you want to see examples of <code>Model</code> classes, look at the files in the <code>models_L</code> package in <a href="http://cs.pnw.edu/~rlkraft/cs45500/for-class/renderer_1.zip">renderer_1.zip</a>. In particular, look at the files <code>Square.java<code>, </code>Circle.java</code>, <code>Cube.java</code>, and <code>Tetrahedron.java</code>, because those are the simplest models.
+</p>
+
+<p>
+To see some examples of creating a <code>Model</code> with colored line segments, look at the files <code>InteractiveTriangle_R4.java</code>, <code>InteractiveCube_R4.java</code>, or <code>ThreeLines_R4.java</code> in the <code>clinets_r4</code> package in <a href="http://cs.pnw.edu/~rlkraft/cs45500/for-class/renderer_4.zip">renderer_4.zip</a>
+</p>
+
+<p>
+After you have defined your letter models, complete the program <code>Hw2.java</code> that uses your letter models to create an animation that looks like the file <code>Hw2_animation.gif</code> from the zip file. Your letters do not have to be shaped exactly like my letters, but they should be colored the same way.
+</p>
+
+<p>
+After you have defined your letter models, and before you actually start to work on the animation, write code in <code>Hw2.java</code> that just creates the initial frame of the animation. The three letters should initially have their front faces in the plane <code>z = -1.5</code>. The plane <code>z = -1.5</code> intersects the camera's view volume in a square that is 3 units wide and 3 units tall (the view volume, in the <code>z = -1.5</code> plane, extends from -1.5 to 1.5 along the x-axis, and from -1.5 to 1.5 along the y-axis.). This square is just wide enough to place the three letters next to each other. First place the three letters next to each other with the x-axis running through the middle of each letter. After you get this image, translate the P up so that it just touches the top of the view volume and translate the W down so that it just touches the bottom of the view volume. That should give you the correct initial positions for the three models. (See the first frame from the sub-folder <code>hw2\animation-frames</code>.)
+</p>
+
+<p>
+Your code should move the models by modifying the <code>Vector</code> object associated with each <code>Model</code> object. If we look at the letter P in the animation, it moves 2 units right, then 2 units down, then 2 units left, and finally 2 units up. This brings the P back to where it started, so the animation can cycle through the frames to create a continuous loop. The letter W in the animation moves 2 units left, then 2 units up, then 2 units right, and finally 2 units down. This brings the W back to where it started. You should write the code that moves just the P and W letters and get them both correct. After P and W are correct, you can work on the N letter.
+</p>
+
+<p>
+If you want to see examples of how to move models in an animation, look at the files <code>OfflineCube.java</code>, <code>OfflineCubes.java</code>, and <code>OfflineMovie.java</code> in the <code>clients_r1</code> package in <a href="http://cs.pnw.edu/~rlkraft/cs45500/for-class/renderer_1.zip">renderer_1.zip</a>.
+</p>
+
+<p>
+The letter N moves just backwards and forwards. It moves backwards for 100 frames and then moves forwards for 100 frames. To make your letter N move like the one in the animation, move your letter by 0.02 in each frame.
+</p>
+
+<p>
+You should not change the package structure of the folder <code>hw2</code>. The files <code>Hw2.java</code>, <code>P.java</code>, <code>N.java</code>, and <code>W.java</code> are in the default package of the folder <code>hw2</code>. All the renderer classes are in the <code>renderer_4.jar</code> <a href="https://en.wikipedia.org/wiki/JAR_(file_format)">jar file</a>. The included build script sets the classpath appropriately.
+</p>
+
+<p>
+After you have <code>Hw2.java</code> working, convert the image frames that your program produces into a real "animation" file. To do this you need to download the following zip file and unzip it to your <code>C:\</code> directory as the folder <code>C:\ImageMagick-7.1.1-38-portable-Q8-x64</code>.
+</p>
+<center><a href="https://imagemagick.org/archive/binaries/ImageMagick-7.1.1-38-portable-Q8-x64.zip">ImageMagick-7.1.1-38-portable-Q8-x64.zip</a></center>
+<p>
+After you have <a href="http://www.imagemagick.org/script/index.php">ImageMagick</a> on your computer, and after you run your program to produce all the animation frames, just double click on the command file <code>ImageMagick-7.1.1-19-portable-Q8-x64.cmd</code> and it should use your frames to create an animation file called <code>animation.gif</code>. Double click on your animation file to see your movie.
+</p>
+
+<p>
+<a href="http://cs.pnw.edu/~rlkraft/cs45500/handin.html">Turn in</a> a zip file called <code>CS455Hw2Surname.zip</code> (where <code>Surname</code> is your last name) containing your versions of <code>P.java</code>, <code>N.java</code>, <code>W.java</code>, <code>Hw2.java</code>, and <code>animation.gif</code>. Please do <b>NOT</b> submit the frames for your animation.
+</p>
+
+<p>
+This assignment is due Tuesday, October 22.
+</p>
+
+</section>
+
+<footer>
+  <script language="JavaScript" type="text/javascript">
+    document.write("<font size=\"-2\"><i>Last modified on " + document.lastModified + ".<\/i><\/font>");
+  </script>
+  <br>
+  <a href="mailto:rlkraft@pnw.edu"><font size="-2"><i>compliments and criticisms</i></font></a>
+</footer>
+
+</body>
+</html>

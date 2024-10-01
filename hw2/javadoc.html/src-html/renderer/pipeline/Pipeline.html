@@ -1,0 +1,215 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<main role="main">
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span><a id="line.1">/*</a>
+<span class="sourceLineNo">002</span><a id="line.2"> * Renderer 4. The MIT License.</a>
+<span class="sourceLineNo">003</span><a id="line.3"> * Copyright (c) 2022 rlkraft@pnw.edu</a>
+<span class="sourceLineNo">004</span><a id="line.4"> * See LICENSE for details.</a>
+<span class="sourceLineNo">005</span><a id="line.5">*/</a>
+<span class="sourceLineNo">006</span><a id="line.6"></a>
+<span class="sourceLineNo">007</span><a id="line.7">package renderer.pipeline;</a>
+<span class="sourceLineNo">008</span><a id="line.8"></a>
+<span class="sourceLineNo">009</span><a id="line.9">import renderer.scene.*;</a>
+<span class="sourceLineNo">010</span><a id="line.10">import renderer.scene.util.CheckModel;</a>
+<span class="sourceLineNo">011</span><a id="line.11">import renderer.framebuffer.*;</a>
+<span class="sourceLineNo">012</span><a id="line.12">import static renderer.pipeline.PipelineLogger.*;</a>
+<span class="sourceLineNo">013</span><a id="line.13"></a>
+<span class="sourceLineNo">014</span><a id="line.14">import java.awt.Color;</a>
+<span class="sourceLineNo">015</span><a id="line.15"></a>
+<span class="sourceLineNo">016</span><a id="line.16">/**</a>
+<span class="sourceLineNo">017</span><a id="line.17">   This renderer takes as its input a {@link Scene} data structure</a>
+<span class="sourceLineNo">018</span><a id="line.18">   and a {@link FrameBuffer.Viewport} within a {@link FrameBuffer}</a>
+<span class="sourceLineNo">019</span><a id="line.19">   data structure. This renderer mutates the {@link FrameBuffer.Viewport}</a>
+<span class="sourceLineNo">020</span><a id="line.20">   so that it is filled in with the rendered image of the geometric</a>
+<span class="sourceLineNo">021</span><a id="line.21">   scene represented by the {@link Scene} object.</a>
+<span class="sourceLineNo">022</span><a id="line.22">&lt;p&gt;</a>
+<span class="sourceLineNo">023</span><a id="line.23">   This implements our third rendering pipeline. This pipeline can</a>
+<span class="sourceLineNo">024</span><a id="line.24">   process the colors stored in each {@link Model}. This renderer</a>
+<span class="sourceLineNo">025</span><a id="line.25">   has the same four pipeline stages but {@link Vertex} colors</a>
+<span class="sourceLineNo">026</span><a id="line.26">   are now interpolated to pixels by the raterization stage.</a>
+<span class="sourceLineNo">027</span><a id="line.27">*/</a>
+<span class="sourceLineNo">028</span><a id="line.28">public final class Pipeline</a>
+<span class="sourceLineNo">029</span><a id="line.29">{</a>
+<span class="sourceLineNo">030</span><a id="line.30">   // Mostly for compatibility with renderers 1 through 3.</a>
+<span class="sourceLineNo">031</span><a id="line.31">   public static Color DEFAULT_COLOR = Color.white;</a>
+<span class="sourceLineNo">032</span><a id="line.32"></a>
+<span class="sourceLineNo">033</span><a id="line.33">   /**</a>
+<span class="sourceLineNo">034</span><a id="line.34">      Mutate the {@link FrameBuffer}'s default {@link FrameBuffer.Viewport}</a>
+<span class="sourceLineNo">035</span><a id="line.35">      so that it holds the rendered image of the {@link Scene} object.</a>
+<span class="sourceLineNo">036</span><a id="line.36"></a>
+<span class="sourceLineNo">037</span><a id="line.37">      @param scene  {@link Scene} object to render</a>
+<span class="sourceLineNo">038</span><a id="line.38">      @param fb     {@link FrameBuffer} to hold rendered image of the {@link Scene}</a>
+<span class="sourceLineNo">039</span><a id="line.39">   */</a>
+<span class="sourceLineNo">040</span><a id="line.40">   public static void render(final Scene scene, final FrameBuffer fb)</a>
+<span class="sourceLineNo">041</span><a id="line.41">   {</a>
+<span class="sourceLineNo">042</span><a id="line.42">      render(scene, fb.vp); // render into the default viewport</a>
+<span class="sourceLineNo">043</span><a id="line.43">   }</a>
+<span class="sourceLineNo">044</span><a id="line.44"></a>
+<span class="sourceLineNo">045</span><a id="line.45"></a>
+<span class="sourceLineNo">046</span><a id="line.46">   /**</a>
+<span class="sourceLineNo">047</span><a id="line.47">      Mutate the {@link FrameBuffer}'s given {@link FrameBuffer.Viewport}</a>
+<span class="sourceLineNo">048</span><a id="line.48">      so that it holds the rendered image of the {@link Scene} object.</a>
+<span class="sourceLineNo">049</span><a id="line.49"></a>
+<span class="sourceLineNo">050</span><a id="line.50">      @param scene  {@link Scene} object to render</a>
+<span class="sourceLineNo">051</span><a id="line.51">      @param vp     {@link FrameBuffer.Viewport} to hold rendered image of the {@link Scene}</a>
+<span class="sourceLineNo">052</span><a id="line.52">   */</a>
+<span class="sourceLineNo">053</span><a id="line.53">   public static void render(final Scene scene, final FrameBuffer.Viewport vp)</a>
+<span class="sourceLineNo">054</span><a id="line.54">   {</a>
+<span class="sourceLineNo">055</span><a id="line.55">      PipelineLogger.debugScene = scene.debug;</a>
+<span class="sourceLineNo">056</span><a id="line.56"></a>
+<span class="sourceLineNo">057</span><a id="line.57">      logMessage("\n== Begin Rendering of Scene: " + scene.name + " ==");</a>
+<span class="sourceLineNo">058</span><a id="line.58"></a>
+<span class="sourceLineNo">059</span><a id="line.59">      logMessage("-- Current Camera:\n" + scene.camera);</a>
+<span class="sourceLineNo">060</span><a id="line.60"></a>
+<span class="sourceLineNo">061</span><a id="line.61">      // For every Position in the Scene, render the Position's Model.</a>
+<span class="sourceLineNo">062</span><a id="line.62">      for (final Position position : scene.positionList)</a>
+<span class="sourceLineNo">063</span><a id="line.63">      {</a>
+<span class="sourceLineNo">064</span><a id="line.64">         PipelineLogger.debugPosition = position.debug;</a>
+<span class="sourceLineNo">065</span><a id="line.65"></a>
+<span class="sourceLineNo">066</span><a id="line.66">         if ( position.visible )</a>
+<span class="sourceLineNo">067</span><a id="line.67">         {</a>
+<span class="sourceLineNo">068</span><a id="line.68">            logMessage("==== Render position: " + position.name + " ====");</a>
+<span class="sourceLineNo">069</span><a id="line.69"></a>
+<span class="sourceLineNo">070</span><a id="line.70">            logMessage("---- Translation vector = " + position.getTranslation());</a>
+<span class="sourceLineNo">071</span><a id="line.71"></a>
+<span class="sourceLineNo">072</span><a id="line.72">            if ( position.getModel().visible )</a>
+<span class="sourceLineNo">073</span><a id="line.73">            {</a>
+<span class="sourceLineNo">074</span><a id="line.74">               logMessage("====== Render model: "</a>
+<span class="sourceLineNo">075</span><a id="line.75">                                  + position.getModel().name + " ======");</a>
+<span class="sourceLineNo">076</span><a id="line.76"></a>
+<span class="sourceLineNo">077</span><a id="line.77">               CheckModel.check(position.getModel());</a>
+<span class="sourceLineNo">078</span><a id="line.78"></a>
+<span class="sourceLineNo">079</span><a id="line.79">               // Mostly for compatibility with renderers 1 through 3.</a>
+<span class="sourceLineNo">080</span><a id="line.80">               if (  position.getModel().colorList.isEmpty()</a>
+<span class="sourceLineNo">081</span><a id="line.81">                 &amp;&amp; !position.getModel().vertexList.isEmpty())</a>
+<span class="sourceLineNo">082</span><a id="line.82">               {</a>
+<span class="sourceLineNo">083</span><a id="line.83">                  for (int i = 0; i &lt; position.getModel().vertexList.size(); ++i)</a>
+<span class="sourceLineNo">084</span><a id="line.84">                  {</a>
+<span class="sourceLineNo">085</span><a id="line.85">                     position.getModel().addColor( DEFAULT_COLOR );</a>
+<span class="sourceLineNo">086</span><a id="line.86">                  }</a>
+<span class="sourceLineNo">087</span><a id="line.87">                  System.err.println("***WARNING: Added default color to model: "</a>
+<span class="sourceLineNo">088</span><a id="line.88">                                    + position.getModel().name + ".");</a>
+<span class="sourceLineNo">089</span><a id="line.89">               }</a>
+<span class="sourceLineNo">090</span><a id="line.90"></a>
+<span class="sourceLineNo">091</span><a id="line.91">               logVertexList("0. Model      ", position.getModel());</a>
+<span class="sourceLineNo">092</span><a id="line.92"></a>
+<span class="sourceLineNo">093</span><a id="line.93">               // 1. Apply the Position's model-to-camera coordinate transformation.</a>
+<span class="sourceLineNo">094</span><a id="line.94">               final Model model1 = Model2Camera.model2camera(position);</a>
+<span class="sourceLineNo">095</span><a id="line.95"></a>
+<span class="sourceLineNo">096</span><a id="line.96">               logVertexList("1. Camera     ", model1);</a>
+<span class="sourceLineNo">097</span><a id="line.97"></a>
+<span class="sourceLineNo">098</span><a id="line.98">               // 2. Apply the Camera's projection transformation.</a>
+<span class="sourceLineNo">099</span><a id="line.99">               final Model model2 = Projection.project(model1,</a>
+<span class="sourceLineNo">100</span><a id="line.100">                                                       scene.camera);</a>
+<span class="sourceLineNo">101</span><a id="line.101"></a>
+<span class="sourceLineNo">102</span><a id="line.102">               logVertexList("2. Projected  ", model2);</a>
+<span class="sourceLineNo">103</span><a id="line.103"></a>
+<span class="sourceLineNo">104</span><a id="line.104">               // 3. Apply the image-plane to pixel-plane transformation.</a>
+<span class="sourceLineNo">105</span><a id="line.105">               final Model model3 = Viewport.imagePlane2pixelPlane(model2,</a>
+<span class="sourceLineNo">106</span><a id="line.106">                                                                   vp);</a>
+<span class="sourceLineNo">107</span><a id="line.107"></a>
+<span class="sourceLineNo">108</span><a id="line.108">               logVertexList("3. Pixel-plane", model3);</a>
+<span class="sourceLineNo">109</span><a id="line.109">               logPrimitiveList("3. Pixel-plane", model3);</a>
+<span class="sourceLineNo">110</span><a id="line.110">               logColorList("3. Pixel-plane", model3);</a>
+<span class="sourceLineNo">111</span><a id="line.111"></a>
+<span class="sourceLineNo">112</span><a id="line.112">               // 4. Rasterize and clip every visible primitive into pixels.</a>
+<span class="sourceLineNo">113</span><a id="line.113">               Rasterize.rasterize(model3, vp);</a>
+<span class="sourceLineNo">114</span><a id="line.114"></a>
+<span class="sourceLineNo">115</span><a id="line.115">               logMessage("====== End model: "</a>
+<span class="sourceLineNo">116</span><a id="line.116">                                  + position.getModel().name + " ======");</a>
+<span class="sourceLineNo">117</span><a id="line.117">            }</a>
+<span class="sourceLineNo">118</span><a id="line.118">            else</a>
+<span class="sourceLineNo">119</span><a id="line.119">            {</a>
+<span class="sourceLineNo">120</span><a id="line.120">               logMessage("====== Hidden model: "</a>
+<span class="sourceLineNo">121</span><a id="line.121">                                  + position.getModel().name + " ======");</a>
+<span class="sourceLineNo">122</span><a id="line.122">            }</a>
+<span class="sourceLineNo">123</span><a id="line.123"></a>
+<span class="sourceLineNo">124</span><a id="line.124">            logMessage("==== End position: " + position.name + " ====");</a>
+<span class="sourceLineNo">125</span><a id="line.125">         }</a>
+<span class="sourceLineNo">126</span><a id="line.126">         else</a>
+<span class="sourceLineNo">127</span><a id="line.127">         {</a>
+<span class="sourceLineNo">128</span><a id="line.128">            logMessage("==== Hidden position: " + position.name + " ====");</a>
+<span class="sourceLineNo">129</span><a id="line.129">         }</a>
+<span class="sourceLineNo">130</span><a id="line.130">      }</a>
+<span class="sourceLineNo">131</span><a id="line.131">      logMessage("== End Rendering of Scene ==");</a>
+<span class="sourceLineNo">132</span><a id="line.132">   }</a>
+<span class="sourceLineNo">133</span><a id="line.133"></a>
+<span class="sourceLineNo">134</span><a id="line.134"></a>
+<span class="sourceLineNo">135</span><a id="line.135"></a>
+<span class="sourceLineNo">136</span><a id="line.136">   // Private default constructor to enforce noninstantiable class.</a>
+<span class="sourceLineNo">137</span><a id="line.137">   // See Item 4 in "Effective Java", 3rd Ed, Joshua Bloch.</a>
+<span class="sourceLineNo">138</span><a id="line.138">   private Pipeline() {</a>
+<span class="sourceLineNo">139</span><a id="line.139">      throw new AssertionError();</a>
+<span class="sourceLineNo">140</span><a id="line.140">   }</a>
+<span class="sourceLineNo">141</span><a id="line.141">}</a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</main>
+</body>
+</html>

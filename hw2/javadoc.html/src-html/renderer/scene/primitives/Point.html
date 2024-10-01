@@ -1,0 +1,178 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<main role="main">
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span><a id="line.1">/*</a>
+<span class="sourceLineNo">002</span><a id="line.2"> * Renderer 4. The MIT License.</a>
+<span class="sourceLineNo">003</span><a id="line.3"> * Copyright (c) 2022 rlkraft@pnw.edu</a>
+<span class="sourceLineNo">004</span><a id="line.4"> * See LICENSE for details.</a>
+<span class="sourceLineNo">005</span><a id="line.5">*/</a>
+<span class="sourceLineNo">006</span><a id="line.6"></a>
+<span class="sourceLineNo">007</span><a id="line.7">package renderer.scene.primitives;</a>
+<span class="sourceLineNo">008</span><a id="line.8"></a>
+<span class="sourceLineNo">009</span><a id="line.9">import java.util.List;</a>
+<span class="sourceLineNo">010</span><a id="line.10"></a>
+<span class="sourceLineNo">011</span><a id="line.11">/**</a>
+<span class="sourceLineNo">012</span><a id="line.12">   A {@code Point} object has two integers that represent the location</a>
+<span class="sourceLineNo">013</span><a id="line.13">   and color of a single {@link renderer.scene.Vertex}. The first integer</a>
+<span class="sourceLineNo">014</span><a id="line.14">   is an index into the {@link renderer.scene.Vertex} list of a</a>
+<span class="sourceLineNo">015</span><a id="line.15">   {@link renderer.scene.Model} object and the second integer is an index</a>
+<span class="sourceLineNo">016</span><a id="line.16">   into the {@link java.awt.Color} list of that {@link renderer.scene.Model}</a>
+<span class="sourceLineNo">017</span><a id="line.17">   object.</a>
+<span class="sourceLineNo">018</span><a id="line.18">*/</a>
+<span class="sourceLineNo">019</span><a id="line.19">public class Point extends Primitive</a>
+<span class="sourceLineNo">020</span><a id="line.20">{</a>
+<span class="sourceLineNo">021</span><a id="line.21">   public int radius = 0;</a>
+<span class="sourceLineNo">022</span><a id="line.22"></a>
+<span class="sourceLineNo">023</span><a id="line.23">   /**</a>
+<span class="sourceLineNo">024</span><a id="line.24">      Construct a {@code Point} object using an integer index.</a>
+<span class="sourceLineNo">025</span><a id="line.25">      Use the given index for both the {@link renderer.scene.Vertex}</a>
+<span class="sourceLineNo">026</span><a id="line.26">      and the {@link java.awt.Color} lists.</a>
+<span class="sourceLineNo">027</span><a id="line.27">      &lt;p&gt;</a>
+<span class="sourceLineNo">028</span><a id="line.28">      NOTE: This constructor does not put a {@link renderer.scene.Vertex}</a>
+<span class="sourceLineNo">029</span><a id="line.29">      or a {@link java.awt.Color} object into this {@link Primitive}'s</a>
+<span class="sourceLineNo">030</span><a id="line.30">      {@link renderer.scene.Model} object. This constructor assumes that</a>
+<span class="sourceLineNo">031</span><a id="line.31">      the given index is valid (or will be valid by the time this</a>
+<span class="sourceLineNo">032</span><a id="line.32">      {@link Primitive} gets rendered).</a>
+<span class="sourceLineNo">033</span><a id="line.33"></a>
+<span class="sourceLineNo">034</span><a id="line.34">      @param i  index for the {@link renderer.scene.Vertex} and {@link java.awt.Color} of the new {@code Point}</a>
+<span class="sourceLineNo">035</span><a id="line.35">   */</a>
+<span class="sourceLineNo">036</span><a id="line.36">   public Point(final int i)</a>
+<span class="sourceLineNo">037</span><a id="line.37">   {</a>
+<span class="sourceLineNo">038</span><a id="line.38">      this(i, i);</a>
+<span class="sourceLineNo">039</span><a id="line.39">   }</a>
+<span class="sourceLineNo">040</span><a id="line.40"></a>
+<span class="sourceLineNo">041</span><a id="line.41"></a>
+<span class="sourceLineNo">042</span><a id="line.42">   /**</a>
+<span class="sourceLineNo">043</span><a id="line.43">      Construct a {@code Point} object using two integer indices, one</a>
+<span class="sourceLineNo">044</span><a id="line.44">      for the {@link renderer.scene.Vertex} list and one for the</a>
+<span class="sourceLineNo">045</span><a id="line.45">      {@link java.awt.Color} list.</a>
+<span class="sourceLineNo">046</span><a id="line.46">      &lt;p&gt;</a>
+<span class="sourceLineNo">047</span><a id="line.47">      NOTE: This constructor does not put a {@link renderer.scene.Vertex}</a>
+<span class="sourceLineNo">048</span><a id="line.48">      or a {@link java.awt.Color} object into this {@link Primitive}'s</a>
+<span class="sourceLineNo">049</span><a id="line.49">      {@link renderer.scene.Model} object. This constructor assumes that</a>
+<span class="sourceLineNo">050</span><a id="line.50">      the given indices are valid (or will be valid by the time this</a>
+<span class="sourceLineNo">051</span><a id="line.51">      {@link Primitive} gets rendered).</a>
+<span class="sourceLineNo">052</span><a id="line.52"></a>
+<span class="sourceLineNo">053</span><a id="line.53">      @param v  index for the {@link renderer.scene.Vertex} of the new {@code Point}</a>
+<span class="sourceLineNo">054</span><a id="line.54">      @param c  index for the {@link java.awt.Color} of the new {@code Point}</a>
+<span class="sourceLineNo">055</span><a id="line.55">   */</a>
+<span class="sourceLineNo">056</span><a id="line.56">   public Point(final int v, final int c)</a>
+<span class="sourceLineNo">057</span><a id="line.57">   {</a>
+<span class="sourceLineNo">058</span><a id="line.58">      super();</a>
+<span class="sourceLineNo">059</span><a id="line.59"></a>
+<span class="sourceLineNo">060</span><a id="line.60">      vIndexList.add(v);</a>
+<span class="sourceLineNo">061</span><a id="line.61">      cIndexList.add(c);</a>
+<span class="sourceLineNo">062</span><a id="line.62">   }</a>
+<span class="sourceLineNo">063</span><a id="line.63"></a>
+<span class="sourceLineNo">064</span><a id="line.64"></a>
+<span class="sourceLineNo">065</span><a id="line.65">   /**</a>
+<span class="sourceLineNo">066</span><a id="line.66">      Construct a {@code Point} object using the two given</a>
+<span class="sourceLineNo">067</span><a id="line.67">      {@link List}s of integer indices.</a>
+<span class="sourceLineNo">068</span><a id="line.68">      &lt;p&gt;</a>
+<span class="sourceLineNo">069</span><a id="line.69">      NOTE: This constructor does not put any {@link renderer.scene.Vertex}</a>
+<span class="sourceLineNo">070</span><a id="line.70">      or {@link java.awt.Color} objects into this {@link Primitive}'s</a>
+<span class="sourceLineNo">071</span><a id="line.71">      {@link renderer.scene.Model} object. This constructor assumes that</a>
+<span class="sourceLineNo">072</span><a id="line.72">      the given indices are valid (or will be valid by the time this</a>
+<span class="sourceLineNo">073</span><a id="line.73">      {@link Primitive} gets rendered).</a>
+<span class="sourceLineNo">074</span><a id="line.74"></a>
+<span class="sourceLineNo">075</span><a id="line.75">      @param vIndexList  {@link List} of integer indices into a {@link renderer.scene.Vertex} list</a>
+<span class="sourceLineNo">076</span><a id="line.76">      @param cIndexList  {@link List} of integer indices into a {@link java.awt.Color} list</a>
+<span class="sourceLineNo">077</span><a id="line.77">      @throws NullPointerException if {@code vIndexList} is {@code null}</a>
+<span class="sourceLineNo">078</span><a id="line.78">      @throws NullPointerException if {@code cIndexList} is {@code null}</a>
+<span class="sourceLineNo">079</span><a id="line.79">      @throws IllegalArgumentException if the size of {@code vIndexList} or {@code cIndexList} is not 1</a>
+<span class="sourceLineNo">080</span><a id="line.80">   */</a>
+<span class="sourceLineNo">081</span><a id="line.81">   public Point(final List&lt;Integer&gt; vIndexList,</a>
+<span class="sourceLineNo">082</span><a id="line.82">                final List&lt;Integer&gt; cIndexList)</a>
+<span class="sourceLineNo">083</span><a id="line.83">   {</a>
+<span class="sourceLineNo">084</span><a id="line.84">      super(vIndexList, cIndexList);</a>
+<span class="sourceLineNo">085</span><a id="line.85"></a>
+<span class="sourceLineNo">086</span><a id="line.86">      if ( 1 != vIndexList.size() )</a>
+<span class="sourceLineNo">087</span><a id="line.87">         throw new IllegalArgumentException("the vertex index list must have length 1");</a>
+<span class="sourceLineNo">088</span><a id="line.88">      if ( 1 != cIndexList.size() )</a>
+<span class="sourceLineNo">089</span><a id="line.89">         throw new IllegalArgumentException("the color index list must have length 1");</a>
+<span class="sourceLineNo">090</span><a id="line.90">   }</a>
+<span class="sourceLineNo">091</span><a id="line.91"></a>
+<span class="sourceLineNo">092</span><a id="line.92"></a>
+<span class="sourceLineNo">093</span><a id="line.93">   /**</a>
+<span class="sourceLineNo">094</span><a id="line.94">      For debugging.</a>
+<span class="sourceLineNo">095</span><a id="line.95"></a>
+<span class="sourceLineNo">096</span><a id="line.96">      @return {@link String} representation of this {@code Point} object</a>
+<span class="sourceLineNo">097</span><a id="line.97">   */</a>
+<span class="sourceLineNo">098</span><a id="line.98">   @Override</a>
+<span class="sourceLineNo">099</span><a id="line.99">   public String toString()</a>
+<span class="sourceLineNo">100</span><a id="line.100">   {</a>
+<span class="sourceLineNo">101</span><a id="line.101">      return "Point: ([" + vIndexList.get(0) + "], "</a>
+<span class="sourceLineNo">102</span><a id="line.102">                   + "[" + cIndexList.get(0) + "]) radius = " + radius;</a>
+<span class="sourceLineNo">103</span><a id="line.103">   }</a>
+<span class="sourceLineNo">104</span><a id="line.104">}</a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</main>
+</body>
+</html>

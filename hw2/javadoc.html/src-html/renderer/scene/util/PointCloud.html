@@ -1,0 +1,172 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<main role="main">
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span><a id="line.1">/*</a>
+<span class="sourceLineNo">002</span><a id="line.2"> * Renderer 4. The MIT License.</a>
+<span class="sourceLineNo">003</span><a id="line.3"> * Copyright (c) 2022 rlkraft@pnw.edu</a>
+<span class="sourceLineNo">004</span><a id="line.4"> * See LICENSE for details.</a>
+<span class="sourceLineNo">005</span><a id="line.5">*/</a>
+<span class="sourceLineNo">006</span><a id="line.6"></a>
+<span class="sourceLineNo">007</span><a id="line.7">package renderer.scene.util;</a>
+<span class="sourceLineNo">008</span><a id="line.8"></a>
+<span class="sourceLineNo">009</span><a id="line.9">import renderer.scene.*;</a>
+<span class="sourceLineNo">010</span><a id="line.10">import renderer.scene.primitives.*;</a>
+<span class="sourceLineNo">011</span><a id="line.11"></a>
+<span class="sourceLineNo">012</span><a id="line.12">import java.util.ArrayList;</a>
+<span class="sourceLineNo">013</span><a id="line.13">import java.awt.Color;</a>
+<span class="sourceLineNo">014</span><a id="line.14"></a>
+<span class="sourceLineNo">015</span><a id="line.15">/**</a>
+<span class="sourceLineNo">016</span><a id="line.16">   Convert a {@link Model} object into a point cloud {@link Model}.</a>
+<span class="sourceLineNo">017</span><a id="line.17">&lt;p&gt;</a>
+<span class="sourceLineNo">018</span><a id="line.18">   See &lt;a href="https://en.wikipedia.org/wiki/Point_cloud" target="_top"&gt;</a>
+<span class="sourceLineNo">019</span><a id="line.19">                https://en.wikipedia.org/wiki/Point_cloud&lt;/a&gt;</a>
+<span class="sourceLineNo">020</span><a id="line.20">*/</a>
+<span class="sourceLineNo">021</span><a id="line.21">public class PointCloud</a>
+<span class="sourceLineNo">022</span><a id="line.22">{</a>
+<span class="sourceLineNo">023</span><a id="line.23">   /**</a>
+<span class="sourceLineNo">024</span><a id="line.24">      A static factory method that converts a given {@link Model}</a>
+<span class="sourceLineNo">025</span><a id="line.25">      into a {@link Model} made up of only {@link Point} primitives.</a>
+<span class="sourceLineNo">026</span><a id="line.26"></a>
+<span class="sourceLineNo">027</span><a id="line.27">      @param model  {@link Model} to convert into a point cloud</a>
+<span class="sourceLineNo">028</span><a id="line.28">      @return a {@link Model} that is a point cloud version of the input {@link Model}</a>
+<span class="sourceLineNo">029</span><a id="line.29">      @throws NullPointerException if {@code model} is {@code null}</a>
+<span class="sourceLineNo">030</span><a id="line.30">   */</a>
+<span class="sourceLineNo">031</span><a id="line.31">   public static Model make(final Model model)</a>
+<span class="sourceLineNo">032</span><a id="line.32">   {</a>
+<span class="sourceLineNo">033</span><a id="line.33">      return make(model, 0); // set the point size to 0</a>
+<span class="sourceLineNo">034</span><a id="line.34">   }</a>
+<span class="sourceLineNo">035</span><a id="line.35"></a>
+<span class="sourceLineNo">036</span><a id="line.36"></a>
+<span class="sourceLineNo">037</span><a id="line.37">   /**</a>
+<span class="sourceLineNo">038</span><a id="line.38">      A static factory method that converts a given {@link Model}</a>
+<span class="sourceLineNo">039</span><a id="line.39">      into a {@link Model} made up of only {@link Point} primitives.</a>
+<span class="sourceLineNo">040</span><a id="line.40"></a>
+<span class="sourceLineNo">041</span><a id="line.41">      @param model      {@link Model} to convert into a point cloud</a>
+<span class="sourceLineNo">042</span><a id="line.42">      @param pointSize  integer diameter of the rasterized points</a>
+<span class="sourceLineNo">043</span><a id="line.43">      @return a {@link Model} that is a point cloud version of the input {@link Model}</a>
+<span class="sourceLineNo">044</span><a id="line.44">      @throws NullPointerException if {@code model} is {@code null}</a>
+<span class="sourceLineNo">045</span><a id="line.45">      @throws IllegalArgumentException if {@code pointSize} is less than 0</a>
+<span class="sourceLineNo">046</span><a id="line.46">   */</a>
+<span class="sourceLineNo">047</span><a id="line.47">   public static Model make(final Model model, final int pointSize)</a>
+<span class="sourceLineNo">048</span><a id="line.48">   {</a>
+<span class="sourceLineNo">049</span><a id="line.49">      if (null == model)</a>
+<span class="sourceLineNo">050</span><a id="line.50">         throw new NullPointerException("model must not be null");</a>
+<span class="sourceLineNo">051</span><a id="line.51">      if (pointSize &lt; 0)</a>
+<span class="sourceLineNo">052</span><a id="line.52">         throw new IllegalArgumentException("pointSize must be greater than or equal to 0");</a>
+<span class="sourceLineNo">053</span><a id="line.53"></a>
+<span class="sourceLineNo">054</span><a id="line.54">      final Model pointCloud = new Model(new ArrayList&lt;Vertex&gt;(model.vertexList),</a>
+<span class="sourceLineNo">055</span><a id="line.55">                                         new ArrayList&lt;&gt;(), // empty primitiveList</a>
+<span class="sourceLineNo">056</span><a id="line.56">                                         new ArrayList&lt;Color&gt;(model.colorList),</a>
+<span class="sourceLineNo">057</span><a id="line.57">                                         "PointCloud: " + model.name,</a>
+<span class="sourceLineNo">058</span><a id="line.58">                                         model.visible);</a>
+<span class="sourceLineNo">059</span><a id="line.59"></a>
+<span class="sourceLineNo">060</span><a id="line.60">      // Find the vertices that are being used by a primitive.</a>
+<span class="sourceLineNo">061</span><a id="line.61">      final boolean[] vIndices = new boolean[model.vertexList.size()];</a>
+<span class="sourceLineNo">062</span><a id="line.62">      final     int[] cIndices = new     int[model.vertexList.size()];</a>
+<span class="sourceLineNo">063</span><a id="line.63"></a>
+<span class="sourceLineNo">064</span><a id="line.64">      for (final Primitive p : model.primitiveList)</a>
+<span class="sourceLineNo">065</span><a id="line.65">      {</a>
+<span class="sourceLineNo">066</span><a id="line.66">         for (int i = 0; i &lt; p.vIndexList.size(); ++i)</a>
+<span class="sourceLineNo">067</span><a id="line.67">         {</a>
+<span class="sourceLineNo">068</span><a id="line.68">            vIndices[p.vIndexList.get(i)] = true;</a>
+<span class="sourceLineNo">069</span><a id="line.69">            cIndices[p.vIndexList.get(i)] = p.cIndexList.get(i);</a>
+<span class="sourceLineNo">070</span><a id="line.70">         }</a>
+<span class="sourceLineNo">071</span><a id="line.71">      }</a>
+<span class="sourceLineNo">072</span><a id="line.72"></a>
+<span class="sourceLineNo">073</span><a id="line.73">      // Create a Point for each vertex that is used by some primitive.</a>
+<span class="sourceLineNo">074</span><a id="line.74">      for (int i = 0; i &lt; vIndices.length; ++i)</a>
+<span class="sourceLineNo">075</span><a id="line.75">      {</a>
+<span class="sourceLineNo">076</span><a id="line.76">         if ( vIndices[i] )</a>
+<span class="sourceLineNo">077</span><a id="line.77">         {</a>
+<span class="sourceLineNo">078</span><a id="line.78">            pointCloud.addPrimitive( new Point(i, cIndices[i]) );</a>
+<span class="sourceLineNo">079</span><a id="line.79">         }</a>
+<span class="sourceLineNo">080</span><a id="line.80">      }</a>
+<span class="sourceLineNo">081</span><a id="line.81"></a>
+<span class="sourceLineNo">082</span><a id="line.82">      // Set the radius for each new Point primitive.</a>
+<span class="sourceLineNo">083</span><a id="line.83">      for (final Primitive p : pointCloud.primitiveList)</a>
+<span class="sourceLineNo">084</span><a id="line.84">      {</a>
+<span class="sourceLineNo">085</span><a id="line.85">         ((Point)p).radius = pointSize;;</a>
+<span class="sourceLineNo">086</span><a id="line.86">      }</a>
+<span class="sourceLineNo">087</span><a id="line.87"></a>
+<span class="sourceLineNo">088</span><a id="line.88">      return pointCloud;</a>
+<span class="sourceLineNo">089</span><a id="line.89">   }</a>
+<span class="sourceLineNo">090</span><a id="line.90"></a>
+<span class="sourceLineNo">091</span><a id="line.91"></a>
+<span class="sourceLineNo">092</span><a id="line.92"></a>
+<span class="sourceLineNo">093</span><a id="line.93">   // Private default constructor to enforce noninstantiable class.</a>
+<span class="sourceLineNo">094</span><a id="line.94">   // See Item 4 in "Effective Java", 3rd Ed, Joshua Bloch.</a>
+<span class="sourceLineNo">095</span><a id="line.95">   private PointCloud() {</a>
+<span class="sourceLineNo">096</span><a id="line.96">      throw new AssertionError();</a>
+<span class="sourceLineNo">097</span><a id="line.97">   }</a>
+<span class="sourceLineNo">098</span><a id="line.98">}</a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</main>
+</body>
+</html>

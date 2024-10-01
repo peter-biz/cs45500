@@ -1,0 +1,206 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<main role="main">
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span><a id="line.1">/*</a>
+<span class="sourceLineNo">002</span><a id="line.2"> * Renderer Models. The MIT License.</a>
+<span class="sourceLineNo">003</span><a id="line.3"> * Copyright (c) 2022 rlkraft@pnw.edu</a>
+<span class="sourceLineNo">004</span><a id="line.4"> * See LICENSE for details.</a>
+<span class="sourceLineNo">005</span><a id="line.5">*/</a>
+<span class="sourceLineNo">006</span><a id="line.6"></a>
+<span class="sourceLineNo">007</span><a id="line.7">package renderer.models_L;</a>
+<span class="sourceLineNo">008</span><a id="line.8"></a>
+<span class="sourceLineNo">009</span><a id="line.9">import renderer.scene.*;</a>
+<span class="sourceLineNo">010</span><a id="line.10">import renderer.scene.primitives.*;</a>
+<span class="sourceLineNo">011</span><a id="line.11"></a>
+<span class="sourceLineNo">012</span><a id="line.12">/**</a>
+<span class="sourceLineNo">013</span><a id="line.13">   Create a wireframe model of a sphere centered at the origin</a>
+<span class="sourceLineNo">014</span><a id="line.14">   by recursively subdividing the faces of a tetrahedron.</a>
+<span class="sourceLineNo">015</span><a id="line.15">&lt;p&gt;</a>
+<span class="sourceLineNo">016</span><a id="line.16">   Also use this subdivision process to draw Sierpinski triangles</a>
+<span class="sourceLineNo">017</span><a id="line.17">   on the surface of the sphere.</a>
+<span class="sourceLineNo">018</span><a id="line.18">*/</a>
+<span class="sourceLineNo">019</span><a id="line.19">public class SphereSubdivided extends Model</a>
+<span class="sourceLineNo">020</span><a id="line.20">{</a>
+<span class="sourceLineNo">021</span><a id="line.21">   /**</a>
+<span class="sourceLineNo">022</span><a id="line.22">      Create a sphere centered at the origin by recursively</a>
+<span class="sourceLineNo">023</span><a id="line.23">      subdividing the faces of a tetrahedron four times.</a>
+<span class="sourceLineNo">024</span><a id="line.24">   */</a>
+<span class="sourceLineNo">025</span><a id="line.25">   public SphereSubdivided()</a>
+<span class="sourceLineNo">026</span><a id="line.26">   {</a>
+<span class="sourceLineNo">027</span><a id="line.27">      this(4);</a>
+<span class="sourceLineNo">028</span><a id="line.28">   }</a>
+<span class="sourceLineNo">029</span><a id="line.29"></a>
+<span class="sourceLineNo">030</span><a id="line.30"></a>
+<span class="sourceLineNo">031</span><a id="line.31">   /**</a>
+<span class="sourceLineNo">032</span><a id="line.32">      Create a sphere centered at the origin by recursively</a>
+<span class="sourceLineNo">033</span><a id="line.33">      subdividing the faces of a tetrahedron {@code n} times.</a>
+<span class="sourceLineNo">034</span><a id="line.34"></a>
+<span class="sourceLineNo">035</span><a id="line.35">      @param n  number of recursive subdivisions</a>
+<span class="sourceLineNo">036</span><a id="line.36">      @throws IllegalArgumentException if {@code n} is less than 0</a>
+<span class="sourceLineNo">037</span><a id="line.37">   */</a>
+<span class="sourceLineNo">038</span><a id="line.38">   public SphereSubdivided(final int n)</a>
+<span class="sourceLineNo">039</span><a id="line.39">   {</a>
+<span class="sourceLineNo">040</span><a id="line.40">      this(n, false, false);</a>
+<span class="sourceLineNo">041</span><a id="line.41">   }</a>
+<span class="sourceLineNo">042</span><a id="line.42"></a>
+<span class="sourceLineNo">043</span><a id="line.43"></a>
+<span class="sourceLineNo">044</span><a id="line.44">   /**</a>
+<span class="sourceLineNo">045</span><a id="line.45">      Create a sphere centered at the origin by recursively</a>
+<span class="sourceLineNo">046</span><a id="line.46">      subdividing the faces of a tetrahedron {@code n} times.</a>
+<span class="sourceLineNo">047</span><a id="line.47">   &lt;p&gt;</a>
+<span class="sourceLineNo">048</span><a id="line.48">      The {@code hole} parameter leaves out one of the original</a>
+<span class="sourceLineNo">049</span><a id="line.49">      four triangle faces of the tetrahedron. This creates a hole</a>
+<span class="sourceLineNo">050</span><a id="line.50">      in the final sphere that is useful for looking at the back</a>
+<span class="sourceLineNo">051</span><a id="line.51">      side of the sphere.</a>
+<span class="sourceLineNo">052</span><a id="line.52">   &lt;p&gt;</a>
+<span class="sourceLineNo">053</span><a id="line.53">      The {@code sierpinski} parameter creates Sierpinski triangles</a>
+<span class="sourceLineNo">054</span><a id="line.54">      on the sphere.</a>
+<span class="sourceLineNo">055</span><a id="line.55"></a>
+<span class="sourceLineNo">056</span><a id="line.56">      @param n           number of recursive subdivisions</a>
+<span class="sourceLineNo">057</span><a id="line.57">      @param hole        do not render one of the four triangles of the tetrahedron</a>
+<span class="sourceLineNo">058</span><a id="line.58">      @param sierpinski  create Sierpinski triangles</a>
+<span class="sourceLineNo">059</span><a id="line.59">      @throws IllegalArgumentException if {@code n} is less than 0</a>
+<span class="sourceLineNo">060</span><a id="line.60">   */</a>
+<span class="sourceLineNo">061</span><a id="line.61">   public SphereSubdivided(final int n, final boolean hole, final boolean sierpinski)</a>
+<span class="sourceLineNo">062</span><a id="line.62">   {</a>
+<span class="sourceLineNo">063</span><a id="line.63">      super(String.format("Sphere Subdivided(%d)", n));</a>
+<span class="sourceLineNo">064</span><a id="line.64"></a>
+<span class="sourceLineNo">065</span><a id="line.65">      if (n &lt; 0)</a>
+<span class="sourceLineNo">066</span><a id="line.66">         throw new IllegalArgumentException("n must be greater than or equal to 0");</a>
+<span class="sourceLineNo">067</span><a id="line.67"></a>
+<span class="sourceLineNo">068</span><a id="line.68">      // Start with the tetrahedron's geometry.</a>
+<span class="sourceLineNo">069</span><a id="line.69">      final double sqr3inv = 1.0/Math.sqrt(3);</a>
+<span class="sourceLineNo">070</span><a id="line.70">      final Vertex v0 = new Vertex( sqr3inv,  sqr3inv,  sqr3inv),</a>
+<span class="sourceLineNo">071</span><a id="line.71">                   v1 = new Vertex(-sqr3inv,  sqr3inv, -sqr3inv),</a>
+<span class="sourceLineNo">072</span><a id="line.72">                   v2 = new Vertex( sqr3inv, -sqr3inv, -sqr3inv),</a>
+<span class="sourceLineNo">073</span><a id="line.73">                   v3 = new Vertex(-sqr3inv, -sqr3inv,  sqr3inv);</a>
+<span class="sourceLineNo">074</span><a id="line.74"></a>
+<span class="sourceLineNo">075</span><a id="line.75">      // Subdivide each of the tetrahedron's four triangles.</a>
+<span class="sourceLineNo">076</span><a id="line.76">      sub(n, v0, v1, v2, sierpinski);</a>
+<span class="sourceLineNo">077</span><a id="line.77">      sub(n, v1, v3, v2, sierpinski);</a>
+<span class="sourceLineNo">078</span><a id="line.78">      sub(n, v2, v3, v0, sierpinski);</a>
+<span class="sourceLineNo">079</span><a id="line.79">      if (! hole) sub(n, v3, v1, v0, sierpinski);</a>
+<span class="sourceLineNo">080</span><a id="line.80">   }</a>
+<span class="sourceLineNo">081</span><a id="line.81"></a>
+<span class="sourceLineNo">082</span><a id="line.82"></a>
+<span class="sourceLineNo">083</span><a id="line.83">   /**</a>
+<span class="sourceLineNo">084</span><a id="line.84">      Recursive helper function.</a>
+<span class="sourceLineNo">085</span><a id="line.85"></a>
+<span class="sourceLineNo">086</span><a id="line.86">      @param n           number of recursive subdivisions</a>
+<span class="sourceLineNo">087</span><a id="line.87">      @param v0          vertex of a triangle on the sphere</a>
+<span class="sourceLineNo">088</span><a id="line.88">      @param v1          vertex of a triangle on the sphere</a>
+<span class="sourceLineNo">089</span><a id="line.89">      @param v2          vertex of a triangle on the sphere</a>
+<span class="sourceLineNo">090</span><a id="line.90">      @param sierpinski  create Sierpinski triangles</a>
+<span class="sourceLineNo">091</span><a id="line.91">   */</a>
+<span class="sourceLineNo">092</span><a id="line.92">   private void sub(final int n,</a>
+<span class="sourceLineNo">093</span><a id="line.93">                    final Vertex v0, final Vertex v1, final Vertex v2,</a>
+<span class="sourceLineNo">094</span><a id="line.94">                    final boolean sierpinski)</a>
+<span class="sourceLineNo">095</span><a id="line.95">   {</a>
+<span class="sourceLineNo">096</span><a id="line.96">      assert (n &gt;= 0);</a>
+<span class="sourceLineNo">097</span><a id="line.97"></a>
+<span class="sourceLineNo">098</span><a id="line.98">      if (0 == n)</a>
+<span class="sourceLineNo">099</span><a id="line.99">      {</a>
+<span class="sourceLineNo">100</span><a id="line.100">         final int index = vertexList.size();</a>
+<span class="sourceLineNo">101</span><a id="line.101">         addVertex(v0, v1, v2);</a>
+<span class="sourceLineNo">102</span><a id="line.102">         addPrimitive(new LineSegment(index+0, index+1),  // v0, v1</a>
+<span class="sourceLineNo">103</span><a id="line.103">                      new LineSegment(index+1, index+2),  // v1, v2</a>
+<span class="sourceLineNo">104</span><a id="line.104">                      new LineSegment(index+2, index+0)); // v2, v0</a>
+<span class="sourceLineNo">105</span><a id="line.105">      }</a>
+<span class="sourceLineNo">106</span><a id="line.106">      else</a>
+<span class="sourceLineNo">107</span><a id="line.107">      {</a>
+<span class="sourceLineNo">108</span><a id="line.108">         // Subdivide each of the three edges.</a>
+<span class="sourceLineNo">109</span><a id="line.109">         final Vertex v3 = new Vertex(0.5*(v0.x + v1.x),</a>
+<span class="sourceLineNo">110</span><a id="line.110">                                      0.5*(v0.y + v1.y),</a>
+<span class="sourceLineNo">111</span><a id="line.111">                                      0.5*(v0.z + v1.z));</a>
+<span class="sourceLineNo">112</span><a id="line.112">         final Vertex v4 = new Vertex(0.5*(v1.x + v2.x),</a>
+<span class="sourceLineNo">113</span><a id="line.113">                                      0.5*(v1.y + v2.y),</a>
+<span class="sourceLineNo">114</span><a id="line.114">                                      0.5*(v1.z + v2.z));</a>
+<span class="sourceLineNo">115</span><a id="line.115">         final Vertex v5 = new Vertex(0.5*(v2.x + v0.x),</a>
+<span class="sourceLineNo">116</span><a id="line.116">                                      0.5*(v2.y + v0.y),</a>
+<span class="sourceLineNo">117</span><a id="line.117">                                      0.5*(v2.z + v0.z));</a>
+<span class="sourceLineNo">118</span><a id="line.118">         // Normalize the subdivision points.</a>
+<span class="sourceLineNo">119</span><a id="line.119">         final double L3 = Math.sqrt(v3.x * v3.x + v3.y * v3.y + v3.z * v3.z),</a>
+<span class="sourceLineNo">120</span><a id="line.120">                      L4 = Math.sqrt(v4.x * v4.x + v4.y * v4.y + v4.z * v4.z),</a>
+<span class="sourceLineNo">121</span><a id="line.121">                      L5 = Math.sqrt(v5.x * v5.x + v5.y * v5.y + v5.z * v5.z);</a>
+<span class="sourceLineNo">122</span><a id="line.122">         final Vertex v3n = new Vertex(v3.x / L3, v3.y / L3, v3.z / L3),</a>
+<span class="sourceLineNo">123</span><a id="line.123">                      v4n = new Vertex(v4.x / L4, v4.y / L4, v4.z / L4),</a>
+<span class="sourceLineNo">124</span><a id="line.124">                      v5n = new Vertex(v5.x / L5, v5.y / L5, v5.z / L5);</a>
+<span class="sourceLineNo">125</span><a id="line.125">         // Recursively do another subdivision.</a>
+<span class="sourceLineNo">126</span><a id="line.126">         sub(n-1, v0,  v3n, v5n, sierpinski);</a>
+<span class="sourceLineNo">127</span><a id="line.127">         sub(n-1, v5n, v4n, v2,  sierpinski);</a>
+<span class="sourceLineNo">128</span><a id="line.128">         sub(n-1, v3n, v1,  v4n, sierpinski);</a>
+<span class="sourceLineNo">129</span><a id="line.129">         if (! sierpinski) sub(n-1, v3n, v4n, v5n, sierpinski);</a>
+<span class="sourceLineNo">130</span><a id="line.130">      }</a>
+<span class="sourceLineNo">131</span><a id="line.131">   }</a>
+<span class="sourceLineNo">132</span><a id="line.132">}//SphereSubdivided</a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</main>
+</body>
+</html>

@@ -1,0 +1,166 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<main role="main">
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span><a id="line.1">/*</a>
+<span class="sourceLineNo">002</span><a id="line.2"> * Renderer Models. The MIT License.</a>
+<span class="sourceLineNo">003</span><a id="line.3"> * Copyright (c) 2022 rlkraft@pnw.edu</a>
+<span class="sourceLineNo">004</span><a id="line.4"> * See LICENSE for details.</a>
+<span class="sourceLineNo">005</span><a id="line.5">*/</a>
+<span class="sourceLineNo">006</span><a id="line.6"></a>
+<span class="sourceLineNo">007</span><a id="line.7">package renderer.models_L;</a>
+<span class="sourceLineNo">008</span><a id="line.8"></a>
+<span class="sourceLineNo">009</span><a id="line.9">import renderer.scene.*;</a>
+<span class="sourceLineNo">010</span><a id="line.10">import renderer.scene.primitives.*;</a>
+<span class="sourceLineNo">011</span><a id="line.11"></a>
+<span class="sourceLineNo">012</span><a id="line.12">/**</a>
+<span class="sourceLineNo">013</span><a id="line.13">   Create a flat wireframe checkerboard panel in the xy-plane.</a>
+<span class="sourceLineNo">014</span><a id="line.14">*/</a>
+<span class="sourceLineNo">015</span><a id="line.15">public class PanelXY extends Model</a>
+<span class="sourceLineNo">016</span><a id="line.16">{</a>
+<span class="sourceLineNo">017</span><a id="line.17">   /**</a>
+<span class="sourceLineNo">018</span><a id="line.18">      Create a flat checkerboard panel in the xy-plane that runs</a>
+<span class="sourceLineNo">019</span><a id="line.19">      from -1 to 1 in the x-direction and -1 to 1 in the y-direction.</a>
+<span class="sourceLineNo">020</span><a id="line.20">   */</a>
+<span class="sourceLineNo">021</span><a id="line.21">   public PanelXY( )</a>
+<span class="sourceLineNo">022</span><a id="line.22">   {</a>
+<span class="sourceLineNo">023</span><a id="line.23">      this(-1, 1, -1, 1);</a>
+<span class="sourceLineNo">024</span><a id="line.24">   }</a>
+<span class="sourceLineNo">025</span><a id="line.25"></a>
+<span class="sourceLineNo">026</span><a id="line.26"></a>
+<span class="sourceLineNo">027</span><a id="line.27">   /**</a>
+<span class="sourceLineNo">028</span><a id="line.28">      Create a flat checkerboard panel in the xy-plane with the given dimensions.</a>
+<span class="sourceLineNo">029</span><a id="line.29"></a>
+<span class="sourceLineNo">030</span><a id="line.30">      @param xMin  location of left edge</a>
+<span class="sourceLineNo">031</span><a id="line.31">      @param xMax  location of right edge</a>
+<span class="sourceLineNo">032</span><a id="line.32">      @param yMin  location of bottom edge</a>
+<span class="sourceLineNo">033</span><a id="line.33">      @param yMax  location of top edge</a>
+<span class="sourceLineNo">034</span><a id="line.34">   */</a>
+<span class="sourceLineNo">035</span><a id="line.35">   public PanelXY(final int xMin, final int xMax,</a>
+<span class="sourceLineNo">036</span><a id="line.36">                  final int yMin, final int yMax)</a>
+<span class="sourceLineNo">037</span><a id="line.37">   {</a>
+<span class="sourceLineNo">038</span><a id="line.38">      this(xMin, xMax, yMin, yMax, 0.0);</a>
+<span class="sourceLineNo">039</span><a id="line.39">   }</a>
+<span class="sourceLineNo">040</span><a id="line.40"></a>
+<span class="sourceLineNo">041</span><a id="line.41"></a>
+<span class="sourceLineNo">042</span><a id="line.42">   /**</a>
+<span class="sourceLineNo">043</span><a id="line.43">      Create a flat checkerboard panel parallel to the xy-plane with the given dimensions.</a>
+<span class="sourceLineNo">044</span><a id="line.44"></a>
+<span class="sourceLineNo">045</span><a id="line.45">      @param xMin  location of left edge</a>
+<span class="sourceLineNo">046</span><a id="line.46">      @param xMax  location of right edge</a>
+<span class="sourceLineNo">047</span><a id="line.47">      @param yMin  location of bottom edge</a>
+<span class="sourceLineNo">048</span><a id="line.48">      @param yMax  location of top edge</a>
+<span class="sourceLineNo">049</span><a id="line.49">      @param z     z-plane that holds the panel</a>
+<span class="sourceLineNo">050</span><a id="line.50">   */</a>
+<span class="sourceLineNo">051</span><a id="line.51">   public PanelXY(final int xMin, final int xMax,</a>
+<span class="sourceLineNo">052</span><a id="line.52">                  final int yMin, final int yMax,</a>
+<span class="sourceLineNo">053</span><a id="line.53">                  final double z)</a>
+<span class="sourceLineNo">054</span><a id="line.54">   {</a>
+<span class="sourceLineNo">055</span><a id="line.55">      super("PanelXY");</a>
+<span class="sourceLineNo">056</span><a id="line.56"></a>
+<span class="sourceLineNo">057</span><a id="line.57">      // Create the checkerboard panel's geometry.</a>
+<span class="sourceLineNo">058</span><a id="line.58"></a>
+<span class="sourceLineNo">059</span><a id="line.59">      // An array of indexes to be used to create line segments.</a>
+<span class="sourceLineNo">060</span><a id="line.60">      final int[][] index = new int[(xMax-xMin)+1][(yMax-yMin)+1];</a>
+<span class="sourceLineNo">061</span><a id="line.61"></a>
+<span class="sourceLineNo">062</span><a id="line.62">      // Create the checkerboard of vertices.</a>
+<span class="sourceLineNo">063</span><a id="line.63">      int i = 0;</a>
+<span class="sourceLineNo">064</span><a id="line.64">      for (int x = xMin; x &lt;= xMax; ++x)</a>
+<span class="sourceLineNo">065</span><a id="line.65">      {</a>
+<span class="sourceLineNo">066</span><a id="line.66">         for (int y = yMin; y &lt;= yMax; ++y)</a>
+<span class="sourceLineNo">067</span><a id="line.67">         {</a>
+<span class="sourceLineNo">068</span><a id="line.68">            addVertex(new Vertex(x, y, z));</a>
+<span class="sourceLineNo">069</span><a id="line.69">            index[x-xMin][y-yMin] = i;</a>
+<span class="sourceLineNo">070</span><a id="line.70">            ++i;</a>
+<span class="sourceLineNo">071</span><a id="line.71">         }</a>
+<span class="sourceLineNo">072</span><a id="line.72">      }</a>
+<span class="sourceLineNo">073</span><a id="line.73"></a>
+<span class="sourceLineNo">074</span><a id="line.74">      // Create the line segments that run in the y-direction.</a>
+<span class="sourceLineNo">075</span><a id="line.75">      for (int x = 0; x &lt;= xMax - xMin; ++x)</a>
+<span class="sourceLineNo">076</span><a id="line.76">      {</a>
+<span class="sourceLineNo">077</span><a id="line.77">         for (int y = 0; y &lt; yMax - yMin; ++y)</a>
+<span class="sourceLineNo">078</span><a id="line.78">         {</a>
+<span class="sourceLineNo">079</span><a id="line.79">            addPrimitive(new LineSegment(index[x][y], index[x][y+1]));</a>
+<span class="sourceLineNo">080</span><a id="line.80">         }</a>
+<span class="sourceLineNo">081</span><a id="line.81">      }</a>
+<span class="sourceLineNo">082</span><a id="line.82"></a>
+<span class="sourceLineNo">083</span><a id="line.83">      // Create the line segments that run in the x-direction.</a>
+<span class="sourceLineNo">084</span><a id="line.84">      for (int y = 0; y &lt;= yMax - yMin; ++y)</a>
+<span class="sourceLineNo">085</span><a id="line.85">      {</a>
+<span class="sourceLineNo">086</span><a id="line.86">         for (int x = 0; x &lt; xMax - xMin; ++x)</a>
+<span class="sourceLineNo">087</span><a id="line.87">         {</a>
+<span class="sourceLineNo">088</span><a id="line.88">            addPrimitive(new LineSegment(index[x][y], index[x+1][y]));</a>
+<span class="sourceLineNo">089</span><a id="line.89">         }</a>
+<span class="sourceLineNo">090</span><a id="line.90">      }</a>
+<span class="sourceLineNo">091</span><a id="line.91">   }</a>
+<span class="sourceLineNo">092</span><a id="line.92">}//PanelXY</a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</main>
+</body>
+</html>

@@ -1,0 +1,262 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<main role="main">
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span><a id="line.1">/*</a>
+<span class="sourceLineNo">002</span><a id="line.2"> * Renderer 4. The MIT License.</a>
+<span class="sourceLineNo">003</span><a id="line.3"> * Copyright (c) 2022 rlkraft@pnw.edu</a>
+<span class="sourceLineNo">004</span><a id="line.4"> * See LICENSE for details.</a>
+<span class="sourceLineNo">005</span><a id="line.5">*/</a>
+<span class="sourceLineNo">006</span><a id="line.6"></a>
+<span class="sourceLineNo">007</span><a id="line.7">package renderer.scene.util;</a>
+<span class="sourceLineNo">008</span><a id="line.8"></a>
+<span class="sourceLineNo">009</span><a id="line.9">import renderer.scene.*;</a>
+<span class="sourceLineNo">010</span><a id="line.10">import renderer.scene.primitives.*;</a>
+<span class="sourceLineNo">011</span><a id="line.11"></a>
+<span class="sourceLineNo">012</span><a id="line.12">import java.util.List;</a>
+<span class="sourceLineNo">013</span><a id="line.13">import java.util.ArrayList;</a>
+<span class="sourceLineNo">014</span><a id="line.14">import java.awt.Color;</a>
+<span class="sourceLineNo">015</span><a id="line.15">import java.util.Random;</a>
+<span class="sourceLineNo">016</span><a id="line.16"></a>
+<span class="sourceLineNo">017</span><a id="line.17">/**</a>
+<span class="sourceLineNo">018</span><a id="line.18">   This is a library of static methods that</a>
+<span class="sourceLineNo">019</span><a id="line.19">   add color shading to a {@link Model}.</a>
+<span class="sourceLineNo">020</span><a id="line.20">*/</a>
+<span class="sourceLineNo">021</span><a id="line.21">public class ModelShading</a>
+<span class="sourceLineNo">022</span><a id="line.22">{</a>
+<span class="sourceLineNo">023</span><a id="line.23">   /**</a>
+<span class="sourceLineNo">024</span><a id="line.24">      Set each {@link Color} in the {@link Model}'s color list</a>
+<span class="sourceLineNo">025</span><a id="line.25">      to the same {@link Color}.</a>
+<span class="sourceLineNo">026</span><a id="line.26"></a>
+<span class="sourceLineNo">027</span><a id="line.27">      @param model  {@link Model} whose color list is being manipulated</a>
+<span class="sourceLineNo">028</span><a id="line.28">      @param c      {@link Color} for all of this model's {@link Vertex} objects</a>
+<span class="sourceLineNo">029</span><a id="line.29">   */</a>
+<span class="sourceLineNo">030</span><a id="line.30">   public static void setColor(final Model model, final Color c)</a>
+<span class="sourceLineNo">031</span><a id="line.31">   {</a>
+<span class="sourceLineNo">032</span><a id="line.32">      if (model.colorList.isEmpty())</a>
+<span class="sourceLineNo">033</span><a id="line.33">      {</a>
+<span class="sourceLineNo">034</span><a id="line.34">         for (int i = 0; i &lt; model.vertexList.size(); ++i)</a>
+<span class="sourceLineNo">035</span><a id="line.35">         {</a>
+<span class="sourceLineNo">036</span><a id="line.36">            model.colorList.add(c);</a>
+<span class="sourceLineNo">037</span><a id="line.37">         }</a>
+<span class="sourceLineNo">038</span><a id="line.38">      }</a>
+<span class="sourceLineNo">039</span><a id="line.39">      else</a>
+<span class="sourceLineNo">040</span><a id="line.40">      {</a>
+<span class="sourceLineNo">041</span><a id="line.41">         for (int i = 0; i &lt; model.colorList.size(); ++i)</a>
+<span class="sourceLineNo">042</span><a id="line.42">         {</a>
+<span class="sourceLineNo">043</span><a id="line.43">            model.colorList.set(i, c);</a>
+<span class="sourceLineNo">044</span><a id="line.44">         }</a>
+<span class="sourceLineNo">045</span><a id="line.45">      }</a>
+<span class="sourceLineNo">046</span><a id="line.46">   }</a>
+<span class="sourceLineNo">047</span><a id="line.47"></a>
+<span class="sourceLineNo">048</span><a id="line.48"></a>
+<span class="sourceLineNo">049</span><a id="line.49">   /**</a>
+<span class="sourceLineNo">050</span><a id="line.50">      Set each {@link Color} in the {@link Model}'s color list</a>
+<span class="sourceLineNo">051</span><a id="line.51">      to the same random {@link Color}.</a>
+<span class="sourceLineNo">052</span><a id="line.52"></a>
+<span class="sourceLineNo">053</span><a id="line.53">      @param model  {@link Model} whose color list is being manipulated</a>
+<span class="sourceLineNo">054</span><a id="line.54">   */</a>
+<span class="sourceLineNo">055</span><a id="line.55">   public static void setRandomColor(final Model model)</a>
+<span class="sourceLineNo">056</span><a id="line.56">   {</a>
+<span class="sourceLineNo">057</span><a id="line.57">      setColor(model, randomColor());</a>
+<span class="sourceLineNo">058</span><a id="line.58">   }</a>
+<span class="sourceLineNo">059</span><a id="line.59"></a>
+<span class="sourceLineNo">060</span><a id="line.60"></a>
+<span class="sourceLineNo">061</span><a id="line.61">   /**</a>
+<span class="sourceLineNo">062</span><a id="line.62">      Set each {@link Color} in the {@link Model}'s color list</a>
+<span class="sourceLineNo">063</span><a id="line.63">      to a different random {@link Color}.</a>
+<span class="sourceLineNo">064</span><a id="line.64"></a>
+<span class="sourceLineNo">065</span><a id="line.65">      @param model  {@link Model} whose color list is being manipulated</a>
+<span class="sourceLineNo">066</span><a id="line.66">   */</a>
+<span class="sourceLineNo">067</span><a id="line.67">   public static void setRandomColors(final Model model)</a>
+<span class="sourceLineNo">068</span><a id="line.68">   {</a>
+<span class="sourceLineNo">069</span><a id="line.69">      if (model.colorList.isEmpty())</a>
+<span class="sourceLineNo">070</span><a id="line.70">      {</a>
+<span class="sourceLineNo">071</span><a id="line.71">         for (int i = 0; i &lt; model.vertexList.size(); ++i)</a>
+<span class="sourceLineNo">072</span><a id="line.72">         {</a>
+<span class="sourceLineNo">073</span><a id="line.73">            model.colorList.add(randomColor());</a>
+<span class="sourceLineNo">074</span><a id="line.74">         }</a>
+<span class="sourceLineNo">075</span><a id="line.75">      }</a>
+<span class="sourceLineNo">076</span><a id="line.76">      else</a>
+<span class="sourceLineNo">077</span><a id="line.77">      {</a>
+<span class="sourceLineNo">078</span><a id="line.78">         for (int i = 0; i &lt; model.colorList.size(); ++i)</a>
+<span class="sourceLineNo">079</span><a id="line.79">         {</a>
+<span class="sourceLineNo">080</span><a id="line.80">            model.colorList.set(i, randomColor());</a>
+<span class="sourceLineNo">081</span><a id="line.81">         }</a>
+<span class="sourceLineNo">082</span><a id="line.82">      }</a>
+<span class="sourceLineNo">083</span><a id="line.83">   }</a>
+<span class="sourceLineNo">084</span><a id="line.84"></a>
+<span class="sourceLineNo">085</span><a id="line.85"></a>
+<span class="sourceLineNo">086</span><a id="line.86">   /**</a>
+<span class="sourceLineNo">087</span><a id="line.87">      Set each {@link Vertex} in the {@link Model}</a>
+<span class="sourceLineNo">088</span><a id="line.88">      to a different random {@link Color}.</a>
+<span class="sourceLineNo">089</span><a id="line.89">      &lt;p&gt;</a>
+<span class="sourceLineNo">090</span><a id="line.90">      This creates a "rainbow model" effect.</a>
+<span class="sourceLineNo">091</span><a id="line.91">      &lt;p&gt;</a>
+<span class="sourceLineNo">092</span><a id="line.92">      NOTE: This will destroy whatever "color structure"</a>
+<span class="sourceLineNo">093</span><a id="line.93">      the model might possess.</a>
+<span class="sourceLineNo">094</span><a id="line.94"></a>
+<span class="sourceLineNo">095</span><a id="line.95">      @param model  {@link Model} whose color list is being manipulated</a>
+<span class="sourceLineNo">096</span><a id="line.96">   */</a>
+<span class="sourceLineNo">097</span><a id="line.97">   public static void setRandomVertexColors(final Model model)</a>
+<span class="sourceLineNo">098</span><a id="line.98">   {</a>
+<span class="sourceLineNo">099</span><a id="line.99">      model.colorList.clear(); // remove all the current colors</a>
+<span class="sourceLineNo">100</span><a id="line.100">      for (int i = 0; i &lt; model.vertexList.size(); ++i)</a>
+<span class="sourceLineNo">101</span><a id="line.101">      {</a>
+<span class="sourceLineNo">102</span><a id="line.102">         model.colorList.add( randomColor() );</a>
+<span class="sourceLineNo">103</span><a id="line.103">      }</a>
+<span class="sourceLineNo">104</span><a id="line.104">      for (final Primitive p : model.primitiveList)</a>
+<span class="sourceLineNo">105</span><a id="line.105">      {</a>
+<span class="sourceLineNo">106</span><a id="line.106">         for (int i = 0; i &lt; p.vIndexList.size(); ++i)</a>
+<span class="sourceLineNo">107</span><a id="line.107">         {</a>
+<span class="sourceLineNo">108</span><a id="line.108">            p.cIndexList.set(i, p.vIndexList.get(i));</a>
+<span class="sourceLineNo">109</span><a id="line.109">         }</a>
+<span class="sourceLineNo">110</span><a id="line.110">      }</a>
+<span class="sourceLineNo">111</span><a id="line.111">   }</a>
+<span class="sourceLineNo">112</span><a id="line.112"></a>
+<span class="sourceLineNo">113</span><a id="line.113"></a>
+<span class="sourceLineNo">114</span><a id="line.114">   /**</a>
+<span class="sourceLineNo">115</span><a id="line.115">      Set each {@link Primitive} in the {@link Model}</a>
+<span class="sourceLineNo">116</span><a id="line.116">      to a different (uniform) random {@link Color}.</a>
+<span class="sourceLineNo">117</span><a id="line.117">      &lt;p&gt;</a>
+<span class="sourceLineNo">118</span><a id="line.118">      NOTE: This will destroy whatever "color structure"</a>
+<span class="sourceLineNo">119</span><a id="line.119">      the model might possess.</a>
+<span class="sourceLineNo">120</span><a id="line.120"></a>
+<span class="sourceLineNo">121</span><a id="line.121">      @param model  {@link Model} whose color list is being manipulated</a>
+<span class="sourceLineNo">122</span><a id="line.122">   */</a>
+<span class="sourceLineNo">123</span><a id="line.123">   public static void setRandomPrimitiveColors(final Model model)</a>
+<span class="sourceLineNo">124</span><a id="line.124">   {</a>
+<span class="sourceLineNo">125</span><a id="line.125">      model.colorList.clear(); // remove all the current colors</a>
+<span class="sourceLineNo">126</span><a id="line.126">      int cIndex = 0;</a>
+<span class="sourceLineNo">127</span><a id="line.127">      for (final Primitive p : model.primitiveList)</a>
+<span class="sourceLineNo">128</span><a id="line.128">      {</a>
+<span class="sourceLineNo">129</span><a id="line.129">         model.colorList.add( randomColor() );</a>
+<span class="sourceLineNo">130</span><a id="line.130">         for (int i = 0; i &lt; p.cIndexList.size(); ++i)</a>
+<span class="sourceLineNo">131</span><a id="line.131">         {</a>
+<span class="sourceLineNo">132</span><a id="line.132">            p.cIndexList.set(i, cIndex);</a>
+<span class="sourceLineNo">133</span><a id="line.133">         }</a>
+<span class="sourceLineNo">134</span><a id="line.134">         ++cIndex;</a>
+<span class="sourceLineNo">135</span><a id="line.135">      }</a>
+<span class="sourceLineNo">136</span><a id="line.136">   }</a>
+<span class="sourceLineNo">137</span><a id="line.137"></a>
+<span class="sourceLineNo">138</span><a id="line.138"></a>
+<span class="sourceLineNo">139</span><a id="line.139">   /**</a>
+<span class="sourceLineNo">140</span><a id="line.140">      Set each {@link Primitive} in the {@link Model}</a>
+<span class="sourceLineNo">141</span><a id="line.141">      to a different random {@link Color} at each endpoint.</a>
+<span class="sourceLineNo">142</span><a id="line.142">      &lt;p&gt;</a>
+<span class="sourceLineNo">143</span><a id="line.143">      This creates a "rainbow primitive" effect.</a>
+<span class="sourceLineNo">144</span><a id="line.144">      &lt;p&gt;</a>
+<span class="sourceLineNo">145</span><a id="line.145">      NOTE: This will destroy whatever "color structure"</a>
+<span class="sourceLineNo">146</span><a id="line.146">      the model might possess.</a>
+<span class="sourceLineNo">147</span><a id="line.147"></a>
+<span class="sourceLineNo">148</span><a id="line.148">      @param model  {@link Model} whose color list is being manipulated</a>
+<span class="sourceLineNo">149</span><a id="line.149">   */</a>
+<span class="sourceLineNo">150</span><a id="line.150">   public static void setRainbowPrimitiveColors(final Model model)</a>
+<span class="sourceLineNo">151</span><a id="line.151">   {</a>
+<span class="sourceLineNo">152</span><a id="line.152">      model.colorList.clear(); // remove all the current colors</a>
+<span class="sourceLineNo">153</span><a id="line.153">      int cIndex = 0;</a>
+<span class="sourceLineNo">154</span><a id="line.154">      for (final Primitive p : model.primitiveList)</a>
+<span class="sourceLineNo">155</span><a id="line.155">      {</a>
+<span class="sourceLineNo">156</span><a id="line.156">         for (int i = 0; i &lt; p.cIndexList.size(); ++i)</a>
+<span class="sourceLineNo">157</span><a id="line.157">         {</a>
+<span class="sourceLineNo">158</span><a id="line.158">            model.colorList.add( randomColor() );</a>
+<span class="sourceLineNo">159</span><a id="line.159">            p.cIndexList.set(i, cIndex);</a>
+<span class="sourceLineNo">160</span><a id="line.160">            ++cIndex;</a>
+<span class="sourceLineNo">161</span><a id="line.161">         }</a>
+<span class="sourceLineNo">162</span><a id="line.162">      }</a>
+<span class="sourceLineNo">163</span><a id="line.163">   }</a>
+<span class="sourceLineNo">164</span><a id="line.164"></a>
+<span class="sourceLineNo">165</span><a id="line.165"></a>
+<span class="sourceLineNo">166</span><a id="line.166">   /**</a>
+<span class="sourceLineNo">167</span><a id="line.167">      Create a {@link Color} object with randomly generated {@code r},</a>
+<span class="sourceLineNo">168</span><a id="line.168">      {@code g}, and {@code b} values.</a>
+<span class="sourceLineNo">169</span><a id="line.169"></a>
+<span class="sourceLineNo">170</span><a id="line.170">      @return a reference to a randomly generated {@link Color} object</a>
+<span class="sourceLineNo">171</span><a id="line.171">   */</a>
+<span class="sourceLineNo">172</span><a id="line.172">   public static Color randomColor()</a>
+<span class="sourceLineNo">173</span><a id="line.173">   {</a>
+<span class="sourceLineNo">174</span><a id="line.174">      final Random generator = new Random();</a>
+<span class="sourceLineNo">175</span><a id="line.175">      final float r = generator.nextFloat();</a>
+<span class="sourceLineNo">176</span><a id="line.176">      final float g = generator.nextFloat();</a>
+<span class="sourceLineNo">177</span><a id="line.177">      final float b = generator.nextFloat();</a>
+<span class="sourceLineNo">178</span><a id="line.178">      return new Color(r, g, b);</a>
+<span class="sourceLineNo">179</span><a id="line.179">   }</a>
+<span class="sourceLineNo">180</span><a id="line.180"></a>
+<span class="sourceLineNo">181</span><a id="line.181"></a>
+<span class="sourceLineNo">182</span><a id="line.182"></a>
+<span class="sourceLineNo">183</span><a id="line.183">   // Private default constructor to enforce noninstantiable class.</a>
+<span class="sourceLineNo">184</span><a id="line.184">   // See Item 4 in "Effective Java", 3rd Ed, Joshua Bloch.</a>
+<span class="sourceLineNo">185</span><a id="line.185">   private ModelShading() {</a>
+<span class="sourceLineNo">186</span><a id="line.186">      throw new AssertionError();</a>
+<span class="sourceLineNo">187</span><a id="line.187">   }</a>
+<span class="sourceLineNo">188</span><a id="line.188">}</a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</main>
+</body>
+</html>
