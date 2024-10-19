@@ -8,6 +8,7 @@ import renderer.scene.util.DrawSceneGraph;
 import renderer.pipeline.*;
 import renderer.framebuffer.*;
 
+
 import java.awt.Color;
 
 /**
@@ -25,7 +26,10 @@ public class Hw2
       final Scene scene = new Scene();
 
       // Create the Models and give them an initial location.
-
+      final Model p = new P();
+      Rasterize.debug=true;
+      Pipeline.render(scene, fb);
+      
 
 
 

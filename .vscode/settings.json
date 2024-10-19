@@ -1,5 +1,6 @@
 {
     "java.project.referencedLibraries": [
-        "renderer_4/renderer_4.jar"
+        "renderer_4/renderer_4.jar",
+        "renderer_4/renderer.jar"
     ]
 }
