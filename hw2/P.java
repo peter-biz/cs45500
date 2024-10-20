@@ -70,19 +70,19 @@ public class P extends Model
 
       // Create the front face line segments
       // (you need to add the Color indices!).
-      addPrimitive(new LineSegment(0, 1, green),
-                   new LineSegment(1, 2, green),
-                   new LineSegment(2, 3, magenta),
-                   new LineSegment(3, 4, magenta),
-                   new LineSegment(4, 5, magenta),
-                   new LineSegment(5, 6, magenta),
-                   new LineSegment(6, 7, red),
-                   new LineSegment(7, 0, red));
+      addPrimitive(new LineSegment(0, 1),
+                   new LineSegment(1, 2),
+                   new LineSegment(2, 3),
+                   new LineSegment(3, 4),
+                   new LineSegment(5, 6),
+                   new LineSegment(6, 7),
+                   new LineSegment(7, 0));
 
-      addPrimitive(new LineSegment( 8,  9, red),
-                   new LineSegment( 9, 10, green),
-                   new LineSegment(10, 11, green),
-                   new LineSegment(11,  8, magenta));
+      addPrimitive(new LineSegment( 8,  9),
+                   new LineSegment( 9, 10),
+                   new LineSegment(10, 11),
+                   new LineSegment(11,  8),
+                   new LineSegment(5, 4));
 
       // Create the back face line segments.
 
