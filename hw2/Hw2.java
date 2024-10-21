@@ -53,7 +53,7 @@ public class Hw2
       // Create a FrameBuffer to render our scene into.
       final int width  = 900;
       final int height = 900;
-      final FrameBuffer fb = new FrameBuffer(width, height, Color.darkGray);
+      final FrameBuffer fb = new FrameBuffer(width, height, Color.black);
 
       Scene scene = new Scene();
 

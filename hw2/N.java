@@ -36,51 +36,60 @@ public class N extends Model
                 new Vertex(0.5, 1.00, 0.0)); // 9
 
       // Create the back face vertices.
-      addVertex(new Vertex(0.00, 1.00, 0.2),  // 9
-                new Vertex(0.00, 0.00, 0.2),  // 10
-                new Vertex(0.25, 0.00, 0.2),  // 11
-                new Vertex(0.25, 0.75, 0.2),  // 12
-                new Vertex(0.75, 0.00, 0.2),  // 13
-                new Vertex(1.00, 0.00, 0.2),  // 14
-                new Vertex(1.00, 1.00, 0.2),  // 15
-                new Vertex(0.75, 1.00, 0.2),  // 16
-                new Vertex(0.75, 0.25, 0.2)); // 17
+      addVertex(new Vertex(0.00, 1.00, -0.25),  // 10
+                new Vertex(0.00, 0.00, -0.25),  // 11
+                new Vertex(0.25, 0.00, -0.25),  // 12
+                new Vertex(0.25, 0.75, -0.25),  // 13
+                new Vertex(0.75, 0.00, -0.25),  // 14
+                new Vertex(1.00, 0.00, -0.25),  // 15
+                new Vertex(1.00, 1.00, -0.25),  // 16
+                new Vertex(0.75, 1.00, -0.25),  // 17
+                new Vertex(0.75, 0.5, -0.25),  // 18
+                new Vertex(0.5, 1.00, -0.25)); // 19
 
       // Create the Color objects.
+      Color magenta = new Color(198, 0, 198);
+      Color red = new Color(204, 0, 0);
+      Color green = new Color(0, 173, 0);
 
+
+      this.addColor(magenta, red, green);
 
       // Create the front face line segments.
-      addPrimitive(new LineSegment(0, 1),
-                   new LineSegment(1, 2),
-                   new LineSegment(2, 3),
-                   new LineSegment(3, 4),
-                   new LineSegment(4, 5),
-                   new LineSegment(5, 6),
-                   new LineSegment(6, 7),
-                   new LineSegment(7, 8),
-                   new LineSegment(8, 9),
-                   new LineSegment(9, 0));
+      addPrimitive(new LineSegment(0, 1, 2),
+                   new LineSegment(1, 2, 2),
+                   new LineSegment(2, 3, 2),
+                   new LineSegment(3, 4, 0),
+                   new LineSegment(4, 5, 1),
+                   new LineSegment(5, 6, 1),
+                   new LineSegment(6, 7, 1),
+                   new LineSegment(7, 8, 1),
+                   new LineSegment(8, 9, 0),
+                   new LineSegment(9, 0, 2));
 
       // Create the back face line segments.
-      // addPrimitive(new LineSegment(9, 10),
-      //              new LineSegment(10, 11),
-      //              new LineSegment(11, 12),
-      //              new LineSegment(12, 17),
-      //              new LineSegment(17, 13),
-      //              new LineSegment(13, 14),
-      //              new LineSegment(14, 15),
-      //              new LineSegment(15, 16),
-      //              new LineSegment(16, 9));
+      addPrimitive(new LineSegment(10, 11, 2),
+                   new LineSegment(11, 12, 2),
+                     new LineSegment(12, 13, 2),
+                     new LineSegment(13, 14, 0),
+                     new LineSegment(14, 15, 1),
+                     new LineSegment(15, 16, 1),
+                     new LineSegment(17, 16, 1),
+                     new LineSegment(17, 18, 1),
+                     new LineSegment(18, 19, 0),
+                     new LineSegment(19, 10, 2));
 
-      // // Connect front face to back face.
-      // addPrimitive(new LineSegment(0, 9),
-      //              new LineSegment(1, 10),
-      //              new LineSegment(2, 11),
-      //              new LineSegment(3, 12),
-      //              new LineSegment(4, 13),
-      //              new LineSegment(5, 14),
-      //              new LineSegment(6, 15),
-      //              new LineSegment(7, 16),
-      //              new LineSegment(8, 17));
+      // Connect front face to back face.
+      addPrimitive(new LineSegment(0, 10, 2),
+                  new LineSegment(1, 11, 2),
+                  new LineSegment(2, 12, 2),
+                  new LineSegment(3, 13, 2),
+                  new LineSegment(4, 14, 1),
+                  new LineSegment(5, 15, 1),
+                  new LineSegment(7, 17, 1),
+                  new LineSegment(6, 16, 1),
+                  new LineSegment(8, 18, 1),
+                  new LineSegment(9, 19, 2));
+      
    }
 }
