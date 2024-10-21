@@ -66,12 +66,12 @@ public class Hw2
 
       //N model
       Model n = new N();
-      Position nPos = new Position(n, new Vector(0, 0.5, -1.5)); //middle(not  lol)
-      //scene.addPosition(nPos);
+      Position nPos = new Position(n, new Vector(-0.5, -0.5, -1.5)); //middle(not  lol)
+      scene.addPosition(nPos);
 
       //W model
       Model w = new W();
-      Position wPos = new Position(w, new Vector(0, 0.5, -1.5)); //bottom right corner(not lot)
+      Position wPos = new Position(w, new Vector(0.5, -1.5, -1.5)); //bottom right corner(not lot)
       scene.addPosition(wPos);
 
         
@@ -89,6 +89,10 @@ public class Hw2
       //scene.debug = true;      // Uncomment this line for debugging output.
       //Rasterize.debug = true;  // Uncomment this line for more debugging output.
 
+      Vector modelPosP = pPos.getTranslation();
+      Vector modelPosN = nPos.getTranslation();
+      Vector modelPosW = wPos.getTranslation();
+
       // Create 200 frames of the animation.
       for (int i = 0; i < 200; ++i)
       {
@@ -102,7 +106,62 @@ public class Hw2
          // Update the P model's location
          //If we look at the letter P in the animation, it moves 2 units right, then 2 units down, then 2 units left, and finally 2 units up. 
          //This brings the P back to where it started, so the animation can cycle through the frames to create a continuous loop.
-         //(0.01, 0.01, 0.01)
+         
+
+         if(i<50){
+            //Update the P model's location to move 2 units right
+            modelPosP = pPos.getTranslation();
+            pPos.translate(modelPosP.x + 0.04, modelPosP.y, modelPosP.z);
+
+            // Update the N model's location
+            modelPosN = nPos.getTranslation();
+            nPos.translate(modelPosN.x, modelPosN.y, modelPosN.z - 0.02);
+
+            // Update the W model's location
+            modelPosW = wPos.getTranslation();
+            wPos.translate(modelPosW.x - 0.04, modelPosW.y, modelPosW.z);
+         }
+         else if(i<100){
+            //Update the P model's location to move 2 units down
+            modelPosP = pPos.getTranslation();
+            pPos.translate(modelPosP.x, modelPosP.y - 0.04, modelPosP.z);
+
+            // Update the N model's location
+            modelPosN = nPos.getTranslation();
+            nPos.translate(modelPosN.x, modelPosN.y, modelPosN.z - 0.02);
+
+            // Update the W model's location
+            modelPosW = wPos.getTranslation();
+            wPos.translate(modelPosW.x, modelPosW.y + 0.04, modelPosW.z);
+         }
+         else if(i<150){
+            //Update the P model's location to move 2 units left
+            modelPosP = pPos.getTranslation();
+            pPos.translate(modelPosP.x - 0.04, modelPosP.y, modelPosP.z);
+
+            // Update the N model's location
+            modelPosN = nPos.getTranslation();
+            nPos.translate(modelPosN.x, modelPosN.y, modelPosN.z + 0.02);
+
+            // Update the W model's location
+            modelPosW = wPos.getTranslation();
+            wPos.translate(modelPosW.x + 0.04, modelPosW.y, modelPosW.z);
+         }
+         else{
+            //Update the P model's location to move 2 units up
+            modelPosP = pPos.getTranslation();
+            pPos.translate(modelPosP.x, modelPosP.y + 0.04, modelPosP.z);
+
+            // Update the N model's location
+            modelPosN = nPos.getTranslation();
+            nPos.translate(modelPosN.x, modelPosN.y, modelPosN.z + 0.02);
+
+            // Update the W model's location
+            modelPosW = wPos.getTranslation();
+            wPos.translate(modelPosW.x, modelPosW.y - 0.04, modelPosW.z);
+         }
+
+
 
 
 
