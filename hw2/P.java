@@ -62,12 +62,12 @@ public class P extends Model
                   new Vertex(0.25, 0.6, -0.25)); // 23
 
       // Create the Color objects.
-      Color magenta = new Color(198, 0, 198);
-      Color red = new Color(204, 0, 0);
-      Color green = new Color(0, 173, 0);
+      Color purple = new Color(255, 0, 255);
+      Color red = new Color(255, 0, 0);
+      Color green = new Color(0, 255, 0);
 
 
-      this.addColor(magenta, red, green);
+      this.addColor(purple, red, green);
 
 
 
