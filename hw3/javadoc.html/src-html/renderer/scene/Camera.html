@@ -1,0 +1,378 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<main role="main">
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span><a id="line.1">/*</a>
+<span class="sourceLineNo">002</span><a id="line.2"> * Renderer 7. The MIT License.</a>
+<span class="sourceLineNo">003</span><a id="line.3"> * Copyright (c) 2022 rlkraft@pnw.edu</a>
+<span class="sourceLineNo">004</span><a id="line.4"> * See LICENSE for details.</a>
+<span class="sourceLineNo">005</span><a id="line.5">*/</a>
+<span class="sourceLineNo">006</span><a id="line.6"></a>
+<span class="sourceLineNo">007</span><a id="line.7">package renderer.scene;</a>
+<span class="sourceLineNo">008</span><a id="line.8"></a>
+<span class="sourceLineNo">009</span><a id="line.9">/**</a>
+<span class="sourceLineNo">010</span><a id="line.10">   This {@code Camera} data structure represents a camera</a>
+<span class="sourceLineNo">011</span><a id="line.11">   located at the origin, looking down the negative z-axis,</a>
+<span class="sourceLineNo">012</span><a id="line.12">   with a near clipping plane.</a>
+<span class="sourceLineNo">013</span><a id="line.13">&lt;p&gt;</a>
+<span class="sourceLineNo">014</span><a id="line.14">   This {@code Camera} has a configurable "view volume" that</a>
+<span class="sourceLineNo">015</span><a id="line.15">   determines what part of space the camera "sees" when we use</a>
+<span class="sourceLineNo">016</span><a id="line.16">   the camera to take a picture (that is, when we render a</a>
+<span class="sourceLineNo">017</span><a id="line.17">   {@link Scene}).</a>
+<span class="sourceLineNo">018</span><a id="line.18">&lt;p&gt;</a>
+<span class="sourceLineNo">019</span><a id="line.19">   This {@code Camera} can "take a picture" two ways, using</a>
+<span class="sourceLineNo">020</span><a id="line.20">   a perspective projection or a parallel (orthographic)</a>
+<span class="sourceLineNo">021</span><a id="line.21">   projection. Each way of taking a picture has a different</a>
+<span class="sourceLineNo">022</span><a id="line.22">   shape for its view volume. The data in this data structure</a>
+<span class="sourceLineNo">023</span><a id="line.23">   determines the shape of each of the two view volumes.</a>
+<span class="sourceLineNo">024</span><a id="line.24">&lt;p&gt;</a>
+<span class="sourceLineNo">025</span><a id="line.25">   For the perspective projection, the view volume (in view</a>
+<span class="sourceLineNo">026</span><a id="line.26">   coordinates!) is the infinitely long frustum that is formed</a>
+<span class="sourceLineNo">027</span><a id="line.27">   by cutting at the near clipping plane, {@code z = -near},</a>
+<span class="sourceLineNo">028</span><a id="line.28">   the infinitely long pyramid with its apex at the origin</a>
+<span class="sourceLineNo">029</span><a id="line.29">   and its cross section in the image plane, {@code z = -1},</a>
+<span class="sourceLineNo">030</span><a id="line.30">   with edges {@code x = -1}, {@code x = +1}, {@code y = -1},</a>
+<span class="sourceLineNo">031</span><a id="line.31">   and {@code y = +1}. The perspective view volume's shape is</a>
+<span class="sourceLineNo">032</span><a id="line.32">   set by the {@link projPerspective} method.</a>
+<span class="sourceLineNo">033</span><a id="line.33">&lt;p&gt;</a>
+<span class="sourceLineNo">034</span><a id="line.34">   For the orthographic projection, the view volume (in view</a>
+<span class="sourceLineNo">035</span><a id="line.35">   coordinates!) is the semi-infinite rectangular cylinder</a>
+<span class="sourceLineNo">036</span><a id="line.36">   parallel to the z-axis, with base in the near clipping plane,</a>
+<span class="sourceLineNo">037</span><a id="line.37">   {@code z = -near}, and with edges {@code x = left},</a>
+<span class="sourceLineNo">038</span><a id="line.38">   {@code x = right}, {@code y = bottom}, {@code y = top} (a</a>
+<span class="sourceLineNo">039</span><a id="line.39">   semi-infinite parallelepiped). The orthographic view volume's</a>
+<span class="sourceLineNo">040</span><a id="line.40">   shape is set by the {@link projOrtho} method.</a>
+<span class="sourceLineNo">041</span><a id="line.41">&lt;p&gt;</a>
+<span class="sourceLineNo">042</span><a id="line.42">   When the graphics rendering {@link renderer.pipeline.Pipeline}</a>
+<span class="sourceLineNo">043</span><a id="line.43">   uses this {@code Camera} to render a {@link Scene}, the renderer</a>
+<span class="sourceLineNo">044</span><a id="line.44">   only "sees" the geometry from the scene that is contained in this</a>
+<span class="sourceLineNo">045</span><a id="line.45">   camera's view volume. (Notice that this means the orthographic</a>
+<span class="sourceLineNo">046</span><a id="line.46">   camera can see geometry that is behind the camera. In fact, the</a>
+<span class="sourceLineNo">047</span><a id="line.47">   perspective camera can also sees geometry that is behind the</a>
+<span class="sourceLineNo">048</span><a id="line.48">   camera.) The renderer's {@link renderer.pipeline.NearClip} and</a>
+<span class="sourceLineNo">049</span><a id="line.49">   {@link renderer.pipeline.Clip} pipeline stages are responsible</a>
+<span class="sourceLineNo">050</span><a id="line.50">   for making sure that the scene's geometry that is outside of</a>
+<span class="sourceLineNo">051</span><a id="line.51">   this camera's view volume is not visible.</a>
+<span class="sourceLineNo">052</span><a id="line.52">&lt;p&gt;</a>
+<span class="sourceLineNo">053</span><a id="line.53">   The plane {@code z = -1} (in view coordinates) is the camera's</a>
+<span class="sourceLineNo">054</span><a id="line.54">   "image plane". The rectangle in the image plane with corners</a>
+<span class="sourceLineNo">055</span><a id="line.55">   {@code (left, bottom, -1)} and {@code (right, top, -1)} is the</a>
+<span class="sourceLineNo">056</span><a id="line.56">   camera's "view rectangle". The view rectangle is like the film</a>
+<span class="sourceLineNo">057</span><a id="line.57">   in a real camera, it is where the camera's image appears when you</a>
+<span class="sourceLineNo">058</span><a id="line.58">   take a picture. The contents of the camera's view rectangle (after</a>
+<span class="sourceLineNo">059</span><a id="line.59">   it gets "normalized" to camera coordinates by the renderer's</a>
+<span class="sourceLineNo">060</span><a id="line.60">   {@link renderer.pipeline.View2Camera} stage) is what gets rasterized,</a>
+<span class="sourceLineNo">061</span><a id="line.61">   by the renderer's {@link renderer.pipeline.Rasterize}</a>
+<span class="sourceLineNo">062</span><a id="line.62">   pipeline stage, into a {@link renderer.framebuffer.FrameBuffer}'s</a>
+<span class="sourceLineNo">063</span><a id="line.63">   {@link renderer.framebuffer.FrameBuffer.Viewport}.</a>
+<span class="sourceLineNo">064</span><a id="line.64">&lt;p&gt;</a>
+<span class="sourceLineNo">065</span><a id="line.65">   For both the perspective and the parallel projections, the camera's</a>
+<span class="sourceLineNo">066</span><a id="line.66">   near plane is there to prevent the camera from seeing what is "behind"</a>
+<span class="sourceLineNo">067</span><a id="line.67">   the near plane. For the perspective projection, the near plane also</a>
+<span class="sourceLineNo">068</span><a id="line.68">   prevents the renderer from incorrectly rasterizing line segments that</a>
+<span class="sourceLineNo">069</span><a id="line.69">   cross the camera plane, {@code z = 0}.</a>
+<span class="sourceLineNo">070</span><a id="line.70">*/</a>
+<span class="sourceLineNo">071</span><a id="line.71">public final class Camera</a>
+<span class="sourceLineNo">072</span><a id="line.72">{</a>
+<span class="sourceLineNo">073</span><a id="line.73">   // Choose either perspective or parallel projection.</a>
+<span class="sourceLineNo">074</span><a id="line.74">   public final boolean perspective;</a>
+<span class="sourceLineNo">075</span><a id="line.75">   // The following five numbers define the camera's view volume.</a>
+<span class="sourceLineNo">076</span><a id="line.76">   public final double left;</a>
+<span class="sourceLineNo">077</span><a id="line.77">   public final double right;</a>
+<span class="sourceLineNo">078</span><a id="line.78">   public final double bottom;</a>
+<span class="sourceLineNo">079</span><a id="line.79">   public final double top;</a>
+<span class="sourceLineNo">080</span><a id="line.80">   public final double n;  // near clipping plane</a>
+<span class="sourceLineNo">081</span><a id="line.81"></a>
+<span class="sourceLineNo">082</span><a id="line.82">   /**</a>
+<span class="sourceLineNo">083</span><a id="line.83">      A private {@code Camera} constructor for</a>
+<span class="sourceLineNo">084</span><a id="line.84">      use by the static factory methods.</a>
+<span class="sourceLineNo">085</span><a id="line.85">   */</a>
+<span class="sourceLineNo">086</span><a id="line.86">   private Camera(final boolean perspective,</a>
+<span class="sourceLineNo">087</span><a id="line.87">                  final double left,</a>
+<span class="sourceLineNo">088</span><a id="line.88">                  final double right,</a>
+<span class="sourceLineNo">089</span><a id="line.89">                  final double bottom,</a>
+<span class="sourceLineNo">090</span><a id="line.90">                  final double top,</a>
+<span class="sourceLineNo">091</span><a id="line.91">                  final double n)</a>
+<span class="sourceLineNo">092</span><a id="line.92">   {</a>
+<span class="sourceLineNo">093</span><a id="line.93">      this.perspective = perspective;</a>
+<span class="sourceLineNo">094</span><a id="line.94">      this.left = left;</a>
+<span class="sourceLineNo">095</span><a id="line.95">      this.right = right;</a>
+<span class="sourceLineNo">096</span><a id="line.96">      this.bottom = bottom;</a>
+<span class="sourceLineNo">097</span><a id="line.97">      this.top = top;</a>
+<span class="sourceLineNo">098</span><a id="line.98">      this.n = n;</a>
+<span class="sourceLineNo">099</span><a id="line.99">   }</a>
+<span class="sourceLineNo">100</span><a id="line.100"></a>
+<span class="sourceLineNo">101</span><a id="line.101"></a>
+<span class="sourceLineNo">102</span><a id="line.102">   /**</a>
+<span class="sourceLineNo">103</span><a id="line.103">      This is a static factory method.</a>
+<span class="sourceLineNo">104</span><a id="line.104">      &lt;p&gt;</a>
+<span class="sourceLineNo">105</span><a id="line.105">      Set up this {@code Camera}'s view volume as a perspective projection</a>
+<span class="sourceLineNo">106</span><a id="line.106">      of the normalized infinite view pyramid extending along the negative</a>
+<span class="sourceLineNo">107</span><a id="line.107">      z-axis.</a>
+<span class="sourceLineNo">108</span><a id="line.108"></a>
+<span class="sourceLineNo">109</span><a id="line.109">      @return a new {@code Camera} object with the default perspective parameters</a>
+<span class="sourceLineNo">110</span><a id="line.110">   */</a>
+<span class="sourceLineNo">111</span><a id="line.111">   public static Camera projPerspective()</a>
+<span class="sourceLineNo">112</span><a id="line.112">   {</a>
+<span class="sourceLineNo">113</span><a id="line.113">      return projPerspective(-1.0, +1.0, -1.0, +1.0); // left, right, bottom, top</a>
+<span class="sourceLineNo">114</span><a id="line.114">   }</a>
+<span class="sourceLineNo">115</span><a id="line.115"></a>
+<span class="sourceLineNo">116</span><a id="line.116"></a>
+<span class="sourceLineNo">117</span><a id="line.117">   /**</a>
+<span class="sourceLineNo">118</span><a id="line.118">      This is a static factory method.</a>
+<span class="sourceLineNo">119</span><a id="line.119">      &lt;p&gt;</a>
+<span class="sourceLineNo">120</span><a id="line.120">      Set up this {@code Camera}'s view volume as a perspective projection</a>
+<span class="sourceLineNo">121</span><a id="line.121">      of an infinite view pyramid extending along the negative z-axis.</a>
+<span class="sourceLineNo">122</span><a id="line.122"></a>
+<span class="sourceLineNo">123</span><a id="line.123">      @param left    left edge of view rectangle in the image plane</a>
+<span class="sourceLineNo">124</span><a id="line.124">      @param right   right edge of view rectangle in the image plane</a>
+<span class="sourceLineNo">125</span><a id="line.125">      @param bottom  bottom edge of view rectangle in the image plane</a>
+<span class="sourceLineNo">126</span><a id="line.126">      @param top     top edge of view rectangle in the image plane</a>
+<span class="sourceLineNo">127</span><a id="line.127">      @return a new {@code Camera} object with the given parameters</a>
+<span class="sourceLineNo">128</span><a id="line.128">   */</a>
+<span class="sourceLineNo">129</span><a id="line.129">   public static Camera projPerspective(final double left,   final double right,</a>
+<span class="sourceLineNo">130</span><a id="line.130">                                        final double bottom, final double top)</a>
+<span class="sourceLineNo">131</span><a id="line.131">   {</a>
+<span class="sourceLineNo">132</span><a id="line.132">      return projPerspective(left, right, bottom, top, 1.0);</a>
+<span class="sourceLineNo">133</span><a id="line.133">   }</a>
+<span class="sourceLineNo">134</span><a id="line.134"></a>
+<span class="sourceLineNo">135</span><a id="line.135"></a>
+<span class="sourceLineNo">136</span><a id="line.136">   /**</a>
+<span class="sourceLineNo">137</span><a id="line.137">      This is a static factory method.</a>
+<span class="sourceLineNo">138</span><a id="line.138">      &lt;p&gt;</a>
+<span class="sourceLineNo">139</span><a id="line.139">      Set up this {@code Camera}'s view volume as a perspective projection</a>
+<span class="sourceLineNo">140</span><a id="line.140">      of an infinite view pyramid extending along the negative z-axis.</a>
+<span class="sourceLineNo">141</span><a id="line.141">      &lt;p&gt;</a>
+<span class="sourceLineNo">142</span><a id="line.142">      Use {@code focalLength} to determine the image plane. So the</a>
+<span class="sourceLineNo">143</span><a id="line.143">      {@code left}, {@code right}, {@code bottom}, {@code top}</a>
+<span class="sourceLineNo">144</span><a id="line.144">      parameters are used in the plane {@code z = -focalLength}.</a>
+<span class="sourceLineNo">145</span><a id="line.145">      &lt;p&gt;</a>
+<span class="sourceLineNo">146</span><a id="line.146">      The {@code focalLength} parameter can be used to zoom an</a>
+<span class="sourceLineNo">147</span><a id="line.147">      asymmetric view volume, much like the {@code fovy} parameter</a>
+<span class="sourceLineNo">148</span><a id="line.148">      for the symmetric view volume, or the "near" parameter for</a>
+<span class="sourceLineNo">149</span><a id="line.149">      the OpenGL gluPerspective() function.</a>
+<span class="sourceLineNo">150</span><a id="line.150"></a>
+<span class="sourceLineNo">151</span><a id="line.151">      @param left    left edge of view rectangle in the image plane</a>
+<span class="sourceLineNo">152</span><a id="line.152">      @param right   right edge of view rectangle in the image plane</a>
+<span class="sourceLineNo">153</span><a id="line.153">      @param bottom  bottom edge of view rectangle in the image plane</a>
+<span class="sourceLineNo">154</span><a id="line.154">      @param top     top edge of view rectangle in the image plane</a>
+<span class="sourceLineNo">155</span><a id="line.155">      @param focalLength  distance from the origin to the image plane</a>
+<span class="sourceLineNo">156</span><a id="line.156">      @return a new {@code Camera} object with the given parameters</a>
+<span class="sourceLineNo">157</span><a id="line.157">   */</a>
+<span class="sourceLineNo">158</span><a id="line.158">   public static Camera projPerspective(final double left,   final double right,</a>
+<span class="sourceLineNo">159</span><a id="line.159">                                        final double bottom, final double top,</a>
+<span class="sourceLineNo">160</span><a id="line.160">                                        final double focalLength)</a>
+<span class="sourceLineNo">161</span><a id="line.161">   {</a>
+<span class="sourceLineNo">162</span><a id="line.162">      return new Camera(true,</a>
+<span class="sourceLineNo">163</span><a id="line.163">                        left / focalLength,</a>
+<span class="sourceLineNo">164</span><a id="line.164">                        right / focalLength,</a>
+<span class="sourceLineNo">165</span><a id="line.165">                        bottom / focalLength,</a>
+<span class="sourceLineNo">166</span><a id="line.166">                        top / focalLength,</a>
+<span class="sourceLineNo">167</span><a id="line.167">                        -0.1);  // near clipping plane (near = +0.1)</a>
+<span class="sourceLineNo">168</span><a id="line.168">   }</a>
+<span class="sourceLineNo">169</span><a id="line.169"></a>
+<span class="sourceLineNo">170</span><a id="line.170"></a>
+<span class="sourceLineNo">171</span><a id="line.171">   /**</a>
+<span class="sourceLineNo">172</span><a id="line.172">      This is a static factory method.</a>
+<span class="sourceLineNo">173</span><a id="line.173">      &lt;p&gt;</a>
+<span class="sourceLineNo">174</span><a id="line.174">      Set up this {@code Camera}'s view volume as a symmetric infinite</a>
+<span class="sourceLineNo">175</span><a id="line.175">      view pyramid extending along the negative z-axis.</a>
+<span class="sourceLineNo">176</span><a id="line.176">      &lt;p&gt;</a>
+<span class="sourceLineNo">177</span><a id="line.177">      Here, the view volume is determined by a vertical "field of view"</a>
+<span class="sourceLineNo">178</span><a id="line.178">      angle and an aspect ratio for the view rectangle in the image plane.</a>
+<span class="sourceLineNo">179</span><a id="line.179"></a>
+<span class="sourceLineNo">180</span><a id="line.180">      @param fovy    angle in the y-direction subtended by the view rectangle in the image plane</a>
+<span class="sourceLineNo">181</span><a id="line.181">      @param aspect  aspect ratio of the view rectangle in the image plane</a>
+<span class="sourceLineNo">182</span><a id="line.182">      @return a new {@code Camera} object with the given parameters</a>
+<span class="sourceLineNo">183</span><a id="line.183">   */</a>
+<span class="sourceLineNo">184</span><a id="line.184">   public static Camera projPerspective(final double fovy, final double aspect)</a>
+<span class="sourceLineNo">185</span><a id="line.185">   {</a>
+<span class="sourceLineNo">186</span><a id="line.186">      final double top    =  Math.tan((Math.PI/180.0)*fovy/2.0);</a>
+<span class="sourceLineNo">187</span><a id="line.187">      final double bottom = -top;</a>
+<span class="sourceLineNo">188</span><a id="line.188">      final double right  =  top * aspect;</a>
+<span class="sourceLineNo">189</span><a id="line.189">      final double left   = -right;</a>
+<span class="sourceLineNo">190</span><a id="line.190"></a>
+<span class="sourceLineNo">191</span><a id="line.191">      return projPerspective(left, right, bottom, top);</a>
+<span class="sourceLineNo">192</span><a id="line.192">   }</a>
+<span class="sourceLineNo">193</span><a id="line.193"></a>
+<span class="sourceLineNo">194</span><a id="line.194"></a>
+<span class="sourceLineNo">195</span><a id="line.195">   /**</a>
+<span class="sourceLineNo">196</span><a id="line.196">      This is a static factory method.</a>
+<span class="sourceLineNo">197</span><a id="line.197">      &lt;p&gt;</a>
+<span class="sourceLineNo">198</span><a id="line.198">      Set up this {@code Camera}'s view volume as a parallel (orthographic)</a>
+<span class="sourceLineNo">199</span><a id="line.199">      projection of the normalized infinite view parallelepiped extending</a>
+<span class="sourceLineNo">200</span><a id="line.200">      along the z-axis.</a>
+<span class="sourceLineNo">201</span><a id="line.201"></a>
+<span class="sourceLineNo">202</span><a id="line.202">      @return a new {@code Camera} object with the default orthographic parameters</a>
+<span class="sourceLineNo">203</span><a id="line.203">   */</a>
+<span class="sourceLineNo">204</span><a id="line.204">   public static Camera projOrtho()</a>
+<span class="sourceLineNo">205</span><a id="line.205">   {</a>
+<span class="sourceLineNo">206</span><a id="line.206">      return projOrtho(-1.0, +1.0, -1.0, +1.0); // left, right, bottom, top</a>
+<span class="sourceLineNo">207</span><a id="line.207">   }</a>
+<span class="sourceLineNo">208</span><a id="line.208"></a>
+<span class="sourceLineNo">209</span><a id="line.209"></a>
+<span class="sourceLineNo">210</span><a id="line.210">   /**</a>
+<span class="sourceLineNo">211</span><a id="line.211">      This is a static factory method.</a>
+<span class="sourceLineNo">212</span><a id="line.212">      &lt;p&gt;</a>
+<span class="sourceLineNo">213</span><a id="line.213">      Set up this {@code Camera}'s view volume as a parallel (orthographic)</a>
+<span class="sourceLineNo">214</span><a id="line.214">      projection of an infinite view parallelepiped extending along the</a>
+<span class="sourceLineNo">215</span><a id="line.215">      z-axis.</a>
+<span class="sourceLineNo">216</span><a id="line.216"></a>
+<span class="sourceLineNo">217</span><a id="line.217">      @param left    left edge of view rectangle in the xy-plane</a>
+<span class="sourceLineNo">218</span><a id="line.218">      @param right   right edge of view rectangle in the xy-plane</a>
+<span class="sourceLineNo">219</span><a id="line.219">      @param bottom  bottom edge of view rectangle in the xy-plane</a>
+<span class="sourceLineNo">220</span><a id="line.220">      @param top     top edge of view rectangle in the xy-plane</a>
+<span class="sourceLineNo">221</span><a id="line.221">      @return a new {@code Camera} object with the given parameters</a>
+<span class="sourceLineNo">222</span><a id="line.222">   */</a>
+<span class="sourceLineNo">223</span><a id="line.223">   public static Camera projOrtho(final double left,   final double right,</a>
+<span class="sourceLineNo">224</span><a id="line.224">                                  final double bottom, final double top)</a>
+<span class="sourceLineNo">225</span><a id="line.225">   {</a>
+<span class="sourceLineNo">226</span><a id="line.226">      return new Camera(false,</a>
+<span class="sourceLineNo">227</span><a id="line.227">                        left,</a>
+<span class="sourceLineNo">228</span><a id="line.228">                        right,</a>
+<span class="sourceLineNo">229</span><a id="line.229">                        bottom,</a>
+<span class="sourceLineNo">230</span><a id="line.230">                        top,</a>
+<span class="sourceLineNo">231</span><a id="line.231">                        +1.0);  // near clipping plane (near = -1.0)</a>
+<span class="sourceLineNo">232</span><a id="line.232">   }</a>
+<span class="sourceLineNo">233</span><a id="line.233"></a>
+<span class="sourceLineNo">234</span><a id="line.234"></a>
+<span class="sourceLineNo">235</span><a id="line.235">   /**</a>
+<span class="sourceLineNo">236</span><a id="line.236">      This is a static factory method.</a>
+<span class="sourceLineNo">237</span><a id="line.237">      &lt;p&gt;</a>
+<span class="sourceLineNo">238</span><a id="line.238">      Set up this {@code Camera}'s view volume as a symmetric infinite</a>
+<span class="sourceLineNo">239</span><a id="line.239">      view parallelepiped extending along the z-axis.</a>
+<span class="sourceLineNo">240</span><a id="line.240">      &lt;p&gt;</a>
+<span class="sourceLineNo">241</span><a id="line.241">      Here, the view volume is determined by a vertical "field-of-view"</a>
+<span class="sourceLineNo">242</span><a id="line.242">      angle and an aspect ratio for the view rectangle in the image plane.</a>
+<span class="sourceLineNo">243</span><a id="line.243"></a>
+<span class="sourceLineNo">244</span><a id="line.244">      @param fovy    angle in the y-direction subtended by the view rectangle in the image plane</a>
+<span class="sourceLineNo">245</span><a id="line.245">      @param aspect  aspect ratio of the view rectangle in the image plane</a>
+<span class="sourceLineNo">246</span><a id="line.246">      @return a new {@code Camera} object with the given parameters</a>
+<span class="sourceLineNo">247</span><a id="line.247">   */</a>
+<span class="sourceLineNo">248</span><a id="line.248">   public static Camera projOrtho(final double fovy, final double aspect)</a>
+<span class="sourceLineNo">249</span><a id="line.249">   {</a>
+<span class="sourceLineNo">250</span><a id="line.250">      final double top    =  Math.tan((Math.PI/180.0)*fovy/2.0);</a>
+<span class="sourceLineNo">251</span><a id="line.251">      final double bottom = -top;</a>
+<span class="sourceLineNo">252</span><a id="line.252">      final double right  =  top * aspect;</a>
+<span class="sourceLineNo">253</span><a id="line.253">      final double left   = -right;</a>
+<span class="sourceLineNo">254</span><a id="line.254"></a>
+<span class="sourceLineNo">255</span><a id="line.255">      return projOrtho(left, right, bottom, top);</a>
+<span class="sourceLineNo">256</span><a id="line.256">   }</a>
+<span class="sourceLineNo">257</span><a id="line.257"></a>
+<span class="sourceLineNo">258</span><a id="line.258"></a>
+<span class="sourceLineNo">259</span><a id="line.259">   /**</a>
+<span class="sourceLineNo">260</span><a id="line.260">      Create a new {@code Camera} that is essentially the same as this</a>
+<span class="sourceLineNo">261</span><a id="line.261">      {@code Camera} but with the given distance from the camera to</a>
+<span class="sourceLineNo">262</span><a id="line.262">      the near clipping plane.</a>
+<span class="sourceLineNo">263</span><a id="line.263">      &lt;p&gt;</a>
+<span class="sourceLineNo">264</span><a id="line.264">      When {@code near} is positive, the near clipping plane is in</a>
+<span class="sourceLineNo">265</span><a id="line.265">      front of the camera. When {@code near} is negative, the near</a>
+<span class="sourceLineNo">266</span><a id="line.266">      clipping plane is behind the camera.</a>
+<span class="sourceLineNo">267</span><a id="line.267"></a>
+<span class="sourceLineNo">268</span><a id="line.268">      @param near  distance from the new {@code Camera} to its near clipping plane</a>
+<span class="sourceLineNo">269</span><a id="line.269">      @return a new {@code Camera} object with the given value for near</a>
+<span class="sourceLineNo">270</span><a id="line.270">   */</a>
+<span class="sourceLineNo">271</span><a id="line.271">   public Camera changeNear(final double near)</a>
+<span class="sourceLineNo">272</span><a id="line.272">   {</a>
+<span class="sourceLineNo">273</span><a id="line.273">      return new Camera(this.perspective,</a>
+<span class="sourceLineNo">274</span><a id="line.274">                        this.left,</a>
+<span class="sourceLineNo">275</span><a id="line.275">                        this.right,</a>
+<span class="sourceLineNo">276</span><a id="line.276">                        this.bottom,</a>
+<span class="sourceLineNo">277</span><a id="line.277">                        this.top,</a>
+<span class="sourceLineNo">278</span><a id="line.278">                        -near);</a>
+<span class="sourceLineNo">279</span><a id="line.279">   }</a>
+<span class="sourceLineNo">280</span><a id="line.280"></a>
+<span class="sourceLineNo">281</span><a id="line.281"></a>
+<span class="sourceLineNo">282</span><a id="line.282">   /**</a>
+<span class="sourceLineNo">283</span><a id="line.283">      For debugging.</a>
+<span class="sourceLineNo">284</span><a id="line.284"></a>
+<span class="sourceLineNo">285</span><a id="line.285">      @return {@link String} representation of this {@code Camera} object</a>
+<span class="sourceLineNo">286</span><a id="line.286">   */</a>
+<span class="sourceLineNo">287</span><a id="line.287">   public String toString()</a>
+<span class="sourceLineNo">288</span><a id="line.288">   {</a>
+<span class="sourceLineNo">289</span><a id="line.289">      final double fovy = (180./Math.PI) * Math.atan(top)</a>
+<span class="sourceLineNo">290</span><a id="line.290">                        + (180./Math.PI) * Math.atan(-bottom);</a>
+<span class="sourceLineNo">291</span><a id="line.291">      final double ratio = (right - left) / (top - bottom);</a>
+<span class="sourceLineNo">292</span><a id="line.292">      String result = "";</a>
+<span class="sourceLineNo">293</span><a id="line.293">      result += "Camera: \n";</a>
+<span class="sourceLineNo">294</span><a id="line.294">      result += "  perspective = " + perspective + "\n";</a>
+<span class="sourceLineNo">295</span><a id="line.295">      result += "  left = "   + left + ", "</a>
+<span class="sourceLineNo">296</span><a id="line.296">             +  "  right = "  + right + "\n"</a>
+<span class="sourceLineNo">297</span><a id="line.297">             +  "  bottom = " + bottom + ", "</a>
+<span class="sourceLineNo">298</span><a id="line.298">             +  "  top = "    + top + "\n"</a>
+<span class="sourceLineNo">299</span><a id="line.299">             +  "  near = "   + -n + "\n"</a>
+<span class="sourceLineNo">300</span><a id="line.300">             +  "  (fovy = " + fovy</a>
+<span class="sourceLineNo">301</span><a id="line.301">             +  ", aspect ratio = " + String.format("%.2f", ratio) + ")";</a>
+<span class="sourceLineNo">302</span><a id="line.302">      return result;</a>
+<span class="sourceLineNo">303</span><a id="line.303">   }</a>
+<span class="sourceLineNo">304</span><a id="line.304">}</a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</main>
+</body>
+</html>

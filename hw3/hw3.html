@@ -1,0 +1,209 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CS 45500 / CS 51580 - Homework 3</title>
+  <meta name="description" content="CS 45500 Homework 3">
+  <meta name="author" content="Roger L. Kraft">
+  <link rel="stylesheet" href="http://math.pnw.edu/~rlkraft/roger-v2.css">
+  <!--[if lt IE 9]>
+    <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+</head>
+
+<body>
+<!--
+<header>
+  <a href="http://math.pnw.edu/~rlkraft/" title="Roger L. Kraft">Roger L. Kraft</a>
+</header>
+ -->
+<nav>
+  <ul class="nav-list" role="navigation">
+    <li><a href="../cs45500.html">CS 45500</a></li>
+    <li><a href="../syllabus.html">Syllabus</a></li>
+    <li><a href="../class.html">Lectures and Readings</a></li>
+    <li><a href="../homework.html">Homework Assignments</a></li>
+  </ul>
+  <ul class="nav-list" role="navigation">
+    <li><a href="http://math.pnw.edu/~rlkraft/roger.html">Roger Kraft</a></li>
+    <li><a href="https://pnw.edu/computer-science/">Computer Science Department</a></li>
+    <li><a href="https://pnw.edu/engineering/">School of Engineering</a></li>
+    <li><a href="https://pnw.edu/college-of-engineering-sciences/">College of Engineering & Sciences</a></li>
+    <li><a href="https://pnw.edu/">Purdue University Northwest</a></li>
+  </ul>
+</nav>
+
+<section id="Content">
+<h1>
+Programming Assignment 3<br>
+CS 45500 / CS 51580<br>
+Computer Graphics<br>
+Fall, 2024
+</h1>
+
+<p>
+This assignment makes use of the files contained in this <a href="http://cs.pnw.edu/~rlkraft/cs45500/homework/hw3.zip">zip file</a>.
+This assignment is due Thursday, November 14.
+</p>
+
+<p>
+For this assignment, you will write an event-driven GUI program that responds to several kinds of mouse, keyboard, window, and component events.
+</p>
+
+<p>
+In the <a href="http://cs.pnw.edu/~rlkraft/cs45500/homework/hw3.zip">zip file</a> there is an executable demo program, <code>hw3_demo.jar</code>, that you can run by double clicking on <code>hw3_demo.cmd</code> (on Windows). On Linux or Macs (and also on Windows) you can run the demo program from the command-line with this command.
+</p>
+<pre>
+        > java -jar hw3_demo.jar
+</pre>
+<p>
+In the zip file there is also a Java source file <code>Hw3.java</code> that you need to complete so that it runs the same way as the demo program.
+</p>
+
+<p>
+The program <code>hw3_demo.jar</code> lets you click on five geometric shapes and drag them around the window. If you click on a point that is inside of several (overlapping) shapes, then all of the shapes will drag around together. When you release the mouse, or if the mouse moves off of the program window, the shapes stop moving.
+</p>
+
+<p>
+The <code>hw3_demo.jar</code> program also responds to several keyboard commands. The keyboard commands are documented in a help message displayed in the program's console window.
+</p>
+
+<p>
+The program <code>hw3_demo.jar</code> responds to its window being resized. If you enlarge the program's window, then the program shows you more of the camera's image-plane (the camera's view-rectangle grows with the program's window). If you shrink the program's window, then the program shows you less of the camera's image-plane (the camera's view-rectangle shrinks with the program's window). If you click on a shape and then use the 'i' keyboard command, then in the console window you will see the image-plane coordinates of every mouse click. If you use the 'j' keyboard command, then in the console window you will see the image-plane coordinates of every mouse movement. When the mouse leaves the program's window, the last mouse coordinate tells you the image-plane coordinate of that edge of the program's window (that is, the coordinate of the corresponding edge of the camera's view-rectangle). Changing a camera's view-rectangle is a feature of <a href="http://cs.pnw.edu/~rlkraft/cs45500/for-class/renderer_7.zip">renderer_7</a>. See the file <code>Readme_r7_view_volumes.txt</code> in the folder <a href="http://cs.pnw.edu/~rlkraft/cs45500/for-class/renderer_7.zip">renderer_7.zip</a>
+</p>
+
+<p>
+The program <code>hw3_demo.jar</code> also has a few GUI components. There are five radio buttons (one for each shape), a drop down list (that lets you change the color of the shape selected by the radio buttons), a button to reset the location of the five shapes, and a button to take a "screenshot" (which will appear as a png image file in the program's directory).
+</p>
+
+<p>
+To make your version of the program respond to all these events (keyboard events, mouse events, window events, radio button events, combo box events, and button events), you will need to write appropriate event handlers that implement the <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.desktop/java/awt/event/KeyListener.html">KeyListener</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.desktop/java/awt/event/MouseListener.html">MouseListener</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.desktop/java/awt/event/MouseMotionListener.html">MouseMotionListener</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.desktop/java/awt/event/ComponentListener.html">ComponentListener</a>, and <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.desktop/java/awt/event/ActionListener.html">ActionListener</a> interfaces. Outlines of these interface implementations are already in the <code>Hw3.java</code> file. You need to complete the code for (at least) the <code>keyTyped()</code>, <code>mousePressed()</code>, <code>mouseReleased()</code>, <code>mouseExited()</code>, <code>mouseDragged()</code>, <code>componentResized()</code>, and <code>actionPerformed()</code> methods. I have outlined the <code>Hw3.java</code> program to implement the event handlers in the style that uses inner (nested) classes.
+</p>
+
+<p>
+If you want to see more examples of event handlers that are similar to the way <code>Hw3.java</code> is set up, look at the example programs <code>EventExperiment_ver4.java</code> and <code>EventExperiment_ver5.java</code>
+from the <code>how_to_handle_handlers</code> sub-folder of <a href="http://cs.pnw.edu/~rlkraft/cs45500/for-class/JavaGuiEvents.zip">JavaGuiEvents.zip</a>.
+</p>
+<p>
+You can see several more examples of event handlers in the <code>clients_r2</code> sub-folder of <a href="http://cs.pnw.edu/~rlkraft/cs45500/for-class/renderer_2.zip">renderer_2.zip</a> (for example, <code>InteractiveCube_R2.java</code> or <code>InteractiveTriangle_R2.java</code>) but those examples set up the event handlers in a slightly different style.
+</p>
+
+<p>
+When you run the program, each of the five shapes that you see on the screen is a <code>Model</code> in the program's scene graph. The <code>Camera</code> for this program is an orthographic camera, so we can think of these shapes as being in the two-dimensional image-plane of the camera (instead of being in three-dimensional camera space). When you click on a point in the program's window, you are clicking on a point in the <code>FrameBuffer</code>, but your program really needs to know what point in the camera's image-plane you are clicking on (because the shapes are in the image-plane). Your program must convert mouse clicks in the FrameBuffer into points in the camera's image-plane. When you drag a shape in the program's window, you are really translating the shape's model in the camera's image-plane. Your program will need to convert mouse displacements in the FrameBuffer into distances in the image-plane. When you run the demo program, you can see these conversions in the mouse debugging output.
+</p>
+
+<p>
+In this program, the center of the FrameBuffer will always correspond to the center of the camera's image-plane. The camera's view-rectangle will always extend from the FrameBuffer's left edge to its right edge. And the camera's view-rectangle will always extend from the FrameBuffer's top edge to its bottom edge. For this program, each unit of distance in the image-plane will be 80 pixels in the FrameBuffer. Initially, the program has a FrameBuffer that is 800 pixels wide and 800 pixels tall. That means that, initially, the camera's view-rectangle is <code>800 / 80 = 10</code> units wide (from -5 to 5 along the x-axis) and <code>800 / 80 = 10</code> units tall (from -5 to 5 along the y-axis). When you resize the program's window, you are resizing the FrameBuffer, which means that you are also resizing the Camera's view-rectangle. In the demo program, you can see this by resizing the window and then using the 'w' key command.
+</p>
+
+<p>
+Here are some suggestions for writing your program. You have to write this program in several steps. Your first step is to read this entire document while looking over all of the code in <code>Hw3.java</code>. Look at how that code is organized. It builds the scene graph, then it builds the gui components, then it defines the event handlers. After the event handlers there are a few utility methods.
+</p>
+
+<p>
+Your second step is to create the two JButtons for the GUI panel. Without these two buttons, the program will crash from a <code>NullPointerException</code>. You do not yet need to make the two buttons do anything, just instantiate them.
+</p>
+
+<p>
+The third step of your program is to take the mouse clicks (in the FrameBuffer) and translate them into points in the camera's image-plane. This is done in the <code>mousePressed()</code> method of the <code>MouseListener</code> interface. After you get the pixel coordinates of a mouse click, you need to transform the pixel coordinates into the corresponding <code>(x_ip, y_ip)</code> coordinates in camera's image-plane. Print this information to <code>stdout</code> and then click on several obvious points in the window (like the corners of the window) and make sure your coordinate transformation is correct (you should compare your results to the demo program's results).
+</p>
+
+<p>
+When you can click on a point and get its correct image-plane coordinates, then you are ready to determine if you are clicking inside of a geometric shape. In the <code>hitFn</code> array there are five <a href="https://dev.java/learn/lambdas/">lambda expressions</a>, one for each geometric shape. These are <code>boolean</code> valued functions that determine if a point from the image-plane is inside of the corresponding shape. You call these functions using an unusual syntax. For example, this line calls the fifth hit function (for the circle) and tests if <code>point_ip</code> is in the circle.
+</p>
+<pre>
+     hitFn[4].test(4, point_ip)
+</pre>
+<p>
+Iterate through the <code>hitFn</code> array and check each shape to see if it has been hit by the point representing the mouse press. Store the boolean results in the <code>hit</code> array and print to  <code>stdout</code> the name of every model that is hit (this code is still in the <code>mousePressed()</code> method).
+</p>
+
+<p>
+When you can determine if a mouse click is within a shape, you are ready to start working with the <code>mouseDragged()</code> method. A user will press down on the mouse button, drag the mouse, then release the mouse button. You get a call to <code>mousePressed()</code> when the user presses down on the mouse button and you get a call to <code>mouseReleased()</code> when the user releases the mouse button (or a call to <code>mouseExited()</code> if the dragged mouse leaves the window). Between the calls to <code>mousePressed()</code> and <code>mouseReleased()</code>, while the mouse is being dragged, you will get calls to <code>mouseDragged()</code>. Each call you receive to <code>mouseDragged()</code> represents some amount of movement of the mouse, sometimes its just one pixel worth of movement, sometimes it is dozens of pixels worth of movement. You need a combination of <code>mousePressed()</code>, <code>mouseDragged()</code>, and <code>mouseReleased()</code> methods to keep track of the pixel coordinates of where the mouse is when its pressed, where the mouse is currently at each call to <code>mouseDragged()</code>, and where the mouse is when the mouse is released. Print all this information to <code>stdout</code> and get a feel for how mouse dragging works (compare your output with that form the demo program). Print all that information in both pixel coordinates and image-plane coordinates. Then compute the "distance traveled" (in image-plane coordinates) by the mouse, in both the x-direction and the y-direction, between calls to <code>mouseDragged()</code> and print this to <code>stdout</code>. The distance traveled by the mouse in the image-plane is vital for being able to move a shape by the appropriate amount.
+</p>
+
+<p>
+Now you know when a mouse press lands within a shape and how far a mouse drag moves. So now you can take the <code>delta-x</code> and <code>delta-y</code> distances traveled by the mouse (between calls to the <code>mouseDragged</code> method) and use them to update the location of a shape that was hit. In the <code>mouseDragged()</code> method, you need to update the translation Vector for each model that was hit by the last mouse pressed event. You update the translation Vector of each hit model by the distance (in the image-plane) that the mouse moved. After updating the translation Vector of each dragged model, the scene needs to be rendered again with this block of code.
+<pre>
+    final FrameBuffer fb = fbp.getFrameBuffer();
+    fb.clearFB();
+    Pipeline.render(scene, fb);
+    fbp.repaint();
+</pre>
+</p>
+
+<p>
+As you complete these small steps, it is a good idea to save each small step as an appropriately named file. That way you have both a reminder of how your program was built up and something to fall back to when a mistake makes things hopelessly confused.
+</p>
+
+<p>
+Notice that the <code>Hw3.java</code> program contains basic event handlers that print the event objects to <code>stdout</code>. When you write the code that implements one of the event handlers, comment out the line that prints out the event object.
+</p>
+
+<p>
+The next feature you need to add to your program is to allow the user to resize the window (try doing this with the demo program). You need to complete the implementation the <code>componentResized()</code> method in the <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.desktop/java/awt/event/ComponentListener.html">ComponentListener</a> interface. As we mentioned earlier, resizing the program's window means resizing the Camera's view-rectangle. You need to use the FrameBuffer's new dimensions to compute new values for the Camera's <code>left</code>, <code>right</code>, <code>bottom</code>, and <code>top</code> parameters. The Camera and the Scene objects are both immutable, so you change the Camera's parameters by creating a new Scene object that contains a new Camera object with this line of code.
+</p>
+<pre>
+     scene = scene.changeCamera(Camera.projOrtho(left, right, bottom, top));
+</pre>
+<p>
+After updating the view-rectangle, the scene needs to be rendered again.
+</p>
+
+<p>
+The next step is to implement the event handlers for the GUI components in the program's side panel. The radio buttons, drop-down list, and regular buttons all use instances of the <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.desktop/java/awt/event/ActionListener.html">ActionListener</a> interface.
+</p>
+<p>
+The five radio buttons all share a single event handler. That event handler should update     the <code>currentModel</code> field and then update the color name displayed by the combo box. Use the <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.desktop/javax/swing/JComboBox.html#setSelectedIndex(int)">setSelectedInde()</a> method in  <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.desktop/javax/swing/JComboBox.html">JComboBox</a> to update the color name shown in the combo box.
+</p>
+<p>
+The Java documentation has sample code for working with radio buttons and combo boxes.
+</p>
+<ul>
+<li><a href="https://docs.oracle.com/javase/tutorial/uiswing/components/button.html#radiobutton">How to Use Radio Buttons</a></li>
+<li><a href="https://docs.oracle.com/javase/tutorial/uiswing/components/combobox.html">How to Use Combo Boxes</a></li>
+</ul>
+
+<p>
+The event handler for the <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.desktop/javax/swing/JComboBox.html">JComboBox</a> needs to change the color of the Model selected by the <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.desktop/javax/swing/JRadioButton.html">JRadioButton</a> <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.desktop/javax/swing/ButtonGroup.html">group</a>. The JComboBox tells you the string name of the selected color. You need to use the <code>currentModel</code> field as an index into the <code>colorChoiceIndex</code> array and set the current model's color choice to the index of the color selected in the combo box. Then change the color of the current model. The renderer library contains a static utility method,  <code>renderer.scene.util.ModelShading.setColor(Color c)</code>, for changing the color of a model.
+</p>
+
+<p>
+Next, you need to implement the <code>ActionListener</code> handlers for the screenshot and reset buttons.
+</p>
+
+<p>
+Finally, you need to implement the keyboard commands for screenshot (the '+' key) and reset (the '=' key) in the <code>keyTyped()</code> method from the <code>KeyListener</code> interface.
+</p>
+
+<p>
+The <code>Hw3.java</code> program has additional information in it about each of the above steps. Some of these steps have some of the code written for you. Otherwise, the steps leave blank spaces for you to fill in.
+</p>
+
+<p>
+Don't be surprised if you need to read this assignment description many times. There is a lot of information here.
+</p>
+
+<p>
+<a href="http://cs.pnw.edu/~rlkraft/cs45500/handin.html">Turn in</a> a zip file called <code>CS455Hw3Surname.zip</code> (where <code>Surname</code> is your last name) containing your version of <code>Hw3.java</code>.
+</p>
+
+<p>
+This assignment is due Thursday, November 14.
+</p>
+
+</section>
+
+<footer>
+  <script language="JavaScript" type="text/javascript">
+    document.write("<font size=\"-2\"><i>Last modified on " + document.lastModified + ".<\/i><\/font>");
+  </script>
+  <br>
+  <a href="mailto:rlkraft@pnw.edu"><font size="-2"><i>compliments and criticisms</i></font></a>
+</footer>
+
+</body>
+</html>

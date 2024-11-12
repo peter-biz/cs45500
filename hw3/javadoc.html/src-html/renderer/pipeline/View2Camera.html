@@ -1,0 +1,296 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<main role="main">
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span><a id="line.1">/*</a>
+<span class="sourceLineNo">002</span><a id="line.2"> * Renderer 7. The MIT License.</a>
+<span class="sourceLineNo">003</span><a id="line.3"> * Copyright (c) 2022 rlkraft@pnw.edu</a>
+<span class="sourceLineNo">004</span><a id="line.4"> * See LICENSE for details.</a>
+<span class="sourceLineNo">005</span><a id="line.5">*/</a>
+<span class="sourceLineNo">006</span><a id="line.6"></a>
+<span class="sourceLineNo">007</span><a id="line.7">package renderer.pipeline;</a>
+<span class="sourceLineNo">008</span><a id="line.8"></a>
+<span class="sourceLineNo">009</span><a id="line.9">import renderer.scene.*;</a>
+<span class="sourceLineNo">010</span><a id="line.10"></a>
+<span class="sourceLineNo">011</span><a id="line.11">import java.util.List;</a>
+<span class="sourceLineNo">012</span><a id="line.12">import java.util.ArrayList;</a>
+<span class="sourceLineNo">013</span><a id="line.13"></a>
+<span class="sourceLineNo">014</span><a id="line.14">/**</a>
+<span class="sourceLineNo">015</span><a id="line.15">   Transform each {@link Vertex} of a {@link Model} from the</a>
+<span class="sourceLineNo">016</span><a id="line.16">   {@link Camera}'s (shared) view coordinates to normalized</a>
+<span class="sourceLineNo">017</span><a id="line.17">   camera coordinates.</a>
+<span class="sourceLineNo">018</span><a id="line.18">&lt;p&gt;</a>
+<span class="sourceLineNo">019</span><a id="line.19">   This stage transforms the {@link Camera}'s view volume</a>
+<span class="sourceLineNo">020</span><a id="line.20">   from a user defined shape (in the view coordinate system)</a>
+<span class="sourceLineNo">021</span><a id="line.21">   into the standard normalized view volume (in the camera</a>
+<span class="sourceLineNo">022</span><a id="line.22">   coordinate system) used by the {@link Clip} pipeline stage.</a>
+<span class="sourceLineNo">023</span><a id="line.23">&lt;p&gt;</a>
+<span class="sourceLineNo">024</span><a id="line.24">   There are two standard normalized view volumes, one for</a>
+<span class="sourceLineNo">025</span><a id="line.25">   perspective projection and one for orthographic projection.</a>
+<span class="sourceLineNo">026</span><a id="line.26">&lt;p&gt;</a>
+<span class="sourceLineNo">027</span><a id="line.27">   The standard normalized perspective view volume is the infinitely</a>
+<span class="sourceLineNo">028</span><a id="line.28">   long pyramid with its apex at the origin and intersecting the</a>
+<span class="sourceLineNo">029</span><a id="line.29">   image plane {@code z = -1} at the corners {@code (-1, -1, -1)}</a>
+<span class="sourceLineNo">030</span><a id="line.30">   and {@code (+1, +1, -1)}.</a>
+<span class="sourceLineNo">031</span><a id="line.31">&lt;p&gt;</a>
+<span class="sourceLineNo">032</span><a id="line.32">   The standard normalized orthographic view volume is the infinitely</a>
+<span class="sourceLineNo">033</span><a id="line.33">   long parallelepiped centered on the z-axis and intersecting the</a>
+<span class="sourceLineNo">034</span><a id="line.34">   image plane {@code z = -1} at the corners {@code (-1, -1, -1)}</a>
+<span class="sourceLineNo">035</span><a id="line.35">   and {@code (+1, +1, -1)}.</a>
+<span class="sourceLineNo">036</span><a id="line.36">&lt;p&gt;</a>
+<span class="sourceLineNo">037</span><a id="line.37">   The user defined view volume determined by the {@link Scene}'s</a>
+<span class="sourceLineNo">038</span><a id="line.38">   {@link Camera} object is either the infinitely long pyramid with its</a>
+<span class="sourceLineNo">039</span><a id="line.39">   apex at the origin and intersecting the image plane {@code z = -1} at</a>
+<span class="sourceLineNo">040</span><a id="line.40">   the corners {@code (left, bottom, -1)} and {@code (right, top, -1)},</a>
+<span class="sourceLineNo">041</span><a id="line.41">   or it is the infinitely long parallelepiped parallel to the z-axis</a>
+<span class="sourceLineNo">042</span><a id="line.42">   and intersecting the image plane {@code z = -1} at the corners</a>
+<span class="sourceLineNo">043</span><a id="line.43">   {@code (left, bottom, -1)} and {@code (right, top, -1)}.</a>
+<span class="sourceLineNo">044</span><a id="line.44">&lt;p&gt;</a>
+<span class="sourceLineNo">045</span><a id="line.45">   The view coordinate system is relative to the user defined view volume.</a>
+<span class="sourceLineNo">046</span><a id="line.46">&lt;p&gt;</a>
+<span class="sourceLineNo">047</span><a id="line.47">   The normalized camera coordinate system is relative to the normalized</a>
+<span class="sourceLineNo">048</span><a id="line.48">   view volume.</a>
+<span class="sourceLineNo">049</span><a id="line.49">&lt;p&gt;</a>
+<span class="sourceLineNo">050</span><a id="line.50">   The transformation formulas that transform the user defined view volume</a>
+<span class="sourceLineNo">051</span><a id="line.51">   into the normalized view volume also transform the view coordinate</a>
+<span class="sourceLineNo">052</span><a id="line.52">   system into the normalized camera coordinate system.</a>
+<span class="sourceLineNo">053</span><a id="line.53">&lt;p&gt;</a>
+<span class="sourceLineNo">054</span><a id="line.54">   We use two steps to transform the camera's perspective view volume</a>
+<span class="sourceLineNo">055</span><a id="line.55">   into the standard perspective view volume. The first step skews the</a>
+<span class="sourceLineNo">056</span><a id="line.56">   camera's view volume so that its center line is the negative z-axis</a>
+<span class="sourceLineNo">057</span><a id="line.57">   (this takes an asymmetric view volume and makes it symmetric). The</a>
+<span class="sourceLineNo">058</span><a id="line.58">   second step scales the skewed view volume so that it intersects the</a>
+<span class="sourceLineNo">059</span><a id="line.59">   image plane, {@code z = -1}, with corners {@code (-1, -1, -1)} and</a>
+<span class="sourceLineNo">060</span><a id="line.60">   {@code (+1, +1, -1)} (this gives the symmetric view volume a 90 degree</a>
+<span class="sourceLineNo">061</span><a id="line.61">   field-of-view).</a>
+<span class="sourceLineNo">062</span><a id="line.62">&lt;p&gt;</a>
+<span class="sourceLineNo">063</span><a id="line.63">   We also use two steps to transform the camera's orthographic view volume</a>
+<span class="sourceLineNo">064</span><a id="line.64">   into the standard orthographic view volume. The first step translates the</a>
+<span class="sourceLineNo">065</span><a id="line.65">   camera's view volume so that its center line is the negative z-axis (this</a>
+<span class="sourceLineNo">066</span><a id="line.66">   takes an asymmetric view volume and makes it symmetric). The second step</a>
+<span class="sourceLineNo">067</span><a id="line.67">   scales the translated view volume so that it intersects the image plane</a>
+<span class="sourceLineNo">068</span><a id="line.68">   {@code z = -1} with corners {@code (-1, -1, -1)} and {@code (+1, +1, -1)}.</a>
+<span class="sourceLineNo">069</span><a id="line.69">&lt;p&gt;</a>
+<span class="sourceLineNo">070</span><a id="line.70">   Let us derive the formulas for transforming the camera's perspective</a>
+<span class="sourceLineNo">071</span><a id="line.71">   view volume into the standard perspective view volume. Suppose the</a>
+<span class="sourceLineNo">072</span><a id="line.72">   camera's perspective view volume has an asymmetrical cross section</a>
+<span class="sourceLineNo">073</span><a id="line.73">   in the yz-plane that is determined by the top and bottom points</a>
+<span class="sourceLineNo">074</span><a id="line.74">   {@code (t, -1)} and {@code (b, -1)}. The center line of this cross</a>
+<span class="sourceLineNo">075</span><a id="line.75">   section is determined by the point {@code ((t+b)/2, -1)}. We want to</a>
+<span class="sourceLineNo">076</span><a id="line.76">   skew the yz-plane in the y-direction along the z-axis so that the</a>
+<span class="sourceLineNo">077</span><a id="line.77">   field-of-view's center line becomes the z-axis. So we need to solve</a>
+<span class="sourceLineNo">078</span><a id="line.78">   this matrix equation for the value of the skew factor {@code s}.</a>
+<span class="sourceLineNo">079</span><a id="line.79">   &lt;pre&gt;{@code</a>
+<span class="sourceLineNo">080</span><a id="line.80">      [ 1  s ] * [ (t+b)/2 ] = [  0 ]</a>
+<span class="sourceLineNo">081</span><a id="line.81">      [ 0  1 ]   [    -1   ]   [ -1 ]</a>
+<span class="sourceLineNo">082</span><a id="line.82">   }&lt;/pre&gt;</a>
+<span class="sourceLineNo">083</span><a id="line.83">   This simplifies to</a>
+<span class="sourceLineNo">084</span><a id="line.84">   &lt;pre&gt;{@code</a>
+<span class="sourceLineNo">085</span><a id="line.85">      (t + b)/2 - s = 0,</a>
+<span class="sourceLineNo">086</span><a id="line.86">      s = (t + b)/2.</a>
+<span class="sourceLineNo">087</span><a id="line.87">   }&lt;/pre&gt;</a>
+<span class="sourceLineNo">088</span><a id="line.88">&lt;p&gt;</a>
+<span class="sourceLineNo">089</span><a id="line.89">   A similar calculation can be made for skewing the field-of-view in the</a>
+<span class="sourceLineNo">090</span><a id="line.90">   xz-plane.</a>
+<span class="sourceLineNo">091</span><a id="line.91">&lt;p&gt;</a>
+<span class="sourceLineNo">092</span><a id="line.92">   The following matrix equation skews the camera's view volume along the</a>
+<span class="sourceLineNo">093</span><a id="line.93">   z-axis so that the transformed view volume will be centered on the</a>
+<span class="sourceLineNo">094</span><a id="line.94">   negative z-axis.</a>
+<span class="sourceLineNo">095</span><a id="line.95">   &lt;pre&gt;{@code</a>
+<span class="sourceLineNo">096</span><a id="line.96">     [ 1  0  (r+l)/2 ]   [ x ]   [ x + z * (r + l)/2 ]</a>
+<span class="sourceLineNo">097</span><a id="line.97">     [ 0  1  (t+b)/2 ] * [ y ] = [ y + z * (t + b)/2 ]</a>
+<span class="sourceLineNo">098</span><a id="line.98">     [ 0  0     1    ]   [ z ]   [     z             ]</a>
+<span class="sourceLineNo">099</span><a id="line.99">   }&lt;/pre&gt;</a>
+<span class="sourceLineNo">100</span><a id="line.100">&lt;p&gt;</a>
+<span class="sourceLineNo">101</span><a id="line.101">   Once the field-of-view in the yz-plane has been made symmetric with</a>
+<span class="sourceLineNo">102</span><a id="line.102">   respect to the z-axis, we want to scale it in the y-direction so that</a>
+<span class="sourceLineNo">103</span><a id="line.103">   the scaled field-of-view has an angle at the origin of 90 degrees. We</a>
+<span class="sourceLineNo">104</span><a id="line.104">   need to scale the point {@code ((t-b)/2, -1)} to the point {@code (1, -1)}</a>
+<span class="sourceLineNo">105</span><a id="line.105">   (and the point {@code ((b-t)/2, -1)} to the point {@code (-1, -1)}). So</a>
+<span class="sourceLineNo">106</span><a id="line.106">   we need to solve this matrix equation for the value of the scale factor</a>
+<span class="sourceLineNo">107</span><a id="line.107">   {@code s}.</a>
+<span class="sourceLineNo">108</span><a id="line.108">   &lt;pre&gt;{@code</a>
+<span class="sourceLineNo">109</span><a id="line.109">      [ s  0 ] * [ (t-b)/2 ] = [  1 ]</a>
+<span class="sourceLineNo">110</span><a id="line.110">      [ 0  1 ]   [    -1   ]   [ -1 ]</a>
+<span class="sourceLineNo">111</span><a id="line.111">   }&lt;/pre&gt;</a>
+<span class="sourceLineNo">112</span><a id="line.112">   This simplifies to</a>
+<span class="sourceLineNo">113</span><a id="line.113">   &lt;pre&gt;{@code</a>
+<span class="sourceLineNo">114</span><a id="line.114">      s * (t - b)/2 = 1,</a>
+<span class="sourceLineNo">115</span><a id="line.115">      s = 2/(t - b).</a>
+<span class="sourceLineNo">116</span><a id="line.116">   }&lt;/pre&gt;</a>
+<span class="sourceLineNo">117</span><a id="line.117">&lt;p&gt;</a>
+<span class="sourceLineNo">118</span><a id="line.118">   A similar calculation can be made for scaling the skewed field-of-view</a>
+<span class="sourceLineNo">119</span><a id="line.119">   in the xz-plane.</a>
+<span class="sourceLineNo">120</span><a id="line.120">&lt;p&gt;</a>
+<span class="sourceLineNo">121</span><a id="line.121">   The following matrix equation scales the skewed view volume to be 2 units</a>
+<span class="sourceLineNo">122</span><a id="line.122">   wide and 2 units tall at the image plane {@code z = -1}.</a>
+<span class="sourceLineNo">123</span><a id="line.123">   &lt;pre&gt;{@code</a>
+<span class="sourceLineNo">124</span><a id="line.124">     [ 2/(r-l)     0     0 ]   [ x ]   [ (2 * x)/(r - l) ]</a>
+<span class="sourceLineNo">125</span><a id="line.125">     [    0     2/(t-b)  0 ] * [ y ] = [ (2 * y)/(t - b) ]</a>
+<span class="sourceLineNo">126</span><a id="line.126">     [    0        0     1 ]   [ z ]   [        z        ]</a>
+<span class="sourceLineNo">127</span><a id="line.127">   }&lt;/pre&gt;</a>
+<span class="sourceLineNo">128</span><a id="line.128">&lt;p&gt;</a>
+<span class="sourceLineNo">129</span><a id="line.129">   The formulas for transforming the camera's orthographic view volume into</a>
+<span class="sourceLineNo">130</span><a id="line.130">   the standard orthographic view volume (a translation followed by a scale)</a>
+<span class="sourceLineNo">131</span><a id="line.131">   are similar but a bit easier to derive. The derivation is left as an</a>
+<span class="sourceLineNo">132</span><a id="line.132">   exercise for the reader.</a>
+<span class="sourceLineNo">133</span><a id="line.133">*/</a>
+<span class="sourceLineNo">134</span><a id="line.134">public final class View2Camera</a>
+<span class="sourceLineNo">135</span><a id="line.135">{</a>
+<span class="sourceLineNo">136</span><a id="line.136">   /**</a>
+<span class="sourceLineNo">137</span><a id="line.137">      Use the {@link Camera}'s view volume data to transform each</a>
+<span class="sourceLineNo">138</span><a id="line.138">      {@link Vertex} from the {@link Camera}'s view coordinate system</a>
+<span class="sourceLineNo">139</span><a id="line.139">      to the normalized camera coordinate system.</a>
+<span class="sourceLineNo">140</span><a id="line.140"></a>
+<span class="sourceLineNo">141</span><a id="line.141">      @param model  {@link Model} with {@link Vertex} objects in the camera's view coordinate system</a>
+<span class="sourceLineNo">142</span><a id="line.142">      @param camera  the {@link Scene}'s {@link Camera} with the view volume data</a>
+<span class="sourceLineNo">143</span><a id="line.143">      @return a new {@link Model} with {@link Vertex} objects in the normalized camera coordinate system</a>
+<span class="sourceLineNo">144</span><a id="line.144">   */</a>
+<span class="sourceLineNo">145</span><a id="line.145">   public static Model view2camera(final Model model, final Camera camera)</a>
+<span class="sourceLineNo">146</span><a id="line.146">   {</a>
+<span class="sourceLineNo">147</span><a id="line.147">      final double l = camera.left; // This data defines the camera's view volume.</a>
+<span class="sourceLineNo">148</span><a id="line.148">      final double r = camera.right;</a>
+<span class="sourceLineNo">149</span><a id="line.149">      final double b = camera.bottom;</a>
+<span class="sourceLineNo">150</span><a id="line.150">      final double t = camera.top;</a>
+<span class="sourceLineNo">151</span><a id="line.151"></a>
+<span class="sourceLineNo">152</span><a id="line.152">      // A new vertex list to hold the transformed vertices.</a>
+<span class="sourceLineNo">153</span><a id="line.153">      final List&lt;Vertex&gt; newVertexList =</a>
+<span class="sourceLineNo">154</span><a id="line.154">                            new ArrayList&lt;&gt;(model.vertexList.size());</a>
+<span class="sourceLineNo">155</span><a id="line.155"></a>
+<span class="sourceLineNo">156</span><a id="line.156">      // Replace each Vertex object with one that</a>
+<span class="sourceLineNo">157</span><a id="line.157">      // contains normalized camera coordinates.</a>
+<span class="sourceLineNo">158</span><a id="line.158">      for (final Vertex v : model.vertexList)</a>
+<span class="sourceLineNo">159</span><a id="line.159">      {</a>
+<span class="sourceLineNo">160</span><a id="line.160">         double v_x, v_y, v_z;</a>
+<span class="sourceLineNo">161</span><a id="line.161"></a>
+<span class="sourceLineNo">162</span><a id="line.162">         if ( camera.perspective )</a>
+<span class="sourceLineNo">163</span><a id="line.163">         {</a>
+<span class="sourceLineNo">164</span><a id="line.164">            // We use two steps to transform the camera's perspective</a>
+<span class="sourceLineNo">165</span><a id="line.165">            // view volume into the standard perspective view volume.</a>
+<span class="sourceLineNo">166</span><a id="line.166">            // The first step skews the current view volume so that</a>
+<span class="sourceLineNo">167</span><a id="line.167">            // its center line is the negative z-axis (this takes an</a>
+<span class="sourceLineNo">168</span><a id="line.168">            // asymmetric view volume and makes it symmetric). The second</a>
+<span class="sourceLineNo">169</span><a id="line.169">            // step scales the skewed view volume so that it intersects the</a>
+<span class="sourceLineNo">170</span><a id="line.170">            // image plane z = -1 with corners (-1, -1, -1) and (+1, +1, -1)</a>
+<span class="sourceLineNo">171</span><a id="line.171">            // (this gives the symmetric view volume a 90 degree field-of-view).</a>
+<span class="sourceLineNo">172</span><a id="line.172"></a>
+<span class="sourceLineNo">173</span><a id="line.173">            // For each vertex, skew its coordinates so that the</a>
+<span class="sourceLineNo">174</span><a id="line.174">            // negative z-axis is at the center of the view volume.</a>
+<span class="sourceLineNo">175</span><a id="line.175">            v_z = v.z;</a>
+<span class="sourceLineNo">176</span><a id="line.176">            v_x = v.x + v_z * (r + l)/2.0;</a>
+<span class="sourceLineNo">177</span><a id="line.177">            v_y = v.y + v_z * (t + b)/2.0;</a>
+<span class="sourceLineNo">178</span><a id="line.178"></a>
+<span class="sourceLineNo">179</span><a id="line.179">            // For each vertex, scale its coordinates so that the</a>
+<span class="sourceLineNo">180</span><a id="line.180">            // view volume has corners (-1, -1, -1) and (+1, +1, -1).</a>
+<span class="sourceLineNo">181</span><a id="line.181">            v_x = (2.0 * v_x)/(r - l);</a>
+<span class="sourceLineNo">182</span><a id="line.182">            v_y = (2.0 * v_y)/(t - b);</a>
+<span class="sourceLineNo">183</span><a id="line.183">         }</a>
+<span class="sourceLineNo">184</span><a id="line.184">         else</a>
+<span class="sourceLineNo">185</span><a id="line.185">         {</a>
+<span class="sourceLineNo">186</span><a id="line.186">            // We use two steps to transform the camera's orthographic</a>
+<span class="sourceLineNo">187</span><a id="line.187">            // view volume into the standard orthographic view volume.</a>
+<span class="sourceLineNo">188</span><a id="line.188">            // The first step translates the current view volume so that</a>
+<span class="sourceLineNo">189</span><a id="line.189">            // its center line is the z-axis. The second step scales the</a>
+<span class="sourceLineNo">190</span><a id="line.190">            // translated view volume so that it intersects the image plane</a>
+<span class="sourceLineNo">191</span><a id="line.191">            // z = -1 with corners (-1, -1, -1) and (+1, +1, -1).</a>
+<span class="sourceLineNo">192</span><a id="line.192"></a>
+<span class="sourceLineNo">193</span><a id="line.193">            // For each vertex, translate its coordinates so that</a>
+<span class="sourceLineNo">194</span><a id="line.194">            // the z-axis is at the center of the view volume.</a>
+<span class="sourceLineNo">195</span><a id="line.195">            v_z = v.z;</a>
+<span class="sourceLineNo">196</span><a id="line.196">            v_x = v.x - (r + l)/2.0;</a>
+<span class="sourceLineNo">197</span><a id="line.197">            v_y = v.y - (t + b)/2.0;</a>
+<span class="sourceLineNo">198</span><a id="line.198"></a>
+<span class="sourceLineNo">199</span><a id="line.199">            // For each vertex, scale its coordinates so that the</a>
+<span class="sourceLineNo">200</span><a id="line.200">            // view volume has corners (-1, -1, -1) and (+1, +1, -1).</a>
+<span class="sourceLineNo">201</span><a id="line.201">            v_x = (2.0 * v_x)/(r - l);</a>
+<span class="sourceLineNo">202</span><a id="line.202">            v_y = (2.0 * v_y)/(t - b);</a>
+<span class="sourceLineNo">203</span><a id="line.203">         }</a>
+<span class="sourceLineNo">204</span><a id="line.204"></a>
+<span class="sourceLineNo">205</span><a id="line.205">         newVertexList.add( new Vertex(v_x, v_y, v_z) );</a>
+<span class="sourceLineNo">206</span><a id="line.206">      }</a>
+<span class="sourceLineNo">207</span><a id="line.207"></a>
+<span class="sourceLineNo">208</span><a id="line.208">      return new Model(newVertexList,</a>
+<span class="sourceLineNo">209</span><a id="line.209">                       model.primitiveList,</a>
+<span class="sourceLineNo">210</span><a id="line.210">                       model.colorList,</a>
+<span class="sourceLineNo">211</span><a id="line.211">                       model.name,</a>
+<span class="sourceLineNo">212</span><a id="line.212">                       model.visible);</a>
+<span class="sourceLineNo">213</span><a id="line.213">   }</a>
+<span class="sourceLineNo">214</span><a id="line.214"></a>
+<span class="sourceLineNo">215</span><a id="line.215"></a>
+<span class="sourceLineNo">216</span><a id="line.216"></a>
+<span class="sourceLineNo">217</span><a id="line.217">   // Private default constructor to enforce noninstantiable class.</a>
+<span class="sourceLineNo">218</span><a id="line.218">   // See Item 4 in "Effective Java", 3rd Ed, Joshua Bloch.</a>
+<span class="sourceLineNo">219</span><a id="line.219">   private View2Camera() {</a>
+<span class="sourceLineNo">220</span><a id="line.220">      throw new AssertionError();</a>
+<span class="sourceLineNo">221</span><a id="line.221">   }</a>
+<span class="sourceLineNo">222</span><a id="line.222">}</a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</main>
+</body>
+</html>

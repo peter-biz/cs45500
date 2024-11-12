@@ -1,0 +1,137 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<main role="main">
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span><a id="line.1">/*</a>
+<span class="sourceLineNo">002</span><a id="line.2"> * Renderer 7. The MIT License.</a>
+<span class="sourceLineNo">003</span><a id="line.3"> * Copyright (c) 2022 rlkraft@pnw.edu</a>
+<span class="sourceLineNo">004</span><a id="line.4"> * See LICENSE for details.</a>
+<span class="sourceLineNo">005</span><a id="line.5">*/</a>
+<span class="sourceLineNo">006</span><a id="line.6"></a>
+<span class="sourceLineNo">007</span><a id="line.7">package renderer.pipeline;</a>
+<span class="sourceLineNo">008</span><a id="line.8"></a>
+<span class="sourceLineNo">009</span><a id="line.9">import renderer.scene.*;</a>
+<span class="sourceLineNo">010</span><a id="line.10">import renderer.scene.primitives.*;</a>
+<span class="sourceLineNo">011</span><a id="line.11">import renderer.framebuffer.*;</a>
+<span class="sourceLineNo">012</span><a id="line.12">import static renderer.pipeline.PipelineLogger.*;</a>
+<span class="sourceLineNo">013</span><a id="line.13"></a>
+<span class="sourceLineNo">014</span><a id="line.14">/**</a>
+<span class="sourceLineNo">015</span><a id="line.15">   Rasterize a projected geometric {@link Primitive}</a>
+<span class="sourceLineNo">016</span><a id="line.16">   into shaded pixels in a {{@link FrameBuffer.Viewport}.</a>
+<span class="sourceLineNo">017</span><a id="line.17">*/</a>
+<span class="sourceLineNo">018</span><a id="line.18">public class Rasterize</a>
+<span class="sourceLineNo">019</span><a id="line.19">{</a>
+<span class="sourceLineNo">020</span><a id="line.20">   public static boolean debug = false;</a>
+<span class="sourceLineNo">021</span><a id="line.21">   public static boolean doClipping = true;  // no longer being used</a>
+<span class="sourceLineNo">022</span><a id="line.22">   public static boolean doAntiAliasing = false;</a>
+<span class="sourceLineNo">023</span><a id="line.23">   public static boolean doGamma = true;</a>
+<span class="sourceLineNo">024</span><a id="line.24">   public static final double GAMMA = 2.2;</a>
+<span class="sourceLineNo">025</span><a id="line.25"></a>
+<span class="sourceLineNo">026</span><a id="line.26">   /**</a>
+<span class="sourceLineNo">027</span><a id="line.27">      Rasterize every clipped, visible {@link Primitive}</a>
+<span class="sourceLineNo">028</span><a id="line.28">      into shaded pixels in a {@link FrameBuffer.Viewport}.</a>
+<span class="sourceLineNo">029</span><a id="line.29"></a>
+<span class="sourceLineNo">030</span><a id="line.30">      @param model  {@link Model} that contains clipped {@link Primitive}s</a>
+<span class="sourceLineNo">031</span><a id="line.31">      @param vp     {@link FrameBuffer.Viewport} to hold rasterized, shaded pixels</a>
+<span class="sourceLineNo">032</span><a id="line.32">   */</a>
+<span class="sourceLineNo">033</span><a id="line.33">   public static void rasterize(final Model model,</a>
+<span class="sourceLineNo">034</span><a id="line.34">                                final FrameBuffer.Viewport vp)</a>
+<span class="sourceLineNo">035</span><a id="line.35">   {</a>
+<span class="sourceLineNo">036</span><a id="line.36">      // Rasterize each visible primitive into shaded pixels.</a>
+<span class="sourceLineNo">037</span><a id="line.37">      for (final Primitive p : model.primitiveList)</a>
+<span class="sourceLineNo">038</span><a id="line.38">      {</a>
+<span class="sourceLineNo">039</span><a id="line.39">         logPrimitive("6. Rasterize", model, p);</a>
+<span class="sourceLineNo">040</span><a id="line.40"></a>
+<span class="sourceLineNo">041</span><a id="line.41">         if (p instanceof LineSegment)</a>
+<span class="sourceLineNo">042</span><a id="line.42">         {</a>
+<span class="sourceLineNo">043</span><a id="line.43">            Rasterize_AntiAlias_Line.rasterize(model, (LineSegment)p, vp);</a>
+<span class="sourceLineNo">044</span><a id="line.44">         }</a>
+<span class="sourceLineNo">045</span><a id="line.45">         else if (p instanceof Point)</a>
+<span class="sourceLineNo">046</span><a id="line.46">         {</a>
+<span class="sourceLineNo">047</span><a id="line.47">            Rasterize_Clip_Point.rasterize(model, (Point)p, vp);</a>
+<span class="sourceLineNo">048</span><a id="line.48">         }</a>
+<span class="sourceLineNo">049</span><a id="line.49">         else // should never get here</a>
+<span class="sourceLineNo">050</span><a id="line.50">         {</a>
+<span class="sourceLineNo">051</span><a id="line.51">            System.err.println("Incorrect primitive: " + p);</a>
+<span class="sourceLineNo">052</span><a id="line.52">         }</a>
+<span class="sourceLineNo">053</span><a id="line.53">      }</a>
+<span class="sourceLineNo">054</span><a id="line.54">   }</a>
+<span class="sourceLineNo">055</span><a id="line.55"></a>
+<span class="sourceLineNo">056</span><a id="line.56"></a>
+<span class="sourceLineNo">057</span><a id="line.57"></a>
+<span class="sourceLineNo">058</span><a id="line.58">   // Private default constructor to enforce noninstantiable class.</a>
+<span class="sourceLineNo">059</span><a id="line.59">   // See Item 4 in "Effective Java", 3rd Ed, Joshua Bloch.</a>
+<span class="sourceLineNo">060</span><a id="line.60">   private Rasterize() {</a>
+<span class="sourceLineNo">061</span><a id="line.61">      throw new AssertionError();</a>
+<span class="sourceLineNo">062</span><a id="line.62">   }</a>
+<span class="sourceLineNo">063</span><a id="line.63">}</a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</main>
+</body>
+</html>

@@ -1,0 +1,178 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<main role="main">
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span><a id="line.1">/*</a>
+<span class="sourceLineNo">002</span><a id="line.2"> * Renderer Models. The MIT License.</a>
+<span class="sourceLineNo">003</span><a id="line.3"> * Copyright (c) 2022 rlkraft@pnw.edu</a>
+<span class="sourceLineNo">004</span><a id="line.4"> * See LICENSE for details.</a>
+<span class="sourceLineNo">005</span><a id="line.5">*/</a>
+<span class="sourceLineNo">006</span><a id="line.6"></a>
+<span class="sourceLineNo">007</span><a id="line.7">package renderer.models_L;</a>
+<span class="sourceLineNo">008</span><a id="line.8"></a>
+<span class="sourceLineNo">009</span><a id="line.9">import renderer.scene.*;</a>
+<span class="sourceLineNo">010</span><a id="line.10">import renderer.scene.primitives.*;</a>
+<span class="sourceLineNo">011</span><a id="line.11"></a>
+<span class="sourceLineNo">012</span><a id="line.12">/**</a>
+<span class="sourceLineNo">013</span><a id="line.13">   Create a wireframe model of a camera's perspective view frustum.</a>
+<span class="sourceLineNo">014</span><a id="line.14">   That is, create a frustum of a pyramid along the negative z-axis</a>
+<span class="sourceLineNo">015</span><a id="line.15">   with its apex at the origin.</a>
+<span class="sourceLineNo">016</span><a id="line.16">&lt;p&gt;</a>
+<span class="sourceLineNo">017</span><a id="line.17">   This class has two constructors that mimic the projPerspective()</a>
+<span class="sourceLineNo">018</span><a id="line.18">   methods from the {@link Camera} class.</a>
+<span class="sourceLineNo">019</span><a id="line.19">&lt;p&gt;</a>
+<span class="sourceLineNo">020</span><a id="line.20">   See &lt;a href="https://en.wikipedia.org/wiki/Viewing_frustum" target="_top"&gt;</a>
+<span class="sourceLineNo">021</span><a id="line.21">                https://en.wikipedia.org/wiki/Viewing_frustum&lt;/a&gt;</a>
+<span class="sourceLineNo">022</span><a id="line.22">*/</a>
+<span class="sourceLineNo">023</span><a id="line.23">public class ViewFrustumModel extends Model</a>
+<span class="sourceLineNo">024</span><a id="line.24">{</a>
+<span class="sourceLineNo">025</span><a id="line.25">   /**</a>
+<span class="sourceLineNo">026</span><a id="line.26">      Create a frustum of a pyramid along the negative z-axis with</a>
+<span class="sourceLineNo">027</span><a id="line.27">      a front face at {@code z = -0.25}, a back face at {@code z = -1},</a>
+<span class="sourceLineNo">028</span><a id="line.28">      and the front face bounded by {@code -0.25 &lt;= x &lt;= 0.25} and</a>
+<span class="sourceLineNo">029</span><a id="line.29">      {@code -0.25 &lt;= y &lt;= 0.25}.</a>
+<span class="sourceLineNo">030</span><a id="line.30">   */</a>
+<span class="sourceLineNo">031</span><a id="line.31">   public ViewFrustumModel( )</a>
+<span class="sourceLineNo">032</span><a id="line.32">   {</a>
+<span class="sourceLineNo">033</span><a id="line.33">      this(-0.25, 0.25, -0.25, 0.25, 0.25, 1);</a>
+<span class="sourceLineNo">034</span><a id="line.34">   }</a>
+<span class="sourceLineNo">035</span><a id="line.35"></a>
+<span class="sourceLineNo">036</span><a id="line.36"></a>
+<span class="sourceLineNo">037</span><a id="line.37">   /**</a>
+<span class="sourceLineNo">038</span><a id="line.38">      Create a frustum of a pyramid along the negative z-axis that</a>
+<span class="sourceLineNo">039</span><a id="line.39">      mimics a {@link Camera}'s perspective view volume.</a>
+<span class="sourceLineNo">040</span><a id="line.40"></a>
+<span class="sourceLineNo">041</span><a id="line.41">      @param left    left edge of the front face in the plane z = -near</a>
+<span class="sourceLineNo">042</span><a id="line.42">      @param right   right edge of the front face in the plane z = -near</a>
+<span class="sourceLineNo">043</span><a id="line.43">      @param bottom  bottom edge of the front face in the plane z = -near</a>
+<span class="sourceLineNo">044</span><a id="line.44">      @param top     top edge of the front face in the plane z = -near</a>
+<span class="sourceLineNo">045</span><a id="line.45">      @param near    distance from the origin to the front face</a>
+<span class="sourceLineNo">046</span><a id="line.46">      @param far     distance from the origin to the back face</a>
+<span class="sourceLineNo">047</span><a id="line.47">   */</a>
+<span class="sourceLineNo">048</span><a id="line.48">   public ViewFrustumModel(final double left,   final double right,</a>
+<span class="sourceLineNo">049</span><a id="line.49">                           final double bottom, final double top,</a>
+<span class="sourceLineNo">050</span><a id="line.50">                           final double near,   final double far)</a>
+<span class="sourceLineNo">051</span><a id="line.51">   {</a>
+<span class="sourceLineNo">052</span><a id="line.52">      super("View Frustum Model");</a>
+<span class="sourceLineNo">053</span><a id="line.53"></a>
+<span class="sourceLineNo">054</span><a id="line.54">      addVertex(new Vertex(left,  top,    -near),</a>
+<span class="sourceLineNo">055</span><a id="line.55">                new Vertex(right, top,    -near),</a>
+<span class="sourceLineNo">056</span><a id="line.56">                new Vertex(right, bottom, -near),</a>
+<span class="sourceLineNo">057</span><a id="line.57">                new Vertex(left,  bottom, -near),</a>
+<span class="sourceLineNo">058</span><a id="line.58">                new Vertex( (left/near)*far,    (top/near)*far, -far),</a>
+<span class="sourceLineNo">059</span><a id="line.59">                new Vertex((right/near)*far,    (top/near)*far, -far),</a>
+<span class="sourceLineNo">060</span><a id="line.60">                new Vertex((right/near)*far, (bottom/near)*far, -far),</a>
+<span class="sourceLineNo">061</span><a id="line.61">                new Vertex( (left/near)*far, (bottom/near)*far, -far));</a>
+<span class="sourceLineNo">062</span><a id="line.62"></a>
+<span class="sourceLineNo">063</span><a id="line.63">      // front (near) face</a>
+<span class="sourceLineNo">064</span><a id="line.64">      addPrimitive(new LineSegment(0, 1),</a>
+<span class="sourceLineNo">065</span><a id="line.65">                   new LineSegment(1, 2),</a>
+<span class="sourceLineNo">066</span><a id="line.66">                   new LineSegment(2, 3),</a>
+<span class="sourceLineNo">067</span><a id="line.67">                   new LineSegment(3, 0));</a>
+<span class="sourceLineNo">068</span><a id="line.68">      // back (far) face</a>
+<span class="sourceLineNo">069</span><a id="line.69">      addPrimitive(new LineSegment(4, 5),</a>
+<span class="sourceLineNo">070</span><a id="line.70">                   new LineSegment(5, 6),</a>
+<span class="sourceLineNo">071</span><a id="line.71">                   new LineSegment(6, 7),</a>
+<span class="sourceLineNo">072</span><a id="line.72">                   new LineSegment(7, 4));</a>
+<span class="sourceLineNo">073</span><a id="line.73">      // lines from front to back</a>
+<span class="sourceLineNo">074</span><a id="line.74">      addPrimitive(new LineSegment(0, 4),</a>
+<span class="sourceLineNo">075</span><a id="line.75">                   new LineSegment(1, 5),</a>
+<span class="sourceLineNo">076</span><a id="line.76">                   new LineSegment(2, 6),</a>
+<span class="sourceLineNo">077</span><a id="line.77">                   new LineSegment(3, 7));</a>
+<span class="sourceLineNo">078</span><a id="line.78">   }</a>
+<span class="sourceLineNo">079</span><a id="line.79"></a>
+<span class="sourceLineNo">080</span><a id="line.80"></a>
+<span class="sourceLineNo">081</span><a id="line.81">   /**</a>
+<span class="sourceLineNo">082</span><a id="line.82">      Here, the frustum is determined by a vertical "field of view"</a>
+<span class="sourceLineNo">083</span><a id="line.83">      angle and an aspect ratio for the front face.</a>
+<span class="sourceLineNo">084</span><a id="line.84"></a>
+<span class="sourceLineNo">085</span><a id="line.85">      @param fovy    angle in the y-direction subtended by the front face</a>
+<span class="sourceLineNo">086</span><a id="line.86">      @param aspect  aspect ratio of the front face</a>
+<span class="sourceLineNo">087</span><a id="line.87">      @param near    distance from the origin to the front face</a>
+<span class="sourceLineNo">088</span><a id="line.88">      @param far     distance from the origin to the back face</a>
+<span class="sourceLineNo">089</span><a id="line.89">   */</a>
+<span class="sourceLineNo">090</span><a id="line.90">   public ViewFrustumModel(final double fovy, final double aspect,</a>
+<span class="sourceLineNo">091</span><a id="line.91">                           final double near, final double far)</a>
+<span class="sourceLineNo">092</span><a id="line.92">   {</a>
+<span class="sourceLineNo">093</span><a id="line.93">      // top    =  near * Math.tan((Math.PI/180.0)*fovy/2.0)</a>
+<span class="sourceLineNo">094</span><a id="line.94">      // left   = -top * aspect</a>
+<span class="sourceLineNo">095</span><a id="line.95">      // right  =  top * aspect</a>
+<span class="sourceLineNo">096</span><a id="line.96">      // bottom = -top</a>
+<span class="sourceLineNo">097</span><a id="line.97">      this(-near * Math.tan((Math.PI/180.0)*fovy/2.0) * aspect,</a>
+<span class="sourceLineNo">098</span><a id="line.98">            near * Math.tan((Math.PI/180.0)*fovy/2.0) * aspect,</a>
+<span class="sourceLineNo">099</span><a id="line.99">           -near * Math.tan((Math.PI/180.0)*fovy/2.0),</a>
+<span class="sourceLineNo">100</span><a id="line.100">            near * Math.tan((Math.PI/180.0)*fovy/2.0),</a>
+<span class="sourceLineNo">101</span><a id="line.101">            near,</a>
+<span class="sourceLineNo">102</span><a id="line.102">            far);</a>
+<span class="sourceLineNo">103</span><a id="line.103">   }</a>
+<span class="sourceLineNo">104</span><a id="line.104">}//ViewFrustumModel</a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</main>
+</body>
+</html>

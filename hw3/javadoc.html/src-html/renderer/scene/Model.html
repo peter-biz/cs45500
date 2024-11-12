@@ -1,0 +1,332 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<main role="main">
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span><a id="line.1">/*</a>
+<span class="sourceLineNo">002</span><a id="line.2"> * Renderer 7. The MIT License.</a>
+<span class="sourceLineNo">003</span><a id="line.3"> * Copyright (c) 2022 rlkraft@pnw.edu</a>
+<span class="sourceLineNo">004</span><a id="line.4"> * See LICENSE for details.</a>
+<span class="sourceLineNo">005</span><a id="line.5">*/</a>
+<span class="sourceLineNo">006</span><a id="line.6"></a>
+<span class="sourceLineNo">007</span><a id="line.7">package renderer.scene;</a>
+<span class="sourceLineNo">008</span><a id="line.8"></a>
+<span class="sourceLineNo">009</span><a id="line.9">import renderer.scene.primitives.*;</a>
+<span class="sourceLineNo">010</span><a id="line.10"></a>
+<span class="sourceLineNo">011</span><a id="line.11">import java.util.List;</a>
+<span class="sourceLineNo">012</span><a id="line.12">import java.util.ArrayList;</a>
+<span class="sourceLineNo">013</span><a id="line.13">import java.awt.Color;</a>
+<span class="sourceLineNo">014</span><a id="line.14"></a>
+<span class="sourceLineNo">015</span><a id="line.15">/**</a>
+<span class="sourceLineNo">016</span><a id="line.16">   A {@code Model} object represents a distinct geometric object in a</a>
+<span class="sourceLineNo">017</span><a id="line.17">   {@link Scene}. A {@code Model} data structure is mainly a {@link List}</a>
+<span class="sourceLineNo">018</span><a id="line.18">   of {@link Vertex} objects, a {@link List} of {@link Primitive} objects,</a>
+<span class="sourceLineNo">019</span><a id="line.19">   and a list of {@link Color} objects.</a>
+<span class="sourceLineNo">020</span><a id="line.20">&lt;p&gt;</a>
+<span class="sourceLineNo">021</span><a id="line.21">   Each {@link Vertex} object contains the xyz-coordinates, in the</a>
+<span class="sourceLineNo">022</span><a id="line.22">   {@code Model}'s own coordinate system, for one point from the</a>
+<span class="sourceLineNo">023</span><a id="line.23">   {@code Model}.</a>
+<span class="sourceLineNo">024</span><a id="line.24">&lt;p&gt;</a>
+<span class="sourceLineNo">025</span><a id="line.25">   Each {@link Color} object represents a color associated to one</a>
+<span class="sourceLineNo">026</span><a id="line.26">   (or more) {@link Vertex} objects.</a>
+<span class="sourceLineNo">027</span><a id="line.27">&lt;p&gt;</a>
+<span class="sourceLineNo">028</span><a id="line.28">   The {@link Vertex} objects represents points from the geometric object</a>
+<span class="sourceLineNo">029</span><a id="line.29">   that we are modeling. In the real world, a geometric object has an infinite</a>
+<span class="sourceLineNo">030</span><a id="line.30">   number of points. In 3D graphics, we "approximate" a geometric object by</a>
+<span class="sourceLineNo">031</span><a id="line.31">   listing just enough points to adequately describe the object. For example,</a>
+<span class="sourceLineNo">032</span><a id="line.32">   in the real world, a rectangle contains an infinite number of points, but</a>
+<span class="sourceLineNo">033</span><a id="line.33">   it can be adequately modeled by just its four corner points. (Think about</a>
+<span class="sourceLineNo">034</span><a id="line.34">   a circle. How many points does it take to adequately model a circle? Look</a>
+<span class="sourceLineNo">035</span><a id="line.35">   at the {@link renderer.models_L.Circle} model.)</a>
+<span class="sourceLineNo">036</span><a id="line.36">&lt;p&gt;</a>
+<span class="sourceLineNo">037</span><a id="line.37">   Each {@link Primitive} object is either a {@link LineSegment} or a</a>
+<span class="sourceLineNo">038</span><a id="line.38">   {@link Point}.</a>
+<span class="sourceLineNo">039</span><a id="line.39">&lt;p&gt;</a>
+<span class="sourceLineNo">040</span><a id="line.40">   Each {@link LineSegment} object contains four integers, two integers that</a>
+<span class="sourceLineNo">041</span><a id="line.41">   are the indices of two {@link Vertex} objects from the {@code Model}'s</a>
+<span class="sourceLineNo">042</span><a id="line.42">   vertex list, and two integers that are indices of two {@link Color}</a>
+<span class="sourceLineNo">043</span><a id="line.43">   objects from the {@link Model}'s color list. The two vertices are the</a>
+<span class="sourceLineNo">044</span><a id="line.44">   line segment's two endpoints, and each of the two colors is associated</a>
+<span class="sourceLineNo">045</span><a id="line.45">   with one of the two endpoints.</a>
+<span class="sourceLineNo">046</span><a id="line.46">&lt;p&gt;</a>
+<span class="sourceLineNo">047</span><a id="line.47">   Each {@link Point} object contains two integers, one integer index of</a>
+<span class="sourceLineNo">048</span><a id="line.48">   a {@link Vertex} from the {@code Model}'s vertex list, and one integer</a>
+<span class="sourceLineNo">049</span><a id="line.49">   index of a {@link Color} from the {@code Model}'s color list.</a>
+<span class="sourceLineNo">050</span><a id="line.50">&lt;p&gt;</a>
+<span class="sourceLineNo">051</span><a id="line.51">   We use {@link LineSegment} objects to represent the space between the</a>
+<span class="sourceLineNo">052</span><a id="line.52">   model's vertices. For example, while a rectangle can be approximated by</a>
+<span class="sourceLineNo">053</span><a id="line.53">   its four corner points, those same four points could also represent two</a>
+<span class="sourceLineNo">054</span><a id="line.54">   parallel line segments, or they could represent two lines that cross each</a>
+<span class="sourceLineNo">055</span><a id="line.55">   other. By using four line segments that connect around the four points,</a>
+<span class="sourceLineNo">056</span><a id="line.56">   we get a good, unambiguous representation of a rectangle.</a>
+<span class="sourceLineNo">057</span><a id="line.57">&lt;p&gt;</a>
+<span class="sourceLineNo">058</span><a id="line.58">   If we modeled a circle using just points, we would probably need to use</a>
+<span class="sourceLineNo">059</span><a id="line.59">   hundreds of points. But if we connect every two adjacent points with a</a>
+<span class="sourceLineNo">060</span><a id="line.60">   short line segment, we can get a good model of a circle with just a few</a>
+<span class="sourceLineNo">061</span><a id="line.61">   dozen points.</a>
+<span class="sourceLineNo">062</span><a id="line.62">&lt;p&gt;</a>
+<span class="sourceLineNo">063</span><a id="line.63">   Our {@code Model}'s represent geometric objects as a "wire-frame" of line</a>
+<span class="sourceLineNo">064</span><a id="line.64">   segments, that is, a geometric object is drawn as a collection of "edges".</a>
+<span class="sourceLineNo">065</span><a id="line.65">   This is a fairly simplistic way of doing 3D graphics and we will improve</a>
+<span class="sourceLineNo">066</span><a id="line.66">   this in later renderers.</a>
+<span class="sourceLineNo">067</span><a id="line.67">&lt;p&gt;</a>
+<span class="sourceLineNo">068</span><a id="line.68">   See</a>
+<span class="sourceLineNo">069</span><a id="line.69">&lt;br&gt; &lt;a href="https://en.wikipedia.org/wiki/Wire-frame_model" target="_top"&gt;</a>
+<span class="sourceLineNo">070</span><a id="line.70">              https://en.wikipedia.org/wiki/Wire-frame_model&lt;/a&gt;</a>
+<span class="sourceLineNo">071</span><a id="line.71">&lt;br&gt;or</a>
+<span class="sourceLineNo">072</span><a id="line.72">&lt;br&gt; &lt;a href="https://www.google.com/search?q=computer+graphics+wireframe&amp;tbm=isch" target="_top"&gt;</a>
+<span class="sourceLineNo">073</span><a id="line.73">              https://www.google.com/search?q=computer+graphics+wireframe&amp;tbm=isch&lt;/a&gt;</a>
+<span class="sourceLineNo">074</span><a id="line.74">*/</a>
+<span class="sourceLineNo">075</span><a id="line.75">public class Model</a>
+<span class="sourceLineNo">076</span><a id="line.76">{</a>
+<span class="sourceLineNo">077</span><a id="line.77">   public final List&lt;Vertex&gt; vertexList;</a>
+<span class="sourceLineNo">078</span><a id="line.78">   public final List&lt;Primitive&gt; primitiveList;</a>
+<span class="sourceLineNo">079</span><a id="line.79">   public final List&lt;Color&gt; colorList;</a>
+<span class="sourceLineNo">080</span><a id="line.80">   public final String name;</a>
+<span class="sourceLineNo">081</span><a id="line.81"></a>
+<span class="sourceLineNo">082</span><a id="line.82">   public boolean visible;</a>
+<span class="sourceLineNo">083</span><a id="line.83"></a>
+<span class="sourceLineNo">084</span><a id="line.84">   /**</a>
+<span class="sourceLineNo">085</span><a id="line.85">      Construct an empty {@code Model} object.</a>
+<span class="sourceLineNo">086</span><a id="line.86">   */</a>
+<span class="sourceLineNo">087</span><a id="line.87">   public Model()</a>
+<span class="sourceLineNo">088</span><a id="line.88">   {</a>
+<span class="sourceLineNo">089</span><a id="line.89">      this(new ArrayList&lt;&gt;(),  // vertexList</a>
+<span class="sourceLineNo">090</span><a id="line.90">           new ArrayList&lt;&gt;(),  // primitiveList</a>
+<span class="sourceLineNo">091</span><a id="line.91">           new ArrayList&lt;&gt;(),  // colorList</a>
+<span class="sourceLineNo">092</span><a id="line.92">           "",                 // name</a>
+<span class="sourceLineNo">093</span><a id="line.93">           true);              // visible</a>
+<span class="sourceLineNo">094</span><a id="line.94">   }</a>
+<span class="sourceLineNo">095</span><a id="line.95"></a>
+<span class="sourceLineNo">096</span><a id="line.96"></a>
+<span class="sourceLineNo">097</span><a id="line.97">   /**</a>
+<span class="sourceLineNo">098</span><a id="line.98">      Construct an empty {@code Model} object with the given</a>
+<span class="sourceLineNo">099</span><a id="line.99">      {link String} name.</a>
+<span class="sourceLineNo">100</span><a id="line.100"></a>
+<span class="sourceLineNo">101</span><a id="line.101">      @param name  a {link String} that is a name for this {@code Model}</a>
+<span class="sourceLineNo">102</span><a id="line.102">      @throws NullPointerException if {@code name} is {@code null}</a>
+<span class="sourceLineNo">103</span><a id="line.103">   */</a>
+<span class="sourceLineNo">104</span><a id="line.104">   public Model(final String name)</a>
+<span class="sourceLineNo">105</span><a id="line.105">   {</a>
+<span class="sourceLineNo">106</span><a id="line.106">      this(new ArrayList&lt;&gt;(),  // vertexList</a>
+<span class="sourceLineNo">107</span><a id="line.107">           new ArrayList&lt;&gt;(),  // primitiveList</a>
+<span class="sourceLineNo">108</span><a id="line.108">           new ArrayList&lt;&gt;(),  // colorList</a>
+<span class="sourceLineNo">109</span><a id="line.109">           name,               // name</a>
+<span class="sourceLineNo">110</span><a id="line.110">           true);              // visible</a>
+<span class="sourceLineNo">111</span><a id="line.111">   }</a>
+<span class="sourceLineNo">112</span><a id="line.112"></a>
+<span class="sourceLineNo">113</span><a id="line.113"></a>
+<span class="sourceLineNo">114</span><a id="line.114">   /**</a>
+<span class="sourceLineNo">115</span><a id="line.115">      Construct a {@code Model} object with all the given data.</a>
+<span class="sourceLineNo">116</span><a id="line.116"></a>
+<span class="sourceLineNo">117</span><a id="line.117">      @param vertexList     a {@link Vertex} {link List} for this {@code Model}</a>
+<span class="sourceLineNo">118</span><a id="line.118">      @param primitiveList  a {@link Primitive} {link List} for this {@code Model}</a>
+<span class="sourceLineNo">119</span><a id="line.119">      @param colorList      a {@link Color} {link List} for this {@code Model}</a>
+<span class="sourceLineNo">120</span><a id="line.120">      @param name           a {link String} that is a name for this {@code Model}</a>
+<span class="sourceLineNo">121</span><a id="line.121">      @param visible        a {@code boolean} that determines this {@code Model}'s visibility</a>
+<span class="sourceLineNo">122</span><a id="line.122">      @throws NullPointerException if {@code vertexList} is {@code null}</a>
+<span class="sourceLineNo">123</span><a id="line.123">      @throws NullPointerException if {@code primitiveList} is {@code null}</a>
+<span class="sourceLineNo">124</span><a id="line.124">      @throws NullPointerException if {@code colorList} is {@code null}</a>
+<span class="sourceLineNo">125</span><a id="line.125">      @throws NullPointerException if {@code name} is {@code null}</a>
+<span class="sourceLineNo">126</span><a id="line.126">   */</a>
+<span class="sourceLineNo">127</span><a id="line.127">   public Model(final List&lt;Vertex&gt; vertexList,</a>
+<span class="sourceLineNo">128</span><a id="line.128">                final List&lt;Primitive&gt; primitiveList,</a>
+<span class="sourceLineNo">129</span><a id="line.129">                final List&lt;Color&gt; colorList,</a>
+<span class="sourceLineNo">130</span><a id="line.130">                final String name,</a>
+<span class="sourceLineNo">131</span><a id="line.131">                final boolean visible)</a>
+<span class="sourceLineNo">132</span><a id="line.132">   {</a>
+<span class="sourceLineNo">133</span><a id="line.133">      if (null == vertexList)</a>
+<span class="sourceLineNo">134</span><a id="line.134">         throw new NullPointerException("vertexList must not be null");</a>
+<span class="sourceLineNo">135</span><a id="line.135">      if (null == primitiveList)</a>
+<span class="sourceLineNo">136</span><a id="line.136">         throw new NullPointerException("primitiveList must not be null");</a>
+<span class="sourceLineNo">137</span><a id="line.137">      if (null == colorList)</a>
+<span class="sourceLineNo">138</span><a id="line.138">         throw new NullPointerException("colorList must not be null");</a>
+<span class="sourceLineNo">139</span><a id="line.139">      if (null == name)</a>
+<span class="sourceLineNo">140</span><a id="line.140">         throw new NullPointerException("name must not be null");</a>
+<span class="sourceLineNo">141</span><a id="line.141"></a>
+<span class="sourceLineNo">142</span><a id="line.142">      this.vertexList = vertexList;</a>
+<span class="sourceLineNo">143</span><a id="line.143">      this.primitiveList = primitiveList;</a>
+<span class="sourceLineNo">144</span><a id="line.144">      this.colorList = colorList;</a>
+<span class="sourceLineNo">145</span><a id="line.145">      this.name = name;</a>
+<span class="sourceLineNo">146</span><a id="line.146">      this.visible = visible;</a>
+<span class="sourceLineNo">147</span><a id="line.147">   }</a>
+<span class="sourceLineNo">148</span><a id="line.148"></a>
+<span class="sourceLineNo">149</span><a id="line.149"></a>
+<span class="sourceLineNo">150</span><a id="line.150">   /**</a>
+<span class="sourceLineNo">151</span><a id="line.151">      Add a {@link Vertex} (or vertices) to this {@code Model}'s</a>
+<span class="sourceLineNo">152</span><a id="line.152">      {@link List} of vertices.</a>
+<span class="sourceLineNo">153</span><a id="line.153"></a>
+<span class="sourceLineNo">154</span><a id="line.154">      @param vArray  array of {@link Vertex} objects to add to this {@code Model}</a>
+<span class="sourceLineNo">155</span><a id="line.155">      @throws NullPointerException if any {@link Vertex} is {@code null}</a>
+<span class="sourceLineNo">156</span><a id="line.156">   */</a>
+<span class="sourceLineNo">157</span><a id="line.157">   public final void addVertex(final Vertex... vArray)</a>
+<span class="sourceLineNo">158</span><a id="line.158">   {</a>
+<span class="sourceLineNo">159</span><a id="line.159">      for (final Vertex v : vArray)</a>
+<span class="sourceLineNo">160</span><a id="line.160">      {</a>
+<span class="sourceLineNo">161</span><a id="line.161">         if (null == v)</a>
+<span class="sourceLineNo">162</span><a id="line.162">            throw new NullPointerException("Vertex must not be null");</a>
+<span class="sourceLineNo">163</span><a id="line.163"></a>
+<span class="sourceLineNo">164</span><a id="line.164">         vertexList.add( v );</a>
+<span class="sourceLineNo">165</span><a id="line.165">      }</a>
+<span class="sourceLineNo">166</span><a id="line.166">   }</a>
+<span class="sourceLineNo">167</span><a id="line.167"></a>
+<span class="sourceLineNo">168</span><a id="line.168"></a>
+<span class="sourceLineNo">169</span><a id="line.169">   /**</a>
+<span class="sourceLineNo">170</span><a id="line.170">      Get a {@link Primitive} from this {@code Model}'s</a>
+<span class="sourceLineNo">171</span><a id="line.171">      {@link List} of primitives.</a>
+<span class="sourceLineNo">172</span><a id="line.172"></a>
+<span class="sourceLineNo">173</span><a id="line.173">      @param index  integer index of a {@link Primitive} from this {@code Model}</a>
+<span class="sourceLineNo">174</span><a id="line.174">      @return the {@link Primitive} object at the given index</a>
+<span class="sourceLineNo">175</span><a id="line.175">   */</a>
+<span class="sourceLineNo">176</span><a id="line.176">   public final Primitive getPrimitive(final int index)</a>
+<span class="sourceLineNo">177</span><a id="line.177">   {</a>
+<span class="sourceLineNo">178</span><a id="line.178">      return primitiveList.get(index);</a>
+<span class="sourceLineNo">179</span><a id="line.179">   }</a>
+<span class="sourceLineNo">180</span><a id="line.180"></a>
+<span class="sourceLineNo">181</span><a id="line.181"></a>
+<span class="sourceLineNo">182</span><a id="line.182">   /**</a>
+<span class="sourceLineNo">183</span><a id="line.183">      Add a {@link Primitive} (or Primitives) to this {@code Model}'s</a>
+<span class="sourceLineNo">184</span><a id="line.184">      {@link List} of primitives.</a>
+<span class="sourceLineNo">185</span><a id="line.185">      &lt;p&gt;</a>
+<span class="sourceLineNo">186</span><a id="line.186">      NOTE: This method does not add any vertices to the {@code Model}'s</a>
+<span class="sourceLineNo">187</span><a id="line.187">      {@link Vertex} list. This method assumes that the appropriate vertices</a>
+<span class="sourceLineNo">188</span><a id="line.188">      have been added to the {@code Model}'s {@link Vertex} list.</a>
+<span class="sourceLineNo">189</span><a id="line.189"></a>
+<span class="sourceLineNo">190</span><a id="line.190">      @param pArray  array of {@link Primitive} objects to add to this {@code Model}</a>
+<span class="sourceLineNo">191</span><a id="line.191">      @throws NullPointerException if any {@link Primitive} is {@code null}</a>
+<span class="sourceLineNo">192</span><a id="line.192">   */</a>
+<span class="sourceLineNo">193</span><a id="line.193">   public final void addPrimitive(final Primitive... pArray)</a>
+<span class="sourceLineNo">194</span><a id="line.194">   {</a>
+<span class="sourceLineNo">195</span><a id="line.195">      for (final Primitive p : pArray)</a>
+<span class="sourceLineNo">196</span><a id="line.196">      {</a>
+<span class="sourceLineNo">197</span><a id="line.197">         if (null == p)</a>
+<span class="sourceLineNo">198</span><a id="line.198">            throw new NullPointerException("Primitive must not be null");</a>
+<span class="sourceLineNo">199</span><a id="line.199"></a>
+<span class="sourceLineNo">200</span><a id="line.200">         primitiveList.add(p);</a>
+<span class="sourceLineNo">201</span><a id="line.201">      }</a>
+<span class="sourceLineNo">202</span><a id="line.202">   }</a>
+<span class="sourceLineNo">203</span><a id="line.203"></a>
+<span class="sourceLineNo">204</span><a id="line.204"></a>
+<span class="sourceLineNo">205</span><a id="line.205">   /**</a>
+<span class="sourceLineNo">206</span><a id="line.206">      Add a {@link Color} (or colors) to this {@code Model}'s</a>
+<span class="sourceLineNo">207</span><a id="line.207">      {@link List} of colors.</a>
+<span class="sourceLineNo">208</span><a id="line.208"></a>
+<span class="sourceLineNo">209</span><a id="line.209">      @param cArray  array of {@link Color} objects to add to this {@code Model}</a>
+<span class="sourceLineNo">210</span><a id="line.210">      @throws NullPointerException if any {@link Color} is {@code null}</a>
+<span class="sourceLineNo">211</span><a id="line.211">   */</a>
+<span class="sourceLineNo">212</span><a id="line.212">   public final void addColor(final Color... cArray)</a>
+<span class="sourceLineNo">213</span><a id="line.213">   {</a>
+<span class="sourceLineNo">214</span><a id="line.214">      for (final Color c : cArray)</a>
+<span class="sourceLineNo">215</span><a id="line.215">      {</a>
+<span class="sourceLineNo">216</span><a id="line.216">         if (null == c)</a>
+<span class="sourceLineNo">217</span><a id="line.217">            throw new NullPointerException("Color must not be null");</a>
+<span class="sourceLineNo">218</span><a id="line.218"></a>
+<span class="sourceLineNo">219</span><a id="line.219">         this.colorList.add(c);</a>
+<span class="sourceLineNo">220</span><a id="line.220">      }</a>
+<span class="sourceLineNo">221</span><a id="line.221">   }</a>
+<span class="sourceLineNo">222</span><a id="line.222"></a>
+<span class="sourceLineNo">223</span><a id="line.223"></a>
+<span class="sourceLineNo">224</span><a id="line.224">   /**</a>
+<span class="sourceLineNo">225</span><a id="line.225">      For debugging.</a>
+<span class="sourceLineNo">226</span><a id="line.226"></a>
+<span class="sourceLineNo">227</span><a id="line.227">      @return {@link String} representation of this {@code Model} object</a>
+<span class="sourceLineNo">228</span><a id="line.228">   */</a>
+<span class="sourceLineNo">229</span><a id="line.229">   @Override</a>
+<span class="sourceLineNo">230</span><a id="line.230">   public String toString()</a>
+<span class="sourceLineNo">231</span><a id="line.231">   {</a>
+<span class="sourceLineNo">232</span><a id="line.232">      String result = "";</a>
+<span class="sourceLineNo">233</span><a id="line.233">      result += "Model: " + name + "\n";</a>
+<span class="sourceLineNo">234</span><a id="line.234">      result += "This Model's visibility is: " + visible + "\n";</a>
+<span class="sourceLineNo">235</span><a id="line.235">      result += "Model has " + vertexList.size() + " vertices.\n";</a>
+<span class="sourceLineNo">236</span><a id="line.236">      result += "Model has " + colorList.size() + " colors.\n";</a>
+<span class="sourceLineNo">237</span><a id="line.237">      result += "Model has " + primitiveList.size() + " primitives.\n";</a>
+<span class="sourceLineNo">238</span><a id="line.238">      int i = 0;</a>
+<span class="sourceLineNo">239</span><a id="line.239">      for (final Vertex v : this.vertexList)</a>
+<span class="sourceLineNo">240</span><a id="line.240">      {</a>
+<span class="sourceLineNo">241</span><a id="line.241">         result += i + ": " + v.toString() + "\n";</a>
+<span class="sourceLineNo">242</span><a id="line.242">         ++i;</a>
+<span class="sourceLineNo">243</span><a id="line.243">      }</a>
+<span class="sourceLineNo">244</span><a id="line.244">      i = 0;</a>
+<span class="sourceLineNo">245</span><a id="line.245">      for (final Color c : this.colorList)</a>
+<span class="sourceLineNo">246</span><a id="line.246">      {</a>
+<span class="sourceLineNo">247</span><a id="line.247">         result += i + ": " + c.toString() + "\n";</a>
+<span class="sourceLineNo">248</span><a id="line.248">         ++i;</a>
+<span class="sourceLineNo">249</span><a id="line.249">      }</a>
+<span class="sourceLineNo">250</span><a id="line.250">      i = 0;</a>
+<span class="sourceLineNo">251</span><a id="line.251">      for (final Primitive p : this.primitiveList)</a>
+<span class="sourceLineNo">252</span><a id="line.252">      {</a>
+<span class="sourceLineNo">253</span><a id="line.253">         result += i + ": " + p.toString() + "\n";</a>
+<span class="sourceLineNo">254</span><a id="line.254">         ++i;</a>
+<span class="sourceLineNo">255</span><a id="line.255">      }</a>
+<span class="sourceLineNo">256</span><a id="line.256">      return result;</a>
+<span class="sourceLineNo">257</span><a id="line.257">   }</a>
+<span class="sourceLineNo">258</span><a id="line.258">}</a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</main>
+</body>
+</html>

@@ -1,0 +1,237 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<main role="main">
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span><a id="line.1">/*</a>
+<span class="sourceLineNo">002</span><a id="line.2"> * Renderer Models. The MIT License.</a>
+<span class="sourceLineNo">003</span><a id="line.3"> * Copyright (c) 2022 rlkraft@pnw.edu</a>
+<span class="sourceLineNo">004</span><a id="line.4"> * See LICENSE for details.</a>
+<span class="sourceLineNo">005</span><a id="line.5">*/</a>
+<span class="sourceLineNo">006</span><a id="line.6"></a>
+<span class="sourceLineNo">007</span><a id="line.7">package renderer.models_L;</a>
+<span class="sourceLineNo">008</span><a id="line.8"></a>
+<span class="sourceLineNo">009</span><a id="line.9">import renderer.scene.*;</a>
+<span class="sourceLineNo">010</span><a id="line.10">import renderer.scene.primitives.*;</a>
+<span class="sourceLineNo">011</span><a id="line.11"></a>
+<span class="sourceLineNo">012</span><a id="line.12">import java.util.Scanner;</a>
+<span class="sourceLineNo">013</span><a id="line.13">import java.io.File;</a>
+<span class="sourceLineNo">014</span><a id="line.14">import java.io.FileInputStream;</a>
+<span class="sourceLineNo">015</span><a id="line.15">import java.io.IOException;</a>
+<span class="sourceLineNo">016</span><a id="line.16">import java.io.FileNotFoundException;</a>
+<span class="sourceLineNo">017</span><a id="line.17">import java.util.regex.*;</a>
+<span class="sourceLineNo">018</span><a id="line.18"></a>
+<span class="sourceLineNo">019</span><a id="line.19">/**</a>
+<span class="sourceLineNo">020</span><a id="line.20">&lt;p&gt;</a>
+<span class="sourceLineNo">021</span><a id="line.21">   A simple demonstration of loading and drawing a basic OBJ file.</a>
+<span class="sourceLineNo">022</span><a id="line.22">&lt;p&gt;</a>
+<span class="sourceLineNo">023</span><a id="line.23">   A basic OBJ file is a text file that contains three kinds of lines:</a>
+<span class="sourceLineNo">024</span><a id="line.24">   lines that begin with the character {@code 'v'}, lines that begin</a>
+<span class="sourceLineNo">025</span><a id="line.25">   with the character {@code 'f'}, and lines that begin with the</a>
+<span class="sourceLineNo">026</span><a id="line.26">   character {@code '#'}.</a>
+<span class="sourceLineNo">027</span><a id="line.27">&lt;p&gt;</a>
+<span class="sourceLineNo">028</span><a id="line.28">   A line in an OBJ file that begins with {@code '#'} is a comment line</a>
+<span class="sourceLineNo">029</span><a id="line.29">   and can be ignored.</a>
+<span class="sourceLineNo">030</span><a id="line.30">&lt;p&gt;</a>
+<span class="sourceLineNo">031</span><a id="line.31">   A line in an OBJ file that begins with {@code 'v'} is a line that</a>
+<span class="sourceLineNo">032</span><a id="line.32">   describes a vertex in 3-dimensional space. The {@code 'v'} will always</a>
+<span class="sourceLineNo">033</span><a id="line.33">   be followed on the line by three doubles, the {@code x}, {@code y},</a>
+<span class="sourceLineNo">034</span><a id="line.34">   and {@code z} coordinates of the vertex.</a>
+<span class="sourceLineNo">035</span><a id="line.35">&lt;p&gt;</a>
+<span class="sourceLineNo">036</span><a id="line.36">   A line in an OBJ file that begins with {@code 'f'} is a line that</a>
+<span class="sourceLineNo">037</span><a id="line.37">   describes a "face". The {@code 'f'} will be followed on the line by</a>
+<span class="sourceLineNo">038</span><a id="line.38">   a sequence of positive integers. The integers are the indices of the</a>
+<span class="sourceLineNo">039</span><a id="line.39">   vertices that make up the face. The "index" of a vertex is the order</a>
+<span class="sourceLineNo">040</span><a id="line.40">   in which the vertex was listed in the OBJ file. So a line like this</a>
+<span class="sourceLineNo">041</span><a id="line.41">&lt;pre&gt;{@code</a>
+<span class="sourceLineNo">042</span><a id="line.42">      f  2  4  1</a>
+<span class="sourceLineNo">043</span><a id="line.43">}&lt;/pre&gt;</a>
+<span class="sourceLineNo">044</span><a id="line.44">   would represent a triangle made up of the 2nd vertex read from the file,</a>
+<span class="sourceLineNo">045</span><a id="line.45">   the 4th vertex read from the file, and the 1st vertex read from the file.</a>
+<span class="sourceLineNo">046</span><a id="line.46">   And a line like this</a>
+<span class="sourceLineNo">047</span><a id="line.47">&lt;pre&gt;{@code</a>
+<span class="sourceLineNo">048</span><a id="line.48">      f  2  4  3  5</a>
+<span class="sourceLineNo">049</span><a id="line.49">}&lt;/pre&gt;</a>
+<span class="sourceLineNo">050</span><a id="line.50">   would represent a quadrilateral made up of the 2nd vertex read from the file,</a>
+<span class="sourceLineNo">051</span><a id="line.51">   the 4th vertex read from the file, the 3rd vertex read from the file, and</a>
+<span class="sourceLineNo">052</span><a id="line.52">   the 5th vertex read from the file.</a>
+<span class="sourceLineNo">053</span><a id="line.53">&lt;p&gt;</a>
+<span class="sourceLineNo">054</span><a id="line.54">   See &lt;a href="https://en.wikipedia.org/wiki/Wavefront_.obj_file" target="_top"&gt;</a>
+<span class="sourceLineNo">055</span><a id="line.55">                https://en.wikipedia.org/wiki/Wavefront_.obj_file&lt;/a&gt;</a>
+<span class="sourceLineNo">056</span><a id="line.56">*/</a>
+<span class="sourceLineNo">057</span><a id="line.57">public class ObjSimpleModel extends Model</a>
+<span class="sourceLineNo">058</span><a id="line.58">{</a>
+<span class="sourceLineNo">059</span><a id="line.59">   /**</a>
+<span class="sourceLineNo">060</span><a id="line.60">      Create a wireframe model from the contents of an OBJ file.</a>
+<span class="sourceLineNo">061</span><a id="line.61"></a>
+<span class="sourceLineNo">062</span><a id="line.62">      @param objFile  {@link File} object for the OBJ data file</a>
+<span class="sourceLineNo">063</span><a id="line.63">   */</a>
+<span class="sourceLineNo">064</span><a id="line.64">   public ObjSimpleModel(final File objFile)</a>
+<span class="sourceLineNo">065</span><a id="line.65">   {</a>
+<span class="sourceLineNo">066</span><a id="line.66">      super(objFile.getPath());</a>
+<span class="sourceLineNo">067</span><a id="line.67"></a>
+<span class="sourceLineNo">068</span><a id="line.68">      // Open the OBJ file.</a>
+<span class="sourceLineNo">069</span><a id="line.69">      FileInputStream fis = null;</a>
+<span class="sourceLineNo">070</span><a id="line.70">      try</a>
+<span class="sourceLineNo">071</span><a id="line.71">      {</a>
+<span class="sourceLineNo">072</span><a id="line.72">         fis = new FileInputStream( objFile );</a>
+<span class="sourceLineNo">073</span><a id="line.73">      }</a>
+<span class="sourceLineNo">074</span><a id="line.74">      catch (FileNotFoundException e)</a>
+<span class="sourceLineNo">075</span><a id="line.75">      {</a>
+<span class="sourceLineNo">076</span><a id="line.76">         e.printStackTrace(System.err);</a>
+<span class="sourceLineNo">077</span><a id="line.77">         System.err.printf("ERROR! Could not find OBJ file: %s\n", objFile);</a>
+<span class="sourceLineNo">078</span><a id="line.78">         System.exit(-1);</a>
+<span class="sourceLineNo">079</span><a id="line.79">      }</a>
+<span class="sourceLineNo">080</span><a id="line.80"></a>
+<span class="sourceLineNo">081</span><a id="line.81">      // Get the geometry from the OBJ file.</a>
+<span class="sourceLineNo">082</span><a id="line.82">      try</a>
+<span class="sourceLineNo">083</span><a id="line.83">      {</a>
+<span class="sourceLineNo">084</span><a id="line.84">         // Pattern for parsing lines that start with "f".</a>
+<span class="sourceLineNo">085</span><a id="line.85">         final Pattern p = Pattern.compile("^(\\d*)[/]?(\\d*)[/]?(\\d*)");</a>
+<span class="sourceLineNo">086</span><a id="line.86"></a>
+<span class="sourceLineNo">087</span><a id="line.87">         final Scanner scanner = new Scanner(fis);</a>
+<span class="sourceLineNo">088</span><a id="line.88">         while ( scanner.hasNext() )</a>
+<span class="sourceLineNo">089</span><a id="line.89">         {</a>
+<span class="sourceLineNo">090</span><a id="line.90">            final String token = scanner.next();</a>
+<span class="sourceLineNo">091</span><a id="line.91">            if ( token.startsWith("#")</a>
+<span class="sourceLineNo">092</span><a id="line.92">              || token.startsWith("vt")</a>
+<span class="sourceLineNo">093</span><a id="line.93">              || token.startsWith("vn")</a>
+<span class="sourceLineNo">094</span><a id="line.94">              || token.startsWith("s")</a>
+<span class="sourceLineNo">095</span><a id="line.95">              || token.startsWith("g")</a>
+<span class="sourceLineNo">096</span><a id="line.96">              || token.startsWith("o")</a>
+<span class="sourceLineNo">097</span><a id="line.97">              || token.startsWith("usemtl")</a>
+<span class="sourceLineNo">098</span><a id="line.98">              || token.startsWith("mtllib") )</a>
+<span class="sourceLineNo">099</span><a id="line.99">            {</a>
+<span class="sourceLineNo">100</span><a id="line.100">               scanner.nextLine(); // skip over these lines</a>
+<span class="sourceLineNo">101</span><a id="line.101">            }</a>
+<span class="sourceLineNo">102</span><a id="line.102">            else if ( token.startsWith("v") )</a>
+<span class="sourceLineNo">103</span><a id="line.103">            {</a>
+<span class="sourceLineNo">104</span><a id="line.104">               final double x = scanner.nextDouble();</a>
+<span class="sourceLineNo">105</span><a id="line.105">               final double y = scanner.nextDouble();</a>
+<span class="sourceLineNo">106</span><a id="line.106">               final double z = scanner.nextDouble();</a>
+<span class="sourceLineNo">107</span><a id="line.107">               addVertex( new Vertex(x, y, z) );</a>
+<span class="sourceLineNo">108</span><a id="line.108">            }// parse vertex</a>
+<span class="sourceLineNo">109</span><a id="line.109">            else if ( token.startsWith("f") )</a>
+<span class="sourceLineNo">110</span><a id="line.110">            {</a>
+<span class="sourceLineNo">111</span><a id="line.111">               // Tokenize the rest of the line.</a>
+<span class="sourceLineNo">112</span><a id="line.112">               final String restOfLine = scanner.nextLine();</a>
+<span class="sourceLineNo">113</span><a id="line.113">               final Scanner scanner2 = new Scanner( restOfLine );</a>
+<span class="sourceLineNo">114</span><a id="line.114">               // Parse three vertices and make two line segments.</a>
+<span class="sourceLineNo">115</span><a id="line.115">               final int[] vIndex = new int[3];</a>
+<span class="sourceLineNo">116</span><a id="line.116">               for (int i = 0; i &lt; 3; ++i)</a>
+<span class="sourceLineNo">117</span><a id="line.117">               {</a>
+<span class="sourceLineNo">118</span><a id="line.118">                  // Parse a "v/vt/vn" group.</a>
+<span class="sourceLineNo">119</span><a id="line.119">                  final String faceGroup = scanner2.next();</a>
+<span class="sourceLineNo">120</span><a id="line.120">                  final Matcher m = p.matcher( faceGroup );</a>
+<span class="sourceLineNo">121</span><a id="line.121">                  if ( m.find() )</a>
+<span class="sourceLineNo">122</span><a id="line.122">                  {</a>
+<span class="sourceLineNo">123</span><a id="line.123">                     vIndex[i] = Integer.parseInt(m.group(1)) - 1;</a>
+<span class="sourceLineNo">124</span><a id="line.124">                     final String vt = m.group(2);  // don't need</a>
+<span class="sourceLineNo">125</span><a id="line.125">                     final String vn = m.group(3);  // don't need</a>
+<span class="sourceLineNo">126</span><a id="line.126">                  }</a>
+<span class="sourceLineNo">127</span><a id="line.127">                  else</a>
+<span class="sourceLineNo">128</span><a id="line.128">                     System.err.println("Error: bad face: " + faceGroup);</a>
+<span class="sourceLineNo">129</span><a id="line.129">               }</a>
+<span class="sourceLineNo">130</span><a id="line.130">               addPrimitive(new LineSegment(vIndex[0], vIndex[1]),</a>
+<span class="sourceLineNo">131</span><a id="line.131">                            new LineSegment(vIndex[1], vIndex[2]));</a>
+<span class="sourceLineNo">132</span><a id="line.132"></a>
+<span class="sourceLineNo">133</span><a id="line.133">               // Parse another vertex (if there is one) and make a line segment.</a>
+<span class="sourceLineNo">134</span><a id="line.134">               while (scanner2.hasNext())</a>
+<span class="sourceLineNo">135</span><a id="line.135">               {</a>
+<span class="sourceLineNo">136</span><a id="line.136">                  vIndex[1] = vIndex[2];</a>
+<span class="sourceLineNo">137</span><a id="line.137">                  final String faceGroup = scanner2.next();</a>
+<span class="sourceLineNo">138</span><a id="line.138">                  final Matcher m = p.matcher( faceGroup );</a>
+<span class="sourceLineNo">139</span><a id="line.139">                  if ( m.find() )</a>
+<span class="sourceLineNo">140</span><a id="line.140">                  {</a>
+<span class="sourceLineNo">141</span><a id="line.141">                     vIndex[2] = Integer.parseInt(m.group(1)) - 1;</a>
+<span class="sourceLineNo">142</span><a id="line.142">                     final String vt = m.group(2);  // don't need</a>
+<span class="sourceLineNo">143</span><a id="line.143">                     final String vn = m.group(3);  // don't need</a>
+<span class="sourceLineNo">144</span><a id="line.144">                  }</a>
+<span class="sourceLineNo">145</span><a id="line.145">                  else</a>
+<span class="sourceLineNo">146</span><a id="line.146">                     System.err.println("Error: bad face: " + faceGroup);</a>
+<span class="sourceLineNo">147</span><a id="line.147"></a>
+<span class="sourceLineNo">148</span><a id="line.148">                  addPrimitive(new LineSegment(vIndex[1], vIndex[2]));</a>
+<span class="sourceLineNo">149</span><a id="line.149">               }</a>
+<span class="sourceLineNo">150</span><a id="line.150">               // Close the line loop around this face.</a>
+<span class="sourceLineNo">151</span><a id="line.151">               addPrimitive(new LineSegment(vIndex[2], vIndex[0]));</a>
+<span class="sourceLineNo">152</span><a id="line.152">            }// parse face</a>
+<span class="sourceLineNo">153</span><a id="line.153">         }// parse one line</a>
+<span class="sourceLineNo">154</span><a id="line.154">         fis.close();</a>
+<span class="sourceLineNo">155</span><a id="line.155">      }</a>
+<span class="sourceLineNo">156</span><a id="line.156">      catch (Exception e)</a>
+<span class="sourceLineNo">157</span><a id="line.157">      {</a>
+<span class="sourceLineNo">158</span><a id="line.158">         e.printStackTrace(System.err);</a>
+<span class="sourceLineNo">159</span><a id="line.159">         System.err.printf("ERROR! Could not read OBJ file: %s\n", objFile);</a>
+<span class="sourceLineNo">160</span><a id="line.160">         System.exit(-1);</a>
+<span class="sourceLineNo">161</span><a id="line.161">      }</a>
+<span class="sourceLineNo">162</span><a id="line.162">   }</a>
+<span class="sourceLineNo">163</span><a id="line.163">}//ObjSimpleModel</a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</main>
+</body>
+</html>
