@@ -133,6 +133,7 @@ public class Hw3
 
 
       // Create the GUI.
+   
 
       // Create a FrameBufferPanel that holds a FrameBuffer.
       final int fbWidth  = (int)(2 * right * PIXELS_PER_UNIT);
