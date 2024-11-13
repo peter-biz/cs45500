@@ -207,9 +207,10 @@ public class Hw3
       screenshot.setMaximumSize(screenshot.getPreferredSize());
       
       // Create the reset button.
-      final JButton reset = new JButton("Reset"); //FIXME: text gets cut off
+      final JButton reset = new JButton("Reset");
       reset.setAlignmentX(Component.CENTER_ALIGNMENT);
       reset.setBorder(BorderFactory.createEmptyBorder(5,20,5,20)); //top,left,bottom,right
+      reset.setPreferredSize(new java.awt.Dimension(100, 30)); // Set preferred size
       reset.setMaximumSize(reset.getPreferredSize());
 
 
@@ -298,7 +299,6 @@ public class Hw3
                    scene.setPosition(i, p);
                }
 
-
             }
             else if ('+' == c) // Take a screenshot.
             {
@@ -310,7 +310,7 @@ public class Hw3
                 int i = 000;
                   while (true)
                   {
-                     String filename = String.format("Screenshot%03d.png", i);
+                     String filename = String.format("hw3/Screenshot%03d.png", i);
                      // Check if the file exists.
                      if (java.nio.file.Files.exists(java.nio.file.Paths.get(filename)))
                      {
@@ -682,7 +682,7 @@ public class Hw3
                 int i = 000;
                   while (true)
                   {
-                     String filename = String.format("Screenshot%03d.png", i);
+                     String filename = String.format("hw3/Screenshot%03d.png", i);
                      // Check if the file exists.
                      if (java.nio.file.Files.exists(java.nio.file.Paths.get(filename)))
                      {
@@ -701,9 +701,6 @@ public class Hw3
                 System.err.println("Error saving screenshot: " + ex.getMessage());
                 ex.printStackTrace();
             }
-
-
-
          }
       });
 
@@ -733,20 +730,6 @@ public class Hw3
                 scene.setPosition(i, p);
             }
 
-            // Reset colors to their initial values
-            colorChoiceIndex[0] = 0;  // Set to whatever the initial colors were
-            colorChoiceIndex[1] = 1;  // Adjust these values based on your
-            colorChoiceIndex[2] = 2;  // initial color configuration
-            colorChoiceIndex[3] = 3;
-            colorChoiceIndex[4] = 4;
-
-            // Apply the reset colors
-            ModelShading.setColor(scene.getPosition(0).getModel(), color[colorChoiceIndex[0]]);
-            ModelShading.setColor(scene.getPosition(1).getModel(), color[colorChoiceIndex[1]]);
-            ModelShading.setColor(scene.getPosition(2).getModel(), color[colorChoiceIndex[2]]);
-            ModelShading.setColor(scene.getPosition(3).getModel(), color[colorChoiceIndex[3]]);
-            ModelShading.setColor(scene.getPosition(4).getModel(), color[colorChoiceIndex[4]]);
-            
             // Render again.
             final FrameBuffer fb = fbp.getFrameBuffer();
             fb.clearFB();
