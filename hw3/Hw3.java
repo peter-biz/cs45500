@@ -137,10 +137,6 @@ public class Hw3
 
 
       // Create the GUI.
-      
-
-   
-
       // Create a FrameBufferPanel that holds a FrameBuffer.
       final int fbWidth  = (int)(2 * right * PIXELS_PER_UNIT);
       final int fbHeight = (int)(2 *   top * PIXELS_PER_UNIT);
@@ -157,7 +153,6 @@ public class Hw3
       jf.add(eastPanel, BorderLayout.EAST);
 
       // Fill the gui panel.
-
       // Label for the radio buttons.
       final JLabel jLabel_1 = new JLabel("Choose Model");
       jLabel_1.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -212,7 +207,7 @@ public class Hw3
       screenshot.setMaximumSize(screenshot.getPreferredSize());
       
       // Create the reset button.
-      final JButton reset = new JButton("Reset");
+      final JButton reset = new JButton("Reset"); //FIXME: text gets cut off
       reset.setAlignmentX(Component.CENTER_ALIGNMENT);
       reset.setBorder(BorderFactory.createEmptyBorder(5,20,5,20)); //top,left,bottom,right
       reset.setMaximumSize(reset.getPreferredSize());
@@ -288,18 +283,52 @@ public class Hw3
             else if ('=' == c) // Reset the translations of the 5 shapes.
             {
                // Reset centerX[] and centerY[] for each shape.
-
-
+               centerX[0] =  0.0; centerY[0] =  0.0;  // Square_1
+               centerX[1] = -2.5; centerY[1] = -2.5;  // Square_2
+               centerX[2] =  2.5; centerY[2] =  2.5;  // Square_3
+               centerX[3] =  2.5; centerY[3] = -2.5;  // Diamond
+               centerX[4] = -2.5; centerY[4] =  2.5;  // Circle
+               
 
                // Reset each translation vector.
-
+               for (int i = 0; i < 5; i++) 
+               {
+                   Position p = scene.getPosition(i);
+                   p.translate(centerX[i], centerY[i], 0);
+                   scene.setPosition(i, p);
+               }
 
 
             }
             else if ('+' == c) // Take a screenshot.
             {
                // Save the FrameBuffer to a file.
-
+               try
+            {
+                final FrameBuffer fb = fbp.getFrameBuffer();
+                // Check if there is already a screenshot.png file, if so, increment the number.
+                int i = 000;
+                  while (true)
+                  {
+                     String filename = String.format("Screenshot%03d.png", i);
+                     // Check if the file exists.
+                     if (java.nio.file.Files.exists(java.nio.file.Paths.get(filename)))
+                     {
+                           i++;
+                     }
+                     else //FIXME: saves in the wrong directory, 1 outside of hw3
+                     {
+                           fb.dumpFB2File(filename, "PNG");
+                           System.out.println("Screenshot saved as " + filename);
+                           break;
+                     }
+                  }
+            }
+            catch (Exception ex)
+            {
+                System.err.println("Error saving screenshot: " + ex.getMessage());
+                ex.printStackTrace();
+            }
 
 
             }
@@ -696,7 +725,7 @@ public class Hw3
             centerX[4] = -2.5; centerY[4] =  2.5;  // Circle
 
 
-            // Reset each translation vector. & color?
+            // Reset each translation vector.
             for (int i = 0; i < 5; i++) 
             {
                 Position p = scene.getPosition(i);
