@@ -1,5 +1,8 @@
 /*
-
+   Course: CS45500
+   Name: Peter Bizoukas
+   Email: pbizouka@pnw.edu
+   Assignment: 3
 */
 
 import renderer.scene.*;
