@@ -33,6 +33,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.util.function.BiPredicate;
+import javax.swing.JCheckBox;
 
 /**
    Implement a GUI with five draggable shapes.
@@ -133,6 +134,8 @@ public class Hw3
 
 
       // Create the GUI.
+      
+
    
 
       // Create a FrameBufferPanel that holds a FrameBuffer.
@@ -200,12 +203,16 @@ public class Hw3
       colorNames.setMaximumSize(colorNames.getPreferredSize()); // Try commenting this out!
 
       // Create the screenshot button.
-      final JButton screenshot = null;  // replace the null
-
-
-
+      final JButton screenshot = new JButton("Screenshot");
+      screenshot.setAlignmentX(Component.CENTER_ALIGNMENT);
+      screenshot.setBorder(BorderFactory.createEmptyBorder(5,20,5,20)); //top,left,bottom,right
+      screenshot.setMaximumSize(screenshot.getPreferredSize());
+      
       // Create the reset button.
-      final JButton reset = null;  // replace the null
+      final JButton reset = new JButton("Reset");
+      reset.setAlignmentX(Component.CENTER_ALIGNMENT);
+      reset.setBorder(BorderFactory.createEmptyBorder(5,20,5,20)); //top,left,bottom,right
+      reset.setMaximumSize(reset.getPreferredSize());
 
 
       // Add all these components to the east panel.
@@ -311,15 +318,25 @@ public class Hw3
          {
             System.out.println( e );
 
+            // Indicates that the mouse is inside the window.
+            mouseInside = true;
 
-
+            //if (debugMouse) TODO: do i need this?
          }
          @Override public void mouseExited(MouseEvent e)
          {
             System.out.println( e );
 
+            // Indicates that the mouse is outside the window.
+            mouseInside = false;
+
+            // if (debugMouse) TODO: do i need this?
 
             // Stop dragging the shapes (set each hit[] to false).
+            for(int i = 0; i < hit.length; ++i)
+            {
+               hit[i] = false;
+            }
 
 
          }
@@ -335,10 +352,25 @@ public class Hw3
             mouseX_fb = e.getX();
             mouseY_fb = e.getY();
 
+            // if (debugMouse) TODO: do i need this?
+
+            // Calculate the mouse location in the image-plane.
+            final Vertex vertex = pixel2camera(fbp.getFrameBuffer(),
+                                               mouseX_fb,
+                                               mouseY_fb);
+
 
             // Determine which shapes have been hit by this
             // mouse click. Set their entry in hit[] to true.
             // Log the results if debugMouse is true.
+            for (int i = 0; i < hit.length; ++i)
+            {
+               hit[i] = hitFn[i].test(i, vertex);
+               if (hit[i]) // if debugMouse && hit[i] TODO: do i need this?
+               {
+                  System.out.printf("Shape %d was hit.\n", i);
+               }
+            }
 
 
 
@@ -348,6 +380,11 @@ public class Hw3
             System.out.println( e );
 
             // Stop dragging the shapes (set each hit[] to false).
+
+            for(int i = 0; i < hit.length; ++i)
+            {
+               hit[i] = false;
+            }
 
 
 
@@ -388,8 +425,13 @@ public class Hw3
                // last mouse location, then divide the displacements
                // by the scaling factor of how many framebuffer pixels
                // there are per unit of the image-plane.
+               final int currentX = e.getX();
+               final int currentY = e.getY();
 
 
+               // Calculate the horizontal and vertical displacements
+               final double dx = (currentX - mouseX_fb) / (double)PIXELS_PER_UNIT;
+               final double dy = (mouseY_fb - currentY) / (double)PIXELS_PER_UNIT;
 
 
 
@@ -399,8 +441,14 @@ public class Hw3
                {
                   if ( hit[i] )
                   {
+                     // Update the center coordinates of the shape
+                     centerX[i] += dx;
+                     centerY[i] += dy;
 
-
+                     // Update the shape's position in the scene graph
+                     Position p = scene.getPosition(i);
+                     p.translate(centerX[i], centerY[i], 0);
+                     scene.setPosition(i, p);
                   }
                }
 
@@ -448,7 +496,11 @@ public class Hw3
 
             // Set the left, right top, bottom parameters
             // for the Camera's view rectangle.
-
+            right  =  5.0 * w / h;
+            left   = -right;
+            top    =  5.0;
+            bottom = -top;
+            
 
 
 
@@ -486,10 +538,30 @@ public class Hw3
 
             // Set the currentModel to the one in
             // the radio button's action command.
+            if (cmd.equals("Square 1"))
+            {
+               currentModel = 0;
+            }
+            else if (cmd.equals("Square 2"))
+            {
+               currentModel = 1;
+            }
+            else if (cmd.equals("Square 3"))
+            {
+               currentModel = 2;
+            }
+            else if (cmd.equals("Diamond"))
+            {
+               currentModel = 3;
+            }
+            else if (cmd.equals("Circle"))
+            {
+               currentModel = 4;
+            }
 
 
             // Update the color choice shown in the combo box.
-
+            colorNames.setSelectedIndex(colorChoiceIndex[currentModel]);
 
          }
       };
@@ -520,22 +592,36 @@ public class Hw3
             // in colorChoiceIndex to the index of the selected color.
             if (colorName.equals("Red") )
             {
-
+               colorChoiceIndex[currentModel] = 0;
             }
             else if (colorName.equals("Blue") )
             {
-
+               colorChoiceIndex[currentModel] = 1;
             }
             else if (colorName.equals("Green") )
+            { 
+               colorChoiceIndex[currentModel] = 2;
+            }  
+            else if(colorName.equals("Cyan"))
             {
-
+               colorChoiceIndex[currentModel] = 3;
             }
-            // continue to go through all the color names
-
-
+            else if(colorName.equals("Magenta"))
+            {
+               colorChoiceIndex[currentModel] = 4;
+            }
+            else if(colorName.equals("Pink"))
+            {
+               colorChoiceIndex[currentModel] = 5;
+            }
+            else if(colorName.equals("Yellow"))
+            {
+               colorChoiceIndex[currentModel] = 6;
+            }
 
             // Set the color of the current model.
-
+            ModelShading.setColor(scene.getPosition(currentModel).getModel(),
+                                  color[colorChoiceIndex[currentModel]]);
 
 
             // Render again.
@@ -557,6 +643,32 @@ public class Hw3
             System.out.println( e );
 
             // Save the FrameBuffer to a file.
+            try
+            {
+                final FrameBuffer fb = fbp.getFrameBuffer();
+                // Check if there is already a screenshot.png file, if so, increment the number.
+                int i = 000;
+                  while (true)
+                  {
+                     String filename = String.format("Screenshot%03d.png", i);
+                     // Check if the file exists.
+                     if (java.nio.file.Files.exists(java.nio.file.Paths.get(filename)))
+                     {
+                           i++;
+                     }
+                     else //TODO: saves in the wrong directory, 1 outside of hw3
+                     {
+                           fb.dumpFB2File(filename, "PNG");
+                           System.out.println("Screenshot saved as " + filename);
+                           break;
+                     }
+                  }
+            }
+            catch (Exception ex)
+            {
+                System.err.println("Error saving screenshot: " + ex.getMessage());
+                ex.printStackTrace();
+            }
 
 
 
@@ -574,13 +686,35 @@ public class Hw3
             System.out.println( e );
 
             // Reset centerX[] and centerY[] for each shape.
+            centerX[0] =  0.0; centerY[0] =  0.0;  // Square_1
+            centerX[1] = -2.5; centerY[1] = -2.5;  // Square_2
+            centerX[2] =  2.5; centerY[2] =  2.5;  // Square_3
+            centerX[3] =  2.5; centerY[3] = -2.5;  // Diamond
+            centerX[4] = -2.5; centerY[4] =  2.5;  // Circle
 
 
+            // Reset each translation vector. & color?
+            for (int i = 0; i < 5; i++) 
+            {
+                Position p = scene.getPosition(i);
+                p.translate(centerX[i], centerY[i], 0);
+                scene.setPosition(i, p);
+            }
 
-            // Reset each translation vector.
+            // Reset colors to their initial values
+            colorChoiceIndex[0] = 0;  // Set to whatever the initial colors were
+            colorChoiceIndex[1] = 1;  // Adjust these values based on your
+            colorChoiceIndex[2] = 2;  // initial color configuration
+            colorChoiceIndex[3] = 3;
+            colorChoiceIndex[4] = 4;
 
-
-
+            // Apply the reset colors
+            ModelShading.setColor(scene.getPosition(0).getModel(), color[colorChoiceIndex[0]]);
+            ModelShading.setColor(scene.getPosition(1).getModel(), color[colorChoiceIndex[1]]);
+            ModelShading.setColor(scene.getPosition(2).getModel(), color[colorChoiceIndex[2]]);
+            ModelShading.setColor(scene.getPosition(3).getModel(), color[colorChoiceIndex[3]]);
+            ModelShading.setColor(scene.getPosition(4).getModel(), color[colorChoiceIndex[4]]);
+            
             // Render again.
             final FrameBuffer fb = fbp.getFrameBuffer();
             fb.clearFB();
