@@ -51,7 +51,7 @@ public class Hw3
    private boolean debugMouse = false;
    private boolean debugMouseExtra = false;
    private boolean debugComponent = false;
-   private int screenshotNumber = 0;
+   private int screenshotNumber = 000;
    private double right  =  5; // Initial size of Camera's view rectangle.
    private double left   = -right;
    private double top    =  right;
@@ -70,8 +70,6 @@ public class Hw3
    private Color[] color = {Color.red, Color.blue, Color.green, Color.cyan,
                             Color.magenta, Color.pink, Color.yellow};
    private int currentModel = 0; // Which shape is selected by a radio button.
-
-   int screenshot_num = 000; // Used to number screenshots.
 
 
    private Hw3()
@@ -309,11 +307,11 @@ public class Hw3
                {
                   final FrameBuffer fb = fbp.getFrameBuffer();
                   // Check if there is already a screenshot.png file, if so, increment the number.
-                  String filename = String.format("hw3/Screenshot%03d.png", screenshot_num);
+                  String filename = String.format("hw3/Screenshot%03d.png", screenshotNumber);
                   // Check if the file exists.
                   fb.dumpFB2File(filename, "PNG");
                   System.out.println("Screenshot saved as " + filename);
-                  screenshot_num++;
+                  screenshotNumber++;
 
                }
                catch (Exception ex)
@@ -671,11 +669,11 @@ public class Hw3
             {
                final FrameBuffer fb = fbp.getFrameBuffer();
                // Check if there is already a screenshot.png file, if so, increment the number.
-               String filename = String.format("hw3/Screenshot%03d.png", screenshot_num);
+               String filename = String.format("hw3/Screenshot%03d.png", screenshotNumber);
                // Check if the file exists.
                fb.dumpFB2File(filename, "PNG");
                System.out.println("Screenshot saved as " + filename);
-               screenshot_num++;
+               screenshotNumber++;
             }
             catch (Exception ex)
             {
