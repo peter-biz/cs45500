@@ -71,6 +71,8 @@ public class Hw3
                             Color.magenta, Color.pink, Color.yellow};
    private int currentModel = 0; // Which shape is selected by a radio button.
 
+   int screenshot_num = 000; // Used to number screenshots.
+
 
    private Hw3()
    {
@@ -304,31 +306,21 @@ public class Hw3
             {
                // Save the FrameBuffer to a file.
                try
-            {
-                final FrameBuffer fb = fbp.getFrameBuffer();
-                // Check if there is already a screenshot.png file, if so, increment the number.
-                int i = 000;
-                  while (true)
-                  {
-                     String filename = String.format("hw3/Screenshot%03d.png", i);
-                     // Check if the file exists.
-                     if (java.nio.file.Files.exists(java.nio.file.Paths.get(filename)))
-                     {
-                           i++;
-                     }
-                     else //FIXME: saves in the wrong directory, 1 outside of hw3
-                     {
-                           fb.dumpFB2File(filename, "PNG");
-                           System.out.println("Screenshot saved as " + filename);
-                           break;
-                     }
-                  }
-            }
-            catch (Exception ex)
-            {
-                System.err.println("Error saving screenshot: " + ex.getMessage());
-                ex.printStackTrace();
-            }
+               {
+                  final FrameBuffer fb = fbp.getFrameBuffer();
+                  // Check if there is already a screenshot.png file, if so, increment the number.
+                  String filename = String.format("hw3/Screenshot%03d.png", screenshot_num);
+                  // Check if the file exists.
+                  fb.dumpFB2File(filename, "PNG");
+                  System.out.println("Screenshot saved as " + filename);
+                  screenshot_num++;
+
+               }
+               catch (Exception ex)
+               {
+                  System.err.println("Error saving screenshot: " + ex.getMessage());
+                  ex.printStackTrace();
+               }
 
 
             }
@@ -528,10 +520,10 @@ public class Hw3
 
             // Set the left, right top, bottom parameters
             // for the Camera's view rectangle.
-            right  =  5.0 * w / h;
-            left   = -right;
-            top    =  5.0;
-            bottom = -top;
+            right  =  (w / (double)PIXELS_PER_UNIT) / 2.0;
+            left   =  (-w / (double)PIXELS_PER_UNIT) / 2.0;
+            top    =  (h / (double)PIXELS_PER_UNIT) / 2.0;
+            bottom =  (-h / (double)PIXELS_PER_UNIT) / 2.0;
             
 
 
@@ -677,24 +669,13 @@ public class Hw3
             // Save the FrameBuffer to a file.
             try
             {
-                final FrameBuffer fb = fbp.getFrameBuffer();
-                // Check if there is already a screenshot.png file, if so, increment the number.
-                int i = 000;
-                  while (true)
-                  {
-                     String filename = String.format("hw3/Screenshot%03d.png", i);
-                     // Check if the file exists.
-                     if (java.nio.file.Files.exists(java.nio.file.Paths.get(filename)))
-                     {
-                           i++;
-                     }
-                     else
-                     {
-                           fb.dumpFB2File(filename, "PNG");
-                           System.out.println("Screenshot saved as " + filename);
-                           break;
-                     }
-                  }
+               final FrameBuffer fb = fbp.getFrameBuffer();
+               // Check if there is already a screenshot.png file, if so, increment the number.
+               String filename = String.format("hw3/Screenshot%03d.png", screenshot_num);
+               // Check if the file exists.
+               fb.dumpFB2File(filename, "PNG");
+               System.out.println("Screenshot saved as " + filename);
+               screenshot_num++;
             }
             catch (Exception ex)
             {
