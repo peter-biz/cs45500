@@ -688,7 +688,7 @@ public class Hw3
                      {
                            i++;
                      }
-                     else //TODO: saves in the wrong directory, 1 outside of hw3
+                     else
                      {
                            fb.dumpFB2File(filename, "PNG");
                            System.out.println("Screenshot saved as " + filename);
