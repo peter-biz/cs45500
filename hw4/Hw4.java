@@ -470,20 +470,37 @@ public class Hw4
       // Rotate the P, N, W models.
 
       // Rotate the letter P around the x-axis.
-      
-
-
+      pPos.transform(Matrix.translate(-1.5, -0.5, 0)          // Move to original position
+                        .times(Matrix.translate(0.5, 0.5, 0))     // Move to the center of P
+                        .times(Matrix.rotateX(pRotation))         // Rotate around the x-axis
+                        .times(Matrix.translate(-0.5, -0.5, 0))   // Move back from the center
+                        .times(Matrix.translate(0, 0, 0)) // Move back to the original position
+                        );   
 
 
       // Rotate the letter N around the y-axis.
+      nPos.transform(Matrix.translate(-0.5, -0.5, 0)          // Move to original position
+               .times(Matrix.translate(0.5, 0.5, 0))     // Move to the center of N
+               .times(Matrix.rotateY(nRotation))         // Rotate around the y-axis
+               .times(Matrix.translate(-0.5, -0.5, 0))   // Move back from the center
+               .times(Matrix.translate(0, 0, 0))  // Move back to the original position
+               );
 
 
 
 
       // Rotate the letter W simultaneously around
       // the y-axis and the z-axis.
+      wPos.transform(Matrix.translate(0.5, -0.5, 0)          // Move to original position
+               .times(Matrix.translate(0.5, 0.5, 0))    // Move to the center of W
+               .times(Matrix.rotateY(wRotation))        // Rotate around the y-axis
+               .times(Matrix.rotateZ(wRotation))        // Rotate around the z-axis
+               .times(Matrix.translate(-0.5, -0.5, 0))  // Move back from the center
+               .times(Matrix.translate(0, 0, 0)) // Move back to the original position
 
+               ); 
 
+      
 
 
 
