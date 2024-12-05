@@ -1,10 +1,10 @@
 {
     "java.project.referencedLibraries": [
         "renderer_4/renderer_4.jar",
-        "hw3/renderer_7.jar",
         "hw3/renderer.jar",
         "hw3/renderer_7-sources.jar",
-        "hw4/renderer_9.jar"
+        "hw4/renderer_9.jar",
+        "hw4/renderer_9-sources.jar"
     ],
     "java.debug.settings.onBuildFailureProceed": true
 }

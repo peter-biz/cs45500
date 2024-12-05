@@ -1,5 +1,8 @@
 /*
-
+   Course: CS45500
+   Name: Peter Bizoukas
+   Email: pbizouka@pnw.edu
+   Assignment: 4
 */
 
 import renderer.scene.*;
@@ -126,7 +129,7 @@ public class Hw4
 
 
       // Create the GUI.
-
+      
 
 
       // Create a FrameBufferPanel that holds a FrameBuffer.
@@ -141,7 +144,8 @@ public class Hw4
 
       // Create a vertical JScrollBar, with initial value 50, and
       // add it to the EAST region of the JFrame's BorderLayout.
-      final JScrollBar jsb = new JScrollBar(JScrollBar.VERTICAL, 50, 10, 0, 100);
+      final JScrollBar jsb = new JScrollBar(JScrollBar.VERTICAL, 50, 1, 0, 100);
+      jf.add(jsb, BorderLayout.EAST);
 
 
 
@@ -153,6 +157,7 @@ public class Hw4
 
       // Create and register all the event handlers
       // (the Controller part of MVC).
+
 
       // Register the JFrame as the source for key events.
       // The event listener is an anonymous inner class.
@@ -280,17 +285,27 @@ public class Hw4
 
       // Register the JScrollBar as the source for adjustment events.
       // The event listener is an anonymous inner class.
-      jsb.addAdjustmentListener(new AdjustmentListener()
-      {
-         @Override public void adjustmentValueChanged(AdjustmentEvent e)
-         {
-            System.out.println( e ); // DO NOT leave this line in your final program.
-
-
-
-            setupViewing();
+      jsb.addAdjustmentListener(new AdjustmentListener() {
+         @Override public void adjustmentValueChanged(AdjustmentEvent e) {
+             // Get the new value of the JScrollBar.
+             scrollBarValue = e.getValue();
+     
+             // Map 0-100 range to a larger vertical movement.
+             double verticalShift = 4.0 * (scrollBarValue - 50) / 50.0;
+     
+             // Adjust the bottom and top of the view rectangle.
+             bottom = -1.0 - verticalShift;
+             top = 1.0 - verticalShift;
+     
+             System.out.println("Scrollbar value: " + scrollBarValue);
+             System.out.println("Vertical Shift: " + verticalShift);
+             System.out.println("Bottom: " + bottom);
+             System.out.println("Top: " + top);
+     
+             // Trigger the setupViewing method to apply the changes.
+             setupViewing();
          }
-      });
+     });
 
 
       // Implement the ActionListener interface for the timer.
@@ -348,6 +363,7 @@ public class Hw4
       final int hFB = fb.height;
 
       // Compute the framebuffer's aspect ratio.
+      final double aspectRatioFB = (double)wFB / (double)hFB;
 
 
 
@@ -366,42 +382,64 @@ public class Hw4
       // value for each of the last seven variable declarations.
       if ( aspectRatioFB > 2.0 ) // crop
       {
-         // Make the viewport all of the framebuffer.
-         vp_ul_y =
-         wVP =
-         hVP =
-         // Use the view-rectangle, with AspectRatio==aspectRatioFB,
-         // to crop the scene. Use scrollBarValue to determine how
-         // the view-rectangle is positioned.
-         left   =
-         right  =
-         top    =
-         bottom =
+          // Make the viewport all of the framebuffer.
+          vp_ul_y = 0;
+          wVP = wFB;
+          hVP = hFB;
+          
+          // Use the view-rectangle, with AspectRatio==aspectRatioFB,
+          // to crop the scene. Use scrollBarValue to determine vertical position.
+          left   = -2.0;
+          right  = 2.0;
+          double newHeight = 4.0 / aspectRatioFB;
+          
+          // Calculate maximum allowed vertical shift to keep content visible
+          double maxShift = (2.0 - newHeight) / 2.0;
+          
+          // Map scrollBarValue (0-100) to shift within safe bounds
+          double verticalShift = ((scrollBarValue / 100.0) * (maxShift * 2)) - maxShift;
+          
+          // Apply bounded shift to view rectangle
+          top    = (newHeight / 2.0) - verticalShift;
+          bottom = (-newHeight / 2.0) - verticalShift;
       }
       else if ( aspectRatioFB < 2.0 ) // letterbox
       {
          // Letterbox a viewport with AspectRatio==2 within the framebuffer.
-         // Use scrollBarValue to determine how the letterbox is positioned.
-         vp_ul_y =
-         wVP =
-         hVP =
-         // No cropping in the view-rectangle.
-         left   =
-         right  =
-         bottom =
-         top    =
+         // Use scrollBarValue to determine the letterbox's vertical position
+         // Calculate viewport height to maintain 2:1 aspect ratio
+         wVP = wFB;
+         hVP = wFB/2;  
+
+         // Calculate the maximum vertical space available
+         int maxSpace = hFB - hVP;
+         
+         // Center the viewport vertically by default
+         int centeredY = maxSpace / 2;
+         
+         // Apply scrollbar offset (-50% to +50% of available space)
+         int offset = (int)(((scrollBarValue - 50) / 50.0) * (maxSpace / 2));
+         
+         // Ensure y-coordinate stays within bounds
+         vp_ul_y = Math.max(0, Math.min(maxSpace, centeredY + offset));
+
+         // No cropping in the view-rectangle
+         left   = -2.0;
+         right  = 2.0;
+         bottom = -1.0;
+         top    = 1.0;
       }
       else // aspectRatio == 2.0
       {
          // Make the viewport all of the framebuffer.
-         vp_ul_y =
-         wVP =
-         hVP =
+         vp_ul_y = 0;
+         wVP = wFB;
+         hVP = hFB;
          // No cropping in the view-rectangle.
-         left   =
-         right  =
-         bottom =
-         top    =
+         left   = -2.0;
+         right  = 2.0;
+         bottom =  -1.0;
+         top    = 1.0;
       }
 
       // Set the default viewport in the framebuffer.
@@ -432,6 +470,7 @@ public class Hw4
       // Rotate the P, N, W models.
 
       // Rotate the letter P around the x-axis.
+      
 
 
 
