@@ -1,0 +1,173 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<main role="main">
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span><a id="line.1">/*</a>
+<span class="sourceLineNo">002</span><a id="line.2"> * Renderer 9. The MIT License.</a>
+<span class="sourceLineNo">003</span><a id="line.3"> * Copyright (c) 2022 rlkraft@pnw.edu</a>
+<span class="sourceLineNo">004</span><a id="line.4"> * See LICENSE for details.</a>
+<span class="sourceLineNo">005</span><a id="line.5">*/</a>
+<span class="sourceLineNo">006</span><a id="line.6"></a>
+<span class="sourceLineNo">007</span><a id="line.7">package renderer.pipeline;</a>
+<span class="sourceLineNo">008</span><a id="line.8"></a>
+<span class="sourceLineNo">009</span><a id="line.9">import renderer.scene.*;</a>
+<span class="sourceLineNo">010</span><a id="line.10"></a>
+<span class="sourceLineNo">011</span><a id="line.11">import java.util.List;</a>
+<span class="sourceLineNo">012</span><a id="line.12">import java.util.ArrayList;</a>
+<span class="sourceLineNo">013</span><a id="line.13"></a>
+<span class="sourceLineNo">014</span><a id="line.14">/**</a>
+<span class="sourceLineNo">015</span><a id="line.15">   Transform each {@link Vertex} of a {@link Model} from the</a>
+<span class="sourceLineNo">016</span><a id="line.16">   {@link Camera}'s (shared) view coordinates to normalized</a>
+<span class="sourceLineNo">017</span><a id="line.17">   camera coordinates.</a>
+<span class="sourceLineNo">018</span><a id="line.18">&lt;p&gt;</a>
+<span class="sourceLineNo">019</span><a id="line.19">   This stage transforms the {@link Camera}'s view volume</a>
+<span class="sourceLineNo">020</span><a id="line.20">   from a user defined shape (in the view coordinate system)</a>
+<span class="sourceLineNo">021</span><a id="line.21">   into the standard normalized view volume (in the camera</a>
+<span class="sourceLineNo">022</span><a id="line.22">   coordinate system) used by the {@link Clip} pipeline stage.</a>
+<span class="sourceLineNo">023</span><a id="line.23">&lt;p&gt;</a>
+<span class="sourceLineNo">024</span><a id="line.24">   There are two standard normalized view volumes, one for</a>
+<span class="sourceLineNo">025</span><a id="line.25">   perspective projection and one for orthographic projection.</a>
+<span class="sourceLineNo">026</span><a id="line.26">&lt;p&gt;</a>
+<span class="sourceLineNo">027</span><a id="line.27">   The standard normalized perspective view volume is the infinitely</a>
+<span class="sourceLineNo">028</span><a id="line.28">   long pyramid with its apex at the origin and intersecting the</a>
+<span class="sourceLineNo">029</span><a id="line.29">   image plane {@code z = -1} at the corners {@code (-1, -1, -1)}</a>
+<span class="sourceLineNo">030</span><a id="line.30">   and {@code (+1, +1, -1)}.</a>
+<span class="sourceLineNo">031</span><a id="line.31">&lt;p&gt;</a>
+<span class="sourceLineNo">032</span><a id="line.32">   The standard normalized orthographic view volume is the infinitely</a>
+<span class="sourceLineNo">033</span><a id="line.33">   long parallelepiped centered on the z-axis and intersecting the</a>
+<span class="sourceLineNo">034</span><a id="line.34">   image plane {@code z = -1} at the corners {@code (-1, -1, -1)}</a>
+<span class="sourceLineNo">035</span><a id="line.35">   and {@code (+1, +1, -1)}.</a>
+<span class="sourceLineNo">036</span><a id="line.36">&lt;p&gt;</a>
+<span class="sourceLineNo">037</span><a id="line.37">   The user defined view volume determined by the {@link Scene}'s</a>
+<span class="sourceLineNo">038</span><a id="line.38">   {@link Camera} object is either the infinitely long pyramid with its</a>
+<span class="sourceLineNo">039</span><a id="line.39">   apex at the origin and intersecting the image plane {@code z = -1} at</a>
+<span class="sourceLineNo">040</span><a id="line.40">   the corners {@code (left, bottom, -1)} and {@code (right, top, -1)},</a>
+<span class="sourceLineNo">041</span><a id="line.41">   or it is the infinitely long parallelepiped parallel to the z-axis</a>
+<span class="sourceLineNo">042</span><a id="line.42">   and intersecting the image plane {@code z = -1} at the corners</a>
+<span class="sourceLineNo">043</span><a id="line.43">   {@code (left, bottom, -1)} and {@code (right, top, -1)}.</a>
+<span class="sourceLineNo">044</span><a id="line.44">&lt;p&gt;</a>
+<span class="sourceLineNo">045</span><a id="line.45">   The view coordinate system is relative to the user defined view volume.</a>
+<span class="sourceLineNo">046</span><a id="line.46">&lt;p&gt;</a>
+<span class="sourceLineNo">047</span><a id="line.47">   The normalized camera coordinate system is relative to the normalized</a>
+<span class="sourceLineNo">048</span><a id="line.48">   view volume.</a>
+<span class="sourceLineNo">049</span><a id="line.49">&lt;p&gt;</a>
+<span class="sourceLineNo">050</span><a id="line.50">   The matrix that transforms the user defined view volume into the</a>
+<span class="sourceLineNo">051</span><a id="line.51">   normalized view volume also transform the view coordinate system</a>
+<span class="sourceLineNo">052</span><a id="line.52">   into the normalized camera coordinate system.</a>
+<span class="sourceLineNo">053</span><a id="line.53">&lt;p&gt;</a>
+<span class="sourceLineNo">054</span><a id="line.54">   The matrix that transforms view coordinates into normalized camera</a>
+<span class="sourceLineNo">055</span><a id="line.55">   coordinates is derived in the comments of</a>
+<span class="sourceLineNo">056</span><a id="line.56">   {@link PerspectiveNormalizeMatrix} and</a>
+<span class="sourceLineNo">057</span><a id="line.57">   {@link OrthographicNormalizeMatrix}.</a>
+<span class="sourceLineNo">058</span><a id="line.58">*/</a>
+<span class="sourceLineNo">059</span><a id="line.59">public final class View2Camera</a>
+<span class="sourceLineNo">060</span><a id="line.60">{</a>
+<span class="sourceLineNo">061</span><a id="line.61">   /**</a>
+<span class="sourceLineNo">062</span><a id="line.62">      Use the {@link Camera}'s normalizing {@link Matrix} to transform each</a>
+<span class="sourceLineNo">063</span><a id="line.63">      {@link Vertex} from the {@link Camera}'s view coordinate system to the</a>
+<span class="sourceLineNo">064</span><a id="line.64">      normalized camera coordinate system.</a>
+<span class="sourceLineNo">065</span><a id="line.65"></a>
+<span class="sourceLineNo">066</span><a id="line.66">      @param model  {@link Model} with {@link Vertex} objects in the camera's view coordinate system</a>
+<span class="sourceLineNo">067</span><a id="line.67">      @param camera  the {@link Scene}'s {@link Camera} with the normalizing {@link Matrix}</a>
+<span class="sourceLineNo">068</span><a id="line.68">      @return a new {@link Model} with {@link Vertex} objects in the normalized camera coordinate system</a>
+<span class="sourceLineNo">069</span><a id="line.69">   */</a>
+<span class="sourceLineNo">070</span><a id="line.70">   public static Model view2camera(final Model model, final Camera camera)</a>
+<span class="sourceLineNo">071</span><a id="line.71">   {</a>
+<span class="sourceLineNo">072</span><a id="line.72">      final Matrix normalizeMatrix = camera.getNormalizeMatrix();</a>
+<span class="sourceLineNo">073</span><a id="line.73"></a>
+<span class="sourceLineNo">074</span><a id="line.74">      // A new vertex list to hold the transformed vertices.</a>
+<span class="sourceLineNo">075</span><a id="line.75">      final List&lt;Vertex&gt; newVertexList =</a>
+<span class="sourceLineNo">076</span><a id="line.76">                            new ArrayList&lt;&gt;(model.vertexList.size());</a>
+<span class="sourceLineNo">077</span><a id="line.77"></a>
+<span class="sourceLineNo">078</span><a id="line.78">      // Replace each Vertex object with one that</a>
+<span class="sourceLineNo">079</span><a id="line.79">      // contains normalized camera coordinates.</a>
+<span class="sourceLineNo">080</span><a id="line.80">      for (final Vertex v : model.vertexList)</a>
+<span class="sourceLineNo">081</span><a id="line.81">      {</a>
+<span class="sourceLineNo">082</span><a id="line.82">         newVertexList.add( normalizeMatrix.times(v) );</a>
+<span class="sourceLineNo">083</span><a id="line.83">      }</a>
+<span class="sourceLineNo">084</span><a id="line.84"></a>
+<span class="sourceLineNo">085</span><a id="line.85">      return new Model(newVertexList,</a>
+<span class="sourceLineNo">086</span><a id="line.86">                       model.primitiveList,</a>
+<span class="sourceLineNo">087</span><a id="line.87">                       model.colorList,</a>
+<span class="sourceLineNo">088</span><a id="line.88">                       model.name,</a>
+<span class="sourceLineNo">089</span><a id="line.89">                       model.visible);</a>
+<span class="sourceLineNo">090</span><a id="line.90">   }</a>
+<span class="sourceLineNo">091</span><a id="line.91"></a>
+<span class="sourceLineNo">092</span><a id="line.92"></a>
+<span class="sourceLineNo">093</span><a id="line.93"></a>
+<span class="sourceLineNo">094</span><a id="line.94">   // Private default constructor to enforce noninstantiable class.</a>
+<span class="sourceLineNo">095</span><a id="line.95">   // See Item 4 in "Effective Java", 3rd Ed, Joshua Bloch.</a>
+<span class="sourceLineNo">096</span><a id="line.96">   private View2Camera() {</a>
+<span class="sourceLineNo">097</span><a id="line.97">      throw new AssertionError();</a>
+<span class="sourceLineNo">098</span><a id="line.98">   }</a>
+<span class="sourceLineNo">099</span><a id="line.99">}</a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</main>
+</body>
+</html>

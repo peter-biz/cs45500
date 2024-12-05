@@ -1,0 +1,429 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<main role="main">
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span><a id="line.1">/*</a>
+<span class="sourceLineNo">002</span><a id="line.2"> * Renderer 9. The MIT License.</a>
+<span class="sourceLineNo">003</span><a id="line.3"> * Copyright (c) 2022 rlkraft@pnw.edu</a>
+<span class="sourceLineNo">004</span><a id="line.4"> * See LICENSE for details.</a>
+<span class="sourceLineNo">005</span><a id="line.5">*/</a>
+<span class="sourceLineNo">006</span><a id="line.6"></a>
+<span class="sourceLineNo">007</span><a id="line.7">package renderer.pipeline;</a>
+<span class="sourceLineNo">008</span><a id="line.8"></a>
+<span class="sourceLineNo">009</span><a id="line.9">import renderer.scene.*;</a>
+<span class="sourceLineNo">010</span><a id="line.10">import renderer.scene.primitives.LineSegment;</a>
+<span class="sourceLineNo">011</span><a id="line.11">import renderer.framebuffer.*;</a>
+<span class="sourceLineNo">012</span><a id="line.12">import static renderer.pipeline.PipelineLogger.*;</a>
+<span class="sourceLineNo">013</span><a id="line.13"></a>
+<span class="sourceLineNo">014</span><a id="line.14">import java.awt.Color;</a>
+<span class="sourceLineNo">015</span><a id="line.15"></a>
+<span class="sourceLineNo">016</span><a id="line.16">/**</a>
+<span class="sourceLineNo">017</span><a id="line.17">   Rasterize a clipped {@link LineSegment} into shaded pixels</a>
+<span class="sourceLineNo">018</span><a id="line.18">   in a {@link FrameBuffer}'s viewport and (optionally)</a>
+<span class="sourceLineNo">019</span><a id="line.19">   anti-alias and gamma-encode the line at the same time.</a>
+<span class="sourceLineNo">020</span><a id="line.20">&lt;p&gt;</a>
+<span class="sourceLineNo">021</span><a id="line.21">   This pipeline stage takes a clipped {@link LineSegment}</a>
+<span class="sourceLineNo">022</span><a id="line.22">   with vertices in the {@link Camera}'s view rectangle and</a>
+<span class="sourceLineNo">023</span><a id="line.23">   rasterizezs the line segment into shaded, anti-aliased</a>
+<span class="sourceLineNo">024</span><a id="line.24">   pixels in a {@link FrameBuffer}'s viewport. This rasterizer</a>
+<span class="sourceLineNo">025</span><a id="line.25">   will linearly interpolate color from the line segment's two</a>
+<span class="sourceLineNo">026</span><a id="line.26">   endpoints to each rasterized (and anti-aliased) pixel in</a>
+<span class="sourceLineNo">027</span><a id="line.27">   the line segment.</a>
+<span class="sourceLineNo">028</span><a id="line.28">&lt;p&gt;</a>
+<span class="sourceLineNo">029</span><a id="line.29">   This rasterization algorithm is based on</a>
+<span class="sourceLineNo">030</span><a id="line.30">&lt;pre&gt;</a>
+<span class="sourceLineNo">031</span><a id="line.31">     "Fundamentals of Computer Graphics", 3rd Edition,</a>
+<span class="sourceLineNo">032</span><a id="line.32">      by Peter Shirley, pages 163-165.</a>
+<span class="sourceLineNo">033</span><a id="line.33">&lt;/pre&gt;</a>
+<span class="sourceLineNo">034</span><a id="line.34">&lt;p&gt;</a>
+<span class="sourceLineNo">035</span><a id="line.35">   This rasterizer implements a simple version of Xiaolin_Wu's</a>
+<span class="sourceLineNo">036</span><a id="line.36">   anti-aliasing algorithm. See</a>
+<span class="sourceLineNo">037</span><a id="line.37">     &lt;a href="https://en.wikipedia.org/wiki/Xiaolin_Wu's_line_algorithm" target="_top"&gt;</a>
+<span class="sourceLineNo">038</span><a id="line.38">              https://en.wikipedia.org/wiki/Xiaolin_Wu's_line_algorithm&lt;/a&gt;</a>
+<span class="sourceLineNo">039</span><a id="line.39">*/</a>
+<span class="sourceLineNo">040</span><a id="line.40">public class Rasterize_AntiAlias_Line</a>
+<span class="sourceLineNo">041</span><a id="line.41">{</a>
+<span class="sourceLineNo">042</span><a id="line.42">   /**</a>
+<span class="sourceLineNo">043</span><a id="line.43">      Rasterize a clipped {@link LineSegment} into anti-aliased, shaded pixels</a>
+<span class="sourceLineNo">044</span><a id="line.44">      in the {@link FrameBuffer.Viewport}.</a>
+<span class="sourceLineNo">045</span><a id="line.45"></a>
+<span class="sourceLineNo">046</span><a id="line.46">      @param model  {@link Model} that the {@link LineSegment} {@code ls} comes from</a>
+<span class="sourceLineNo">047</span><a id="line.47">      @param ls     {@link LineSegment} to rasterize into the {@link FrameBuffer.Viewport}</a>
+<span class="sourceLineNo">048</span><a id="line.48">      @param vp     {@link FrameBuffer.Viewport} to hold rasterized pixels</a>
+<span class="sourceLineNo">049</span><a id="line.49">   */</a>
+<span class="sourceLineNo">050</span><a id="line.50">   public static void rasterize(final Model model,</a>
+<span class="sourceLineNo">051</span><a id="line.51">                                final LineSegment ls,</a>
+<span class="sourceLineNo">052</span><a id="line.52">                                final FrameBuffer.Viewport vp)</a>
+<span class="sourceLineNo">053</span><a id="line.53">   {</a>
+<span class="sourceLineNo">054</span><a id="line.54">      // Get the viewport's background color.</a>
+<span class="sourceLineNo">055</span><a id="line.55">      final Color bg = vp.bgColorVP;</a>
+<span class="sourceLineNo">056</span><a id="line.56"></a>
+<span class="sourceLineNo">057</span><a id="line.57">      // Make local copies of several values.</a>
+<span class="sourceLineNo">058</span><a id="line.58">      final int w = vp.getWidthVP();</a>
+<span class="sourceLineNo">059</span><a id="line.59">      final int h = vp.getHeightVP();</a>
+<span class="sourceLineNo">060</span><a id="line.60"></a>
+<span class="sourceLineNo">061</span><a id="line.61">      final int vIndex0 = ls.vIndexList.get(0);</a>
+<span class="sourceLineNo">062</span><a id="line.62">      final int vIndex1 = ls.vIndexList.get(1);</a>
+<span class="sourceLineNo">063</span><a id="line.63">      final Vertex v0 = model.vertexList.get(vIndex0);</a>
+<span class="sourceLineNo">064</span><a id="line.64">      final Vertex v1 = model.vertexList.get(vIndex1);</a>
+<span class="sourceLineNo">065</span><a id="line.65"></a>
+<span class="sourceLineNo">066</span><a id="line.66">      final int cIndex0 = ls.cIndexList.get(0);</a>
+<span class="sourceLineNo">067</span><a id="line.67">      final int cIndex1 = ls.cIndexList.get(1);</a>
+<span class="sourceLineNo">068</span><a id="line.68">      final float[] c0 = model.colorList.get(cIndex0).getRGBComponents(null);</a>
+<span class="sourceLineNo">069</span><a id="line.69">      final float[] c1 = model.colorList.get(cIndex1).getRGBComponents(null);</a>
+<span class="sourceLineNo">070</span><a id="line.70">      float r0 = c0[0], g0 = c0[1], b0 = c0[2];</a>
+<span class="sourceLineNo">071</span><a id="line.71">      float r1 = c1[0], g1 = c1[1], b1 = c1[2];</a>
+<span class="sourceLineNo">072</span><a id="line.72"></a>
+<span class="sourceLineNo">073</span><a id="line.73">      // Transform each vertex to the "pixel plane" coordinate system.</a>
+<span class="sourceLineNo">074</span><a id="line.74">      double x0 = 0.5 + w/2.001 * (v0.x + 1); // x_pp = 0.5 + w/2 * (x_p+1)</a>
+<span class="sourceLineNo">075</span><a id="line.75">      double y0 = 0.5 + h/2.001 * (v0.y + 1); // y_pp = 0.5 + h/2 * (y_p+1)</a>
+<span class="sourceLineNo">076</span><a id="line.76">      double x1 = 0.5 + w/2.001 * (v1.x + 1);</a>
+<span class="sourceLineNo">077</span><a id="line.77">      double y1 = 0.5 + h/2.001 * (v1.y + 1);</a>
+<span class="sourceLineNo">078</span><a id="line.78">      // NOTE: Notice the 2.001 fudge factor in the last two equations.</a>
+<span class="sourceLineNo">079</span><a id="line.79">      // This is explained on page 142 of</a>
+<span class="sourceLineNo">080</span><a id="line.80">      //    "Jim Blinn's Corner: A Trip Down The Graphics Pipeline"</a>
+<span class="sourceLineNo">081</span><a id="line.81">      //     by Jim Blinn, 1996, Morgan Kaufmann Publishers.</a>
+<span class="sourceLineNo">082</span><a id="line.82"></a>
+<span class="sourceLineNo">083</span><a id="line.83">      if (Rasterize.debug)</a>
+<span class="sourceLineNo">084</span><a id="line.84">      {</a>
+<span class="sourceLineNo">085</span><a id="line.85">         logMessage(String.format("(x0_pp, y0_pp) = (%9.4f, %9.4f)", x0,y0));</a>
+<span class="sourceLineNo">086</span><a id="line.86">         logMessage(String.format("(x1_pp, y1_pp) = (%9.4f, %9.4f)", x1,y1));</a>
+<span class="sourceLineNo">087</span><a id="line.87">      }</a>
+<span class="sourceLineNo">088</span><a id="line.88"></a>
+<span class="sourceLineNo">089</span><a id="line.89">      // Round each vertex to the nearest logical pixel.</a>
+<span class="sourceLineNo">090</span><a id="line.90">      // This makes the algorithm a lot simpler, but it can</a>
+<span class="sourceLineNo">091</span><a id="line.91">      // cause a slight, but noticeable, shift of the line segment.</a>
+<span class="sourceLineNo">092</span><a id="line.92">      x0 = Math.round(x0);</a>
+<span class="sourceLineNo">093</span><a id="line.93">      y0 = Math.round(y0);</a>
+<span class="sourceLineNo">094</span><a id="line.94">      x1 = Math.round(x1);</a>
+<span class="sourceLineNo">095</span><a id="line.95">      y1 = Math.round(y1);</a>
+<span class="sourceLineNo">096</span><a id="line.96"></a>
+<span class="sourceLineNo">097</span><a id="line.97">      // Rasterize a degenerate line segment (a line segment</a>
+<span class="sourceLineNo">098</span><a id="line.98">      // that projected onto a point) as a single pixel.</a>
+<span class="sourceLineNo">099</span><a id="line.99">      if ( (x0 == x1) &amp;&amp; (y0 == y1) )</a>
+<span class="sourceLineNo">100</span><a id="line.100">      {</a>
+<span class="sourceLineNo">101</span><a id="line.101">         // We don't know which endpoint of the line segment</a>
+<span class="sourceLineNo">102</span><a id="line.102">         // is in front, so just pick v0.</a>
+<span class="sourceLineNo">103</span><a id="line.103">         final int x0_vp = (int)x0 - 1;  // viewport coordinate</a>
+<span class="sourceLineNo">104</span><a id="line.104">         final int y0_vp = h - (int)y0;  // viewport coordinate</a>
+<span class="sourceLineNo">105</span><a id="line.105"></a>
+<span class="sourceLineNo">106</span><a id="line.106">         if (Rasterize.debug) logPixel(x0, y0,</a>
+<span class="sourceLineNo">107</span><a id="line.107">                                       x0_vp, y0_vp,</a>
+<span class="sourceLineNo">108</span><a id="line.108">                                       r0, g0, b0,</a>
+<span class="sourceLineNo">109</span><a id="line.109">                                       vp);</a>
+<span class="sourceLineNo">110</span><a id="line.110">         // Log the pixel before setting it so that an array out-</a>
+<span class="sourceLineNo">111</span><a id="line.111">         // of-bounds error will be right after the pixel's address.</a>
+<span class="sourceLineNo">112</span><a id="line.112"></a>
+<span class="sourceLineNo">113</span><a id="line.113">         vp.setPixelVP(x0_vp, y0_vp, new Color(r0, g0, b0));</a>
+<span class="sourceLineNo">114</span><a id="line.114"></a>
+<span class="sourceLineNo">115</span><a id="line.115">         return;</a>
+<span class="sourceLineNo">116</span><a id="line.116">      }</a>
+<span class="sourceLineNo">117</span><a id="line.117"></a>
+<span class="sourceLineNo">118</span><a id="line.118">      // If abs(slope) &gt; 1, then transpose this line so that</a>
+<span class="sourceLineNo">119</span><a id="line.119">      // the transposed line has slope &lt; 1. Remember that the</a>
+<span class="sourceLineNo">120</span><a id="line.120">      // line has been transposed.</a>
+<span class="sourceLineNo">121</span><a id="line.121">      boolean transposedLine = false;</a>
+<span class="sourceLineNo">122</span><a id="line.122">      if (Math.abs(y1 - y0) &gt; Math.abs(x1 - x0)) // if abs(slope) &gt; 1</a>
+<span class="sourceLineNo">123</span><a id="line.123">      {</a>
+<span class="sourceLineNo">124</span><a id="line.124">         // Swap x0 with y0.</a>
+<span class="sourceLineNo">125</span><a id="line.125">         final double temp0 = x0;</a>
+<span class="sourceLineNo">126</span><a id="line.126">         x0 = y0;</a>
+<span class="sourceLineNo">127</span><a id="line.127">         y0 = temp0;</a>
+<span class="sourceLineNo">128</span><a id="line.128">         // Swap x1 with y1.</a>
+<span class="sourceLineNo">129</span><a id="line.129">         final double temp1 = x1;</a>
+<span class="sourceLineNo">130</span><a id="line.130">         x1 = y1;</a>
+<span class="sourceLineNo">131</span><a id="line.131">         y1 = temp1;</a>
+<span class="sourceLineNo">132</span><a id="line.132">         transposedLine = true; // Remember that this line is transposed.</a>
+<span class="sourceLineNo">133</span><a id="line.133">      }</a>
+<span class="sourceLineNo">134</span><a id="line.134"></a>
+<span class="sourceLineNo">135</span><a id="line.135">      if (x1 &lt; x0) // We want to rasterize in the direction of increasing x,</a>
+<span class="sourceLineNo">136</span><a id="line.136">      {            // so, if necessary, swap (x0, y0) with (x1, y1).</a>
+<span class="sourceLineNo">137</span><a id="line.137">         // Swap x0 with x1.</a>
+<span class="sourceLineNo">138</span><a id="line.138">         final double tempX = x0;</a>
+<span class="sourceLineNo">139</span><a id="line.139">         x0 = x1;</a>
+<span class="sourceLineNo">140</span><a id="line.140">         x1 = tempX;</a>
+<span class="sourceLineNo">141</span><a id="line.141">         // Swap y0 with y1.</a>
+<span class="sourceLineNo">142</span><a id="line.142">         final double tempY = y0;</a>
+<span class="sourceLineNo">143</span><a id="line.143">         y0 = y1;</a>
+<span class="sourceLineNo">144</span><a id="line.144">         y1 = tempY;</a>
+<span class="sourceLineNo">145</span><a id="line.145">         // Swap the colors too.</a>
+<span class="sourceLineNo">146</span><a id="line.146">         final float tempR = r0;</a>
+<span class="sourceLineNo">147</span><a id="line.147">         final float tempG = g0;</a>
+<span class="sourceLineNo">148</span><a id="line.148">         final float tempB = b0;</a>
+<span class="sourceLineNo">149</span><a id="line.149">         r0 = r1;</a>
+<span class="sourceLineNo">150</span><a id="line.150">         g0 = g1;</a>
+<span class="sourceLineNo">151</span><a id="line.151">         b0 = b1;</a>
+<span class="sourceLineNo">152</span><a id="line.152">         r1 = tempR;</a>
+<span class="sourceLineNo">153</span><a id="line.153">         g1 = tempG;</a>
+<span class="sourceLineNo">154</span><a id="line.154">         b1 = tempB;</a>
+<span class="sourceLineNo">155</span><a id="line.155">      }</a>
+<span class="sourceLineNo">156</span><a id="line.156"></a>
+<span class="sourceLineNo">157</span><a id="line.157">      // Compute this line segment's slopes.</a>
+<span class="sourceLineNo">158</span><a id="line.158">      final double      m = (y1 - y0) / (x1 - x0);</a>
+<span class="sourceLineNo">159</span><a id="line.159">      final double slopeR = (r1 - r0) / (x1 - x0);</a>
+<span class="sourceLineNo">160</span><a id="line.160">      final double slopeG = (g1 - g0) / (x1 - x0);</a>
+<span class="sourceLineNo">161</span><a id="line.161">      final double slopeB = (b1 - b0) / (x1 - x0);</a>
+<span class="sourceLineNo">162</span><a id="line.162"></a>
+<span class="sourceLineNo">163</span><a id="line.163">      if (Rasterize.debug)</a>
+<span class="sourceLineNo">164</span><a id="line.164">      {</a>
+<span class="sourceLineNo">165</span><a id="line.165">         final String inverseSlope = (transposedLine)</a>
+<span class="sourceLineNo">166</span><a id="line.166">                                        ? " (transposed, so 1/m = " + 1/m + ")"</a>
+<span class="sourceLineNo">167</span><a id="line.167">                                        : "";</a>
+<span class="sourceLineNo">168</span><a id="line.168">         logMessage("Slope m    = " + m + inverseSlope);</a>
+<span class="sourceLineNo">169</span><a id="line.169">         logMessage("Slope mRed = " + slopeR);</a>
+<span class="sourceLineNo">170</span><a id="line.170">         logMessage("Slope mGrn = " + slopeG);</a>
+<span class="sourceLineNo">171</span><a id="line.171">         logMessage("Slope mBlu = " + slopeB);</a>
+<span class="sourceLineNo">172</span><a id="line.172">         logMessage(String.format("(x0_vp, y0_vp) = (%9.4f, %9.4f)", x0-1,h-y0));</a>
+<span class="sourceLineNo">173</span><a id="line.173">         logMessage(String.format("(x1_vp, y1_vp) = (%9.4f, %9.4f)", x1-1,h-y1));</a>
+<span class="sourceLineNo">174</span><a id="line.174">      }</a>
+<span class="sourceLineNo">175</span><a id="line.175"></a>
+<span class="sourceLineNo">176</span><a id="line.176">      // Rasterize this line segment in the direction of increasing x.</a>
+<span class="sourceLineNo">177</span><a id="line.177">      // In the following loop, as x moves across the logical horizontal</a>
+<span class="sourceLineNo">178</span><a id="line.178">      // (or vertical) pixels, we will compute a y value for each x.</a>
+<span class="sourceLineNo">179</span><a id="line.179">      double y = y0;</a>
+<span class="sourceLineNo">180</span><a id="line.180">      for (int x = (int)x0; x &lt; (int)x1; x += 1, y += m)</a>
+<span class="sourceLineNo">181</span><a id="line.181">      {</a>
+<span class="sourceLineNo">182</span><a id="line.182">         // Interpolate this pixel's color between the two endpoint's colors.</a>
+<span class="sourceLineNo">183</span><a id="line.183">         float r = (float)Math.abs(r0 + slopeR*(x - x0));</a>
+<span class="sourceLineNo">184</span><a id="line.184">         float g = (float)Math.abs(g0 + slopeG*(x - x0));</a>
+<span class="sourceLineNo">185</span><a id="line.185">         float b = (float)Math.abs(b0 + slopeB*(x - x0));</a>
+<span class="sourceLineNo">186</span><a id="line.186">         // We need the Math.abs() because otherwise, we sometimes get -0.0.</a>
+<span class="sourceLineNo">187</span><a id="line.187"></a>
+<span class="sourceLineNo">188</span><a id="line.188">         if (Rasterize.doAntiAliasing)</a>
+<span class="sourceLineNo">189</span><a id="line.189">         {</a>
+<span class="sourceLineNo">190</span><a id="line.190">            // y must be between two vertical (or horizontal) logical pixel</a>
+<span class="sourceLineNo">191</span><a id="line.191">            //  coordinates. Let y_low and y_hi be the logical pixel coordinates</a>
+<span class="sourceLineNo">192</span><a id="line.192">            // that bracket around y.</a>
+<span class="sourceLineNo">193</span><a id="line.193">            int y_low = (int)y;                      // the integer part of y</a>
+<span class="sourceLineNo">194</span><a id="line.194">            int y_hi  = y_low + 1;</a>
+<span class="sourceLineNo">195</span><a id="line.195">            if (!transposedLine &amp;&amp; y == h) y_hi = h; // test for the top edge</a>
+<span class="sourceLineNo">196</span><a id="line.196">            if ( transposedLine &amp;&amp; y == w) y_hi = w; // test for the right edge</a>
+<span class="sourceLineNo">197</span><a id="line.197"></a>
+<span class="sourceLineNo">198</span><a id="line.198">            // Let weight be the fractional part of y. We will use</a>
+<span class="sourceLineNo">199</span><a id="line.199">            // weight to determine how much emphasis to place on</a>
+<span class="sourceLineNo">200</span><a id="line.200">            // each of the two pixels that bracket y.</a>
+<span class="sourceLineNo">201</span><a id="line.201">            final float weight = (float)(y - y_low);</a>
+<span class="sourceLineNo">202</span><a id="line.202"></a>
+<span class="sourceLineNo">203</span><a id="line.203">            // Interpolate colors for the low and high pixels.</a>
+<span class="sourceLineNo">204</span><a id="line.204">            // The smaller weight is, the closer y is to the lower</a>
+<span class="sourceLineNo">205</span><a id="line.205">            // pixel, so we give the lower pixel more emphasis when</a>
+<span class="sourceLineNo">206</span><a id="line.206">            // weight is small.</a>
+<span class="sourceLineNo">207</span><a id="line.207">            float r_low = (1 - weight) * r + weight * (bg.getRed()  /255.0f);</a>
+<span class="sourceLineNo">208</span><a id="line.208">            float g_low = (1 - weight) * g + weight * (bg.getGreen()/255.0f);</a>
+<span class="sourceLineNo">209</span><a id="line.209">            float b_low = (1 - weight) * b + weight * (bg.getBlue() /255.0f);</a>
+<span class="sourceLineNo">210</span><a id="line.210">            float r_hi  = weight * r + (1 - weight) * (bg.getRed()  /255.0f);</a>
+<span class="sourceLineNo">211</span><a id="line.211">            float g_hi  = weight * g + (1 - weight) * (bg.getGreen()/255.0f);</a>
+<span class="sourceLineNo">212</span><a id="line.212">            float b_hi  = weight * b + (1 - weight) * (bg.getBlue() /255.0f);</a>
+<span class="sourceLineNo">213</span><a id="line.213">/*</a>
+<span class="sourceLineNo">214</span><a id="line.214">            // You can try replacing the above anti-aliasing code with this</a>
+<span class="sourceLineNo">215</span><a id="line.215">            // code to see that this simple idea doesn't work here (as it</a>
+<span class="sourceLineNo">216</span><a id="line.216">            // did in the previous renderer). This code just distributes the</a>
+<span class="sourceLineNo">217</span><a id="line.217">            // line's color between two adjacent pixels (instead of blending</a>
+<span class="sourceLineNo">218</span><a id="line.218">            // each pixel's color with the back ground color). This code ends</a>
+<span class="sourceLineNo">219</span><a id="line.219">            // up having pixels fade to black, instead of fading to the back</a>
+<span class="sourceLineNo">220</span><a id="line.220">            // ground color.</a>
+<span class="sourceLineNo">221</span><a id="line.221">            float r_low = (1 - weight) * r;</a>
+<span class="sourceLineNo">222</span><a id="line.222">            float g_low = (1 - weight) * g;</a>
+<span class="sourceLineNo">223</span><a id="line.223">            float b_low = (1 - weight) * b;</a>
+<span class="sourceLineNo">224</span><a id="line.224">            float r_hi  = weight * r;</a>
+<span class="sourceLineNo">225</span><a id="line.225">            float g_hi  = weight * g;</a>
+<span class="sourceLineNo">226</span><a id="line.226">            float b_hi  = weight * b;</a>
+<span class="sourceLineNo">227</span><a id="line.227">*/</a>
+<span class="sourceLineNo">228</span><a id="line.228">            if (Rasterize.doGamma)</a>
+<span class="sourceLineNo">229</span><a id="line.229">            {</a>
+<span class="sourceLineNo">230</span><a id="line.230">               // Apply gamma-encoding (gamma-compression) to the colors.</a>
+<span class="sourceLineNo">231</span><a id="line.231">               // https://www.scratchapixel.com/lessons/digital-imaging/digital-images</a>
+<span class="sourceLineNo">232</span><a id="line.232">               // http://blog.johnnovak.net/2016/09/21/what-every-coder-should-know-about-gamma/</a>
+<span class="sourceLineNo">233</span><a id="line.233">               final double gammaInv = 1.0 / Rasterize.GAMMA;</a>
+<span class="sourceLineNo">234</span><a id="line.234">               r_low = (float)Math.pow(r_low, gammaInv);</a>
+<span class="sourceLineNo">235</span><a id="line.235">               r_hi  = (float)Math.pow(r_hi,  gammaInv);</a>
+<span class="sourceLineNo">236</span><a id="line.236">               g_low = (float)Math.pow(g_low, gammaInv);</a>
+<span class="sourceLineNo">237</span><a id="line.237">               g_hi  = (float)Math.pow(g_hi,  gammaInv);</a>
+<span class="sourceLineNo">238</span><a id="line.238">               b_low = (float)Math.pow(b_low, gammaInv);</a>
+<span class="sourceLineNo">239</span><a id="line.239">               b_hi  = (float)Math.pow(b_hi,  gammaInv);</a>
+<span class="sourceLineNo">240</span><a id="line.240">            }</a>
+<span class="sourceLineNo">241</span><a id="line.241"></a>
+<span class="sourceLineNo">242</span><a id="line.242">            // Set this (anti-aliased) pixel in the framebuffer.</a>
+<span class="sourceLineNo">243</span><a id="line.243">            if ( ! transposedLine )</a>
+<span class="sourceLineNo">244</span><a id="line.244">            {</a>
+<span class="sourceLineNo">245</span><a id="line.245">               final int x_vp     = x - 1;      // viewport coordinate</a>
+<span class="sourceLineNo">246</span><a id="line.246">               final int y_vp_low = h - y_low;  // viewport coordinate</a>
+<span class="sourceLineNo">247</span><a id="line.247">               final int y_vp_hi  = h - y_hi;   // viewport coordinate</a>
+<span class="sourceLineNo">248</span><a id="line.248"></a>
+<span class="sourceLineNo">249</span><a id="line.249">               if (Rasterize.debug) logPixelsAA(x, y,</a>
+<span class="sourceLineNo">250</span><a id="line.250">                                                x_vp, y_vp_low, y_vp_hi,</a>
+<span class="sourceLineNo">251</span><a id="line.251">                                                r_low, g_low, b_low,</a>
+<span class="sourceLineNo">252</span><a id="line.252">                                                r_hi,  g_hi,  b_hi,</a>
+<span class="sourceLineNo">253</span><a id="line.253">                                                vp);</a>
+<span class="sourceLineNo">254</span><a id="line.254"></a>
+<span class="sourceLineNo">255</span><a id="line.255">               vp.setPixelVP(x_vp, y_vp_low, new Color(r_low, g_low, b_low));</a>
+<span class="sourceLineNo">256</span><a id="line.256">               vp.setPixelVP(x_vp, y_vp_hi,  new Color(r_hi,  g_hi,  b_hi));</a>
+<span class="sourceLineNo">257</span><a id="line.257">            }</a>
+<span class="sourceLineNo">258</span><a id="line.258">            else // a transposed line</a>
+<span class="sourceLineNo">259</span><a id="line.259">            {</a>
+<span class="sourceLineNo">260</span><a id="line.260">               final int x_vp_low = y_low - 1;  // viewport coordinate</a>
+<span class="sourceLineNo">261</span><a id="line.261">               final int x_vp_hi  = y_hi  - 1;  // viewport coordinate</a>
+<span class="sourceLineNo">262</span><a id="line.262">               final int y_vp     = h - x;      // viewport coordinate</a>
+<span class="sourceLineNo">263</span><a id="line.263"></a>
+<span class="sourceLineNo">264</span><a id="line.264">               if (Rasterize.debug) logPixelsAA(y, x,</a>
+<span class="sourceLineNo">265</span><a id="line.265">                                                x_vp_low, x_vp_hi, y_vp,</a>
+<span class="sourceLineNo">266</span><a id="line.266">                                                r_low, g_low, b_low,</a>
+<span class="sourceLineNo">267</span><a id="line.267">                                                r_hi,  g_hi,  b_hi,</a>
+<span class="sourceLineNo">268</span><a id="line.268">                                                vp);</a>
+<span class="sourceLineNo">269</span><a id="line.269"></a>
+<span class="sourceLineNo">270</span><a id="line.270">               vp.setPixelVP(x_vp_low, y_vp, new Color(r_low, g_low, b_low));</a>
+<span class="sourceLineNo">271</span><a id="line.271">               vp.setPixelVP(x_vp_hi,  y_vp, new Color(r_hi,  g_hi,  b_hi));</a>
+<span class="sourceLineNo">272</span><a id="line.272">            }</a>
+<span class="sourceLineNo">273</span><a id="line.273">         }</a>
+<span class="sourceLineNo">274</span><a id="line.274">         else // No anti-aliasing.</a>
+<span class="sourceLineNo">275</span><a id="line.275">         {</a>
+<span class="sourceLineNo">276</span><a id="line.276">            if (Rasterize.doGamma)</a>
+<span class="sourceLineNo">277</span><a id="line.277">            {</a>
+<span class="sourceLineNo">278</span><a id="line.278">               // Apply gamma-encoding (gamma-compression) to the colors.</a>
+<span class="sourceLineNo">279</span><a id="line.279">               // https://www.scratchapixel.com/lessons/digital-imaging/digital-images</a>
+<span class="sourceLineNo">280</span><a id="line.280">               // http://blog.johnnovak.net/2016/09/21/what-every-coder-should-know-about-gamma/</a>
+<span class="sourceLineNo">281</span><a id="line.281">               final double gammaInv = 1.0 / Rasterize.GAMMA;</a>
+<span class="sourceLineNo">282</span><a id="line.282">               r = (float)Math.pow(r, gammaInv);</a>
+<span class="sourceLineNo">283</span><a id="line.283">               g = (float)Math.pow(g, gammaInv);</a>
+<span class="sourceLineNo">284</span><a id="line.284">               b = (float)Math.pow(b, gammaInv);</a>
+<span class="sourceLineNo">285</span><a id="line.285">            }</a>
+<span class="sourceLineNo">286</span><a id="line.286"></a>
+<span class="sourceLineNo">287</span><a id="line.287">            // The value of y will almost always be between</a>
+<span class="sourceLineNo">288</span><a id="line.288">            // two vertical (or horizontal) pixel coordinates.</a>
+<span class="sourceLineNo">289</span><a id="line.289">            // By rounding off the value of y, we are choosing the</a>
+<span class="sourceLineNo">290</span><a id="line.290">            // nearest logical vertical (or horizontal) pixel coordinate.</a>
+<span class="sourceLineNo">291</span><a id="line.291">            if ( ! transposedLine )</a>
+<span class="sourceLineNo">292</span><a id="line.292">            {</a>
+<span class="sourceLineNo">293</span><a id="line.293">               final int x_vp = x - 1;                  // viewport coordinate</a>
+<span class="sourceLineNo">294</span><a id="line.294">               final int y_vp = h - (int)Math.round(y); // viewport coordinate</a>
+<span class="sourceLineNo">295</span><a id="line.295"></a>
+<span class="sourceLineNo">296</span><a id="line.296">               if (Rasterize.debug) logPixel(x, y,</a>
+<span class="sourceLineNo">297</span><a id="line.297">                                             x_vp, y_vp,</a>
+<span class="sourceLineNo">298</span><a id="line.298">                                             r, g, b,</a>
+<span class="sourceLineNo">299</span><a id="line.299">                                             vp);</a>
+<span class="sourceLineNo">300</span><a id="line.300">               // Log the pixel before setting it so that an array out-</a>
+<span class="sourceLineNo">301</span><a id="line.301">               // of-bounds error will be right after the pixel's address.</a>
+<span class="sourceLineNo">302</span><a id="line.302"></a>
+<span class="sourceLineNo">303</span><a id="line.303">               vp.setPixelVP(x_vp, y_vp, new Color(r, g, b));</a>
+<span class="sourceLineNo">304</span><a id="line.304">            }</a>
+<span class="sourceLineNo">305</span><a id="line.305">            else // a transposed line</a>
+<span class="sourceLineNo">306</span><a id="line.306">            {</a>
+<span class="sourceLineNo">307</span><a id="line.307">               final int x_vp = (int)Math.round(y) - 1; // viewport coordinate</a>
+<span class="sourceLineNo">308</span><a id="line.308">               final int y_vp = h - x;                  // viewport coordinate</a>
+<span class="sourceLineNo">309</span><a id="line.309"></a>
+<span class="sourceLineNo">310</span><a id="line.310">               if (Rasterize.debug) logPixel(y, x,</a>
+<span class="sourceLineNo">311</span><a id="line.311">                                             x_vp, y_vp,</a>
+<span class="sourceLineNo">312</span><a id="line.312">                                             r, g, b,</a>
+<span class="sourceLineNo">313</span><a id="line.313">                                             vp);</a>
+<span class="sourceLineNo">314</span><a id="line.314"></a>
+<span class="sourceLineNo">315</span><a id="line.315">               vp.setPixelVP(x_vp, y_vp, new Color(r, g, b));</a>
+<span class="sourceLineNo">316</span><a id="line.316">            }</a>
+<span class="sourceLineNo">317</span><a id="line.317">         }</a>
+<span class="sourceLineNo">318</span><a id="line.318">         // Advance (x,y) to the next pixel (delta_x is 1, so delta_y is m).</a>
+<span class="sourceLineNo">319</span><a id="line.319">      }</a>
+<span class="sourceLineNo">320</span><a id="line.320">      // Set the pixel for the (x1,y1) endpoint.</a>
+<span class="sourceLineNo">321</span><a id="line.321">      // We do this separately to avoid rounding errors.</a>
+<span class="sourceLineNo">322</span><a id="line.322">      if ( ! transposedLine )</a>
+<span class="sourceLineNo">323</span><a id="line.323">      {</a>
+<span class="sourceLineNo">324</span><a id="line.324">         final int x_vp = (int)x1 - 1;  // viewport coordinate</a>
+<span class="sourceLineNo">325</span><a id="line.325">         final int y_vp = h - (int)y1;  // viewport coordinate</a>
+<span class="sourceLineNo">326</span><a id="line.326"></a>
+<span class="sourceLineNo">327</span><a id="line.327">         if (Rasterize.debug) logPixel(x1, y1,</a>
+<span class="sourceLineNo">328</span><a id="line.328">                                       x_vp, y_vp,</a>
+<span class="sourceLineNo">329</span><a id="line.329">                                       r1, g1, b1,</a>
+<span class="sourceLineNo">330</span><a id="line.330">                                       vp);</a>
+<span class="sourceLineNo">331</span><a id="line.331"></a>
+<span class="sourceLineNo">332</span><a id="line.332">         vp.setPixelVP(x_vp, y_vp, new Color(r1, g1, b1));</a>
+<span class="sourceLineNo">333</span><a id="line.333">      }</a>
+<span class="sourceLineNo">334</span><a id="line.334">      else // a transposed line</a>
+<span class="sourceLineNo">335</span><a id="line.335">      {</a>
+<span class="sourceLineNo">336</span><a id="line.336">         final int x_vp = (int)y1 - 1;  // viewport coordinate</a>
+<span class="sourceLineNo">337</span><a id="line.337">         final int y_vp = h - (int)x1;  // viewport coordinate</a>
+<span class="sourceLineNo">338</span><a id="line.338"></a>
+<span class="sourceLineNo">339</span><a id="line.339">         if (Rasterize.debug) logPixel(y1, x1,</a>
+<span class="sourceLineNo">340</span><a id="line.340">                                       x_vp, y_vp,</a>
+<span class="sourceLineNo">341</span><a id="line.341">                                       r1, g1, b1,</a>
+<span class="sourceLineNo">342</span><a id="line.342">                                       vp);</a>
+<span class="sourceLineNo">343</span><a id="line.343"></a>
+<span class="sourceLineNo">344</span><a id="line.344">         vp.setPixelVP(x_vp, y_vp, new Color(r1, g1, b1));</a>
+<span class="sourceLineNo">345</span><a id="line.345">      }</a>
+<span class="sourceLineNo">346</span><a id="line.346">   }</a>
+<span class="sourceLineNo">347</span><a id="line.347"></a>
+<span class="sourceLineNo">348</span><a id="line.348"></a>
+<span class="sourceLineNo">349</span><a id="line.349"></a>
+<span class="sourceLineNo">350</span><a id="line.350">   // Private default constructor to enforce noninstantiable class.</a>
+<span class="sourceLineNo">351</span><a id="line.351">   // See Item 4 in "Effective Java", 3rd Ed, Joshua Bloch.</a>
+<span class="sourceLineNo">352</span><a id="line.352">   private Rasterize_AntiAlias_Line() {</a>
+<span class="sourceLineNo">353</span><a id="line.353">      throw new AssertionError();</a>
+<span class="sourceLineNo">354</span><a id="line.354">   }</a>
+<span class="sourceLineNo">355</span><a id="line.355">}</a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</main>
+</body>
+</html>

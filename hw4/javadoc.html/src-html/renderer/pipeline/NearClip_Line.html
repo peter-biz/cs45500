@@ -1,0 +1,276 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<main role="main">
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span><a id="line.1">/*</a>
+<span class="sourceLineNo">002</span><a id="line.2"> * Renderer 9. The MIT License.</a>
+<span class="sourceLineNo">003</span><a id="line.3"> * Copyright (c) 2022 rlkraft@pnw.edu</a>
+<span class="sourceLineNo">004</span><a id="line.4"> * See LICENSE for details.</a>
+<span class="sourceLineNo">005</span><a id="line.5">*/</a>
+<span class="sourceLineNo">006</span><a id="line.6"></a>
+<span class="sourceLineNo">007</span><a id="line.7">package renderer.pipeline;</a>
+<span class="sourceLineNo">008</span><a id="line.8"></a>
+<span class="sourceLineNo">009</span><a id="line.9">import renderer.scene.*;</a>
+<span class="sourceLineNo">010</span><a id="line.10">import renderer.scene.primitives.*;</a>
+<span class="sourceLineNo">011</span><a id="line.11">import static renderer.pipeline.PipelineLogger.*;</a>
+<span class="sourceLineNo">012</span><a id="line.12"></a>
+<span class="sourceLineNo">013</span><a id="line.13">import java.awt.Color;</a>
+<span class="sourceLineNo">014</span><a id="line.14">import java.util.List;</a>
+<span class="sourceLineNo">015</span><a id="line.15">import java.util.ArrayList;</a>
+<span class="sourceLineNo">016</span><a id="line.16">import java.util.Optional;</a>
+<span class="sourceLineNo">017</span><a id="line.17"></a>
+<span class="sourceLineNo">018</span><a id="line.18">/**</a>
+<span class="sourceLineNo">019</span><a id="line.19">   Clip in camera space any {@link LineSegment} that crosses the</a>
+<span class="sourceLineNo">020</span><a id="line.20">   camera's near clipping plane {@code z = -near}. Interpolate</a>
+<span class="sourceLineNo">021</span><a id="line.21">   {@link Vertex} color from any clipped off {@link Vertex} to</a>
+<span class="sourceLineNo">022</span><a id="line.22">   the new {@link Vertex}.</a>
+<span class="sourceLineNo">023</span><a id="line.23">&lt;p&gt;</a>
+<span class="sourceLineNo">024</span><a id="line.24">   This clipping algorithm is a simplification of the Liang-Barsky</a>
+<span class="sourceLineNo">025</span><a id="line.25">   Parametric Line Clipping algorithm.</a>
+<span class="sourceLineNo">026</span><a id="line.26">*/</a>
+<span class="sourceLineNo">027</span><a id="line.27">public final class NearClip_Line</a>
+<span class="sourceLineNo">028</span><a id="line.28">{</a>
+<span class="sourceLineNo">029</span><a id="line.29">   /**</a>
+<span class="sourceLineNo">030</span><a id="line.30">      If the {@link LineSegment} crosses the camera's near plane,</a>
+<span class="sourceLineNo">031</span><a id="line.31">      then return a clipped version that is contained in the far</a>
+<span class="sourceLineNo">032</span><a id="line.32">      side of the near plane. The new, clipped {@link LineSegment}</a>
+<span class="sourceLineNo">033</span><a id="line.33">      object is returned wrapped in an {@link Optional} object.</a>
+<span class="sourceLineNo">034</span><a id="line.34">      &lt;p&gt;</a>
+<span class="sourceLineNo">035</span><a id="line.35">      One new clipped {@link Vertex} object may be added to the</a>
+<span class="sourceLineNo">036</span><a id="line.36">      {@link Model}'s vertex list and one new interpolated</a>
+<span class="sourceLineNo">037</span><a id="line.37">      {@link Color} object may be added to the model's color list.</a>
+<span class="sourceLineNo">038</span><a id="line.38">      &lt;p&gt;</a>
+<span class="sourceLineNo">039</span><a id="line.39">      If the {@link LineSegment} is completely on the camera side</a>
+<span class="sourceLineNo">040</span><a id="line.40">      of the near plane, then return an empty {@link Optional} object</a>
+<span class="sourceLineNo">041</span><a id="line.41">      to indicate that the {@link LineSegment} should be discarded</a>
+<span class="sourceLineNo">042</span><a id="line.42">      from the model's {@link Primitive} list.</a>
+<span class="sourceLineNo">043</span><a id="line.43"></a>
+<span class="sourceLineNo">044</span><a id="line.44">      @param model   {@link Model} that the {@link LineSegment} {@code ls} comes from</a>
+<span class="sourceLineNo">045</span><a id="line.45">      @param ls      {@link LineSegment} to be clipped</a>
+<span class="sourceLineNo">046</span><a id="line.46">      @param camera  {@link Camera} that determines the near clipping plane</a>
+<span class="sourceLineNo">047</span><a id="line.47">      @return a clipped version of {@code ls} wrapped in an {@link Optional} object</a>
+<span class="sourceLineNo">048</span><a id="line.48">   */</a>
+<span class="sourceLineNo">049</span><a id="line.49">   public static Optional&lt;Primitive&gt; clip(final Model model,</a>
+<span class="sourceLineNo">050</span><a id="line.50">                                          final LineSegment ls,</a>
+<span class="sourceLineNo">051</span><a id="line.51">                                          final Camera camera)</a>
+<span class="sourceLineNo">052</span><a id="line.52">   {</a>
+<span class="sourceLineNo">053</span><a id="line.53">      // Make local copies of several values.</a>
+<span class="sourceLineNo">054</span><a id="line.54">      final double n = camera.n;</a>
+<span class="sourceLineNo">055</span><a id="line.55"></a>
+<span class="sourceLineNo">056</span><a id="line.56">      final int vIndex0 = ls.vIndexList.get(0);</a>
+<span class="sourceLineNo">057</span><a id="line.57">      final int vIndex1 = ls.vIndexList.get(1);</a>
+<span class="sourceLineNo">058</span><a id="line.58">      final Vertex v0 = model.vertexList.get(vIndex0);</a>
+<span class="sourceLineNo">059</span><a id="line.59">      final Vertex v1 = model.vertexList.get(vIndex1);</a>
+<span class="sourceLineNo">060</span><a id="line.60"></a>
+<span class="sourceLineNo">061</span><a id="line.61">      final double z0 = v0.z;</a>
+<span class="sourceLineNo">062</span><a id="line.62">      final double z1 = v1.z;</a>
+<span class="sourceLineNo">063</span><a id="line.63"></a>
+<span class="sourceLineNo">064</span><a id="line.64">      // 1. Check for trivial accept.</a>
+<span class="sourceLineNo">065</span><a id="line.65">      if ( z0 &lt;= n &amp;&amp; z1 &lt;= n ) // on the far side of the near plane z = n</a>
+<span class="sourceLineNo">066</span><a id="line.66">      {</a>
+<span class="sourceLineNo">067</span><a id="line.67">         if (Clip.debug) logMessage("-- Near_Clip: Trivial accept.");</a>
+<span class="sourceLineNo">068</span><a id="line.68">         return Optional.of(ls); // better than "return ls;"</a>
+<span class="sourceLineNo">069</span><a id="line.69">      }</a>
+<span class="sourceLineNo">070</span><a id="line.70">      // 2. Check for trivial delete.</a>
+<span class="sourceLineNo">071</span><a id="line.71">      if ( z0 &gt; n &amp;&amp; z1 &gt; n ) // on the near side of the near plane z = n</a>
+<span class="sourceLineNo">072</span><a id="line.72">      {</a>
+<span class="sourceLineNo">073</span><a id="line.73">         if (Clip.debug) logMessage("-- Near_Clip: Trivial delete.");</a>
+<span class="sourceLineNo">074</span><a id="line.74">         return Optional.empty(); // better than "return null;"</a>
+<span class="sourceLineNo">075</span><a id="line.75">      }</a>
+<span class="sourceLineNo">076</span><a id="line.76">      // 3. Need to clip this line segment.</a>
+<span class="sourceLineNo">077</span><a id="line.77">      else // crosses the near plane z = n</a>
+<span class="sourceLineNo">078</span><a id="line.78">      {</a>
+<span class="sourceLineNo">079</span><a id="line.79">         return Optional.of(interpolateNewVertex(model, ls, n));</a>
+<span class="sourceLineNo">080</span><a id="line.80">      }</a>
+<span class="sourceLineNo">081</span><a id="line.81">   }</a>
+<span class="sourceLineNo">082</span><a id="line.82"></a>
+<span class="sourceLineNo">083</span><a id="line.83"></a>
+<span class="sourceLineNo">084</span><a id="line.84">   /**</a>
+<span class="sourceLineNo">085</span><a id="line.85">      This method takes a line segment with one vertex on the near</a>
+<span class="sourceLineNo">086</span><a id="line.86">      side of the near clipping plane (in front of clipping plane)</a>
+<span class="sourceLineNo">087</span><a id="line.87">      and the other vertex on the far side of the near clipping plane</a>
+<span class="sourceLineNo">088</span><a id="line.88">      (behind the clipping plane).</a>
+<span class="sourceLineNo">089</span><a id="line.89">      &lt;p&gt;</a>
+<span class="sourceLineNo">090</span><a id="line.90">      This method returns the line segment from the clipping plane to the</a>
+<span class="sourceLineNo">091</span><a id="line.91">      vertex on the far side of the clipping plane.</a>
+<span class="sourceLineNo">092</span><a id="line.92">      &lt;p&gt;</a>
+<span class="sourceLineNo">093</span><a id="line.93">      This method solves for the value of {@code t} for which the z-component</a>
+<span class="sourceLineNo">094</span><a id="line.94">      of the parametric equation</a>
+<span class="sourceLineNo">095</span><a id="line.95">      &lt;pre&gt;{@code</a>
+<span class="sourceLineNo">096</span><a id="line.96">                  p(t) = (1 - t) * v0 + t * v1</a>
+<span class="sourceLineNo">097</span><a id="line.97">      }&lt;/pre&gt;</a>
+<span class="sourceLineNo">098</span><a id="line.98">      intersects the given clipping plane, {@code z = n}. The solved for</a>
+<span class="sourceLineNo">099</span><a id="line.99">      value of {@code t} is then plugged into the x and y components of the</a>
+<span class="sourceLineNo">100</span><a id="line.100">      parametric equation to get the coordinates of the intersection point.</a>
+<span class="sourceLineNo">101</span><a id="line.101"></a>
+<span class="sourceLineNo">102</span><a id="line.102">      @param model  {@link Model} that the {@link LineSegment} {@code ls} comes from</a>
+<span class="sourceLineNo">103</span><a id="line.103">      @param ls     the {@link LineSegment} being clipped</a>
+<span class="sourceLineNo">104</span><a id="line.104">      @param n      the z-coordinate of the near clipping plane</a>
+<span class="sourceLineNo">105</span><a id="line.105">      @return the index of the new interpolated {@link Vertex} object</a>
+<span class="sourceLineNo">106</span><a id="line.106">   */</a>
+<span class="sourceLineNo">107</span><a id="line.107">   private static LineSegment interpolateNewVertex(final Model model,</a>
+<span class="sourceLineNo">108</span><a id="line.108">                                                   final LineSegment ls,</a>
+<span class="sourceLineNo">109</span><a id="line.109">                                                   final double n)</a>
+<span class="sourceLineNo">110</span><a id="line.110">   {</a>
+<span class="sourceLineNo">111</span><a id="line.111">      // Make local copies of several values.</a>
+<span class="sourceLineNo">112</span><a id="line.112">      final int vIndex0 = ls.vIndexList.get(0);</a>
+<span class="sourceLineNo">113</span><a id="line.113">      final Vertex v0  = model.vertexList.get(vIndex0);</a>
+<span class="sourceLineNo">114</span><a id="line.114">      final double v0x = v0.x;</a>
+<span class="sourceLineNo">115</span><a id="line.115">      final double v0y = v0.y;</a>
+<span class="sourceLineNo">116</span><a id="line.116">      final double v0z = v0.z;</a>
+<span class="sourceLineNo">117</span><a id="line.117">      final int cIndex0 = ls.cIndexList.get(0);</a>
+<span class="sourceLineNo">118</span><a id="line.118">      float c0[] = model.colorList.get(cIndex0).getRGBColorComponents(null);</a>
+<span class="sourceLineNo">119</span><a id="line.119"></a>
+<span class="sourceLineNo">120</span><a id="line.120">      final int vIndex1 = ls.vIndexList.get(1);</a>
+<span class="sourceLineNo">121</span><a id="line.121">      final Vertex v1  = model.vertexList.get(vIndex1);</a>
+<span class="sourceLineNo">122</span><a id="line.122">      final double v1x = v1.x;</a>
+<span class="sourceLineNo">123</span><a id="line.123">      final double v1y = v1.y;</a>
+<span class="sourceLineNo">124</span><a id="line.124">      final double v1z = v1.z;</a>
+<span class="sourceLineNo">125</span><a id="line.125">      final int cIndex1 = ls.cIndexList.get(1);</a>
+<span class="sourceLineNo">126</span><a id="line.126">      float c1[] = model.colorList.get(cIndex1).getRGBColorComponents(null);</a>
+<span class="sourceLineNo">127</span><a id="line.127"></a>
+<span class="sourceLineNo">128</span><a id="line.128">      // Interpolate between v1 and v0.</a>
+<span class="sourceLineNo">129</span><a id="line.129">      final double t = (n - v1z) / (v0z - v1z);</a>
+<span class="sourceLineNo">130</span><a id="line.130"></a>
+<span class="sourceLineNo">131</span><a id="line.131">      // Use the value of t to interpolate the coordinates of the new vertex.</a>
+<span class="sourceLineNo">132</span><a id="line.132">      final double x = (1 - t) * v1x + t * v0x;</a>
+<span class="sourceLineNo">133</span><a id="line.133">      final double y = (1 - t) * v1y + t * v0y;</a>
+<span class="sourceLineNo">134</span><a id="line.134">      final double z = n;</a>
+<span class="sourceLineNo">135</span><a id="line.135"></a>
+<span class="sourceLineNo">136</span><a id="line.136">      // Use the value of t to interpolate the color of the new vertex.</a>
+<span class="sourceLineNo">137</span><a id="line.137">      final float t_ = (float)t;</a>
+<span class="sourceLineNo">138</span><a id="line.138">      final float r = (1 - t_) * c1[0] + t_ * c0[0];</a>
+<span class="sourceLineNo">139</span><a id="line.139">      final float g = (1 - t_) * c1[1] + t_ * c0[1];</a>
+<span class="sourceLineNo">140</span><a id="line.140">      final float b = (1 - t_) * c1[2] + t_ * c0[2];</a>
+<span class="sourceLineNo">141</span><a id="line.141"></a>
+<span class="sourceLineNo">142</span><a id="line.142">      // Modify the Model to contain the new Vertex.</a>
+<span class="sourceLineNo">143</span><a id="line.143">      final Vertex newVertex = new Vertex(x, y, z);</a>
+<span class="sourceLineNo">144</span><a id="line.144">      final int vIndexNew = model.vertexList.size();</a>
+<span class="sourceLineNo">145</span><a id="line.145">      model.vertexList.add(newVertex);</a>
+<span class="sourceLineNo">146</span><a id="line.146"></a>
+<span class="sourceLineNo">147</span><a id="line.147">      // Modify the Model to contain the new Color.</a>
+<span class="sourceLineNo">148</span><a id="line.148">      final Color newColor = new Color(r, g, b);</a>
+<span class="sourceLineNo">149</span><a id="line.149">      final int cIndexNew = model.colorList.size();</a>
+<span class="sourceLineNo">150</span><a id="line.150">      model.colorList.add(newColor);</a>
+<span class="sourceLineNo">151</span><a id="line.151"></a>
+<span class="sourceLineNo">152</span><a id="line.152">      // Which Vertex of ls is on the near side of the clipping plane?</a>
+<span class="sourceLineNo">153</span><a id="line.153">      final int vNearIndex;</a>
+<span class="sourceLineNo">154</span><a id="line.154">      if ( v0z &gt; n ) // clip off v0</a>
+<span class="sourceLineNo">155</span><a id="line.155">      {</a>
+<span class="sourceLineNo">156</span><a id="line.156">         vNearIndex = 0;</a>
+<span class="sourceLineNo">157</span><a id="line.157">      }</a>
+<span class="sourceLineNo">158</span><a id="line.158">      else // clip off v1</a>
+<span class="sourceLineNo">159</span><a id="line.159">      {</a>
+<span class="sourceLineNo">160</span><a id="line.160">         vNearIndex = 1;</a>
+<span class="sourceLineNo">161</span><a id="line.161">      }</a>
+<span class="sourceLineNo">162</span><a id="line.162"></a>
+<span class="sourceLineNo">163</span><a id="line.163">      if (Clip.debug)</a>
+<span class="sourceLineNo">164</span><a id="line.164">      {</a>
+<span class="sourceLineNo">165</span><a id="line.165">         final String vClipped = (0==vNearIndex) ? "v0" : "v1";</a>
+<span class="sourceLineNo">166</span><a id="line.166">         logMessage(String.format("-- Clip off %s at z=%.3f",</a>
+<span class="sourceLineNo">167</span><a id="line.167">                                        vClipped, n));</a>
+<span class="sourceLineNo">168</span><a id="line.168">         logMessage(String.format("-- t = %.25f", t));</a>
+<span class="sourceLineNo">169</span><a id="line.169">         logMessage(String.format("-- &lt;x0, y0, z0&gt; = &lt;% .8f, % .8f, % .8f",</a>
+<span class="sourceLineNo">170</span><a id="line.170">                                       v0x, v0y, v0z));</a>
+<span class="sourceLineNo">171</span><a id="line.171">         logMessage(String.format("-- &lt;x1, y1, z1&gt; = &lt;% .8f, % .8f, % .8f",</a>
+<span class="sourceLineNo">172</span><a id="line.172">                                       v1x, v1y, v1z));</a>
+<span class="sourceLineNo">173</span><a id="line.173">         logMessage(String.format("-- &lt;x,  y,  z&gt;  = &lt;% .8f, % .8f, % .8f",</a>
+<span class="sourceLineNo">174</span><a id="line.174">                                       x,  y,  z));</a>
+<span class="sourceLineNo">175</span><a id="line.175">         logMessage(String.format("-- &lt;r0, g0, b0&gt; = &lt;%.8f, %.8f, %.8f&gt;",</a>
+<span class="sourceLineNo">176</span><a id="line.176">                                       c0[0], c0[1], c0[2]));</a>
+<span class="sourceLineNo">177</span><a id="line.177">         logMessage(String.format("-- &lt;r1, g1, b1&gt; = &lt;%.8f, %.8f, %.8f&gt;",</a>
+<span class="sourceLineNo">178</span><a id="line.178">                                       c1[0], c1[1], c1[2]));</a>
+<span class="sourceLineNo">179</span><a id="line.179">         logMessage(String.format("-- &lt;r,  g,  b&gt;  = &lt;%.8f, %.8f, %.8f&gt;",</a>
+<span class="sourceLineNo">180</span><a id="line.180">                                       r,  g,  b));</a>
+<span class="sourceLineNo">181</span><a id="line.181">      }</a>
+<span class="sourceLineNo">182</span><a id="line.182"></a>
+<span class="sourceLineNo">183</span><a id="line.183">      final LineSegment result;</a>
+<span class="sourceLineNo">184</span><a id="line.184">      if (0 == vNearIndex)</a>
+<span class="sourceLineNo">185</span><a id="line.185">      {</a>
+<span class="sourceLineNo">186</span><a id="line.186">         result = new LineSegment(vIndexNew, vIndex1, cIndexNew, cIndex1);</a>
+<span class="sourceLineNo">187</span><a id="line.187">      }</a>
+<span class="sourceLineNo">188</span><a id="line.188">      else</a>
+<span class="sourceLineNo">189</span><a id="line.189">      {</a>
+<span class="sourceLineNo">190</span><a id="line.190">         result = new LineSegment(vIndex0, vIndexNew, cIndex0, cIndexNew);</a>
+<span class="sourceLineNo">191</span><a id="line.191">      }</a>
+<span class="sourceLineNo">192</span><a id="line.192">      return result;</a>
+<span class="sourceLineNo">193</span><a id="line.193">   }</a>
+<span class="sourceLineNo">194</span><a id="line.194"></a>
+<span class="sourceLineNo">195</span><a id="line.195"></a>
+<span class="sourceLineNo">196</span><a id="line.196"></a>
+<span class="sourceLineNo">197</span><a id="line.197">   // Private default constructor to enforce noninstantiable class.</a>
+<span class="sourceLineNo">198</span><a id="line.198">   // See Item 4 in "Effective Java", 3rd Ed, Joshua Bloch.</a>
+<span class="sourceLineNo">199</span><a id="line.199">   private NearClip_Line() {</a>
+<span class="sourceLineNo">200</span><a id="line.200">      throw new AssertionError();</a>
+<span class="sourceLineNo">201</span><a id="line.201">   }</a>
+<span class="sourceLineNo">202</span><a id="line.202">}</a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</main>
+</body>
+</html>

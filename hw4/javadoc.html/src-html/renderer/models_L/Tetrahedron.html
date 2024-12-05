@@ -1,0 +1,337 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<main role="main">
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span><a id="line.1">/*</a>
+<span class="sourceLineNo">002</span><a id="line.2"> * Renderer Models. The MIT License.</a>
+<span class="sourceLineNo">003</span><a id="line.3"> * Copyright (c) 2022 rlkraft@pnw.edu</a>
+<span class="sourceLineNo">004</span><a id="line.4"> * See LICENSE for details.</a>
+<span class="sourceLineNo">005</span><a id="line.5">*/</a>
+<span class="sourceLineNo">006</span><a id="line.6"></a>
+<span class="sourceLineNo">007</span><a id="line.7">package renderer.models_L;</a>
+<span class="sourceLineNo">008</span><a id="line.8"></a>
+<span class="sourceLineNo">009</span><a id="line.9">import renderer.scene.*;</a>
+<span class="sourceLineNo">010</span><a id="line.10">import renderer.scene.primitives.*;</a>
+<span class="sourceLineNo">011</span><a id="line.11">import renderer.scene.util.MeshMaker;</a>
+<span class="sourceLineNo">012</span><a id="line.12"></a>
+<span class="sourceLineNo">013</span><a id="line.13">/**</a>
+<span class="sourceLineNo">014</span><a id="line.14">   Create a wireframe model of a regular tetrahedron</a>
+<span class="sourceLineNo">015</span><a id="line.15">   with its center at the origin, having edge length</a>
+<span class="sourceLineNo">016</span><a id="line.16">   {@code 2*sqrt(2)}, and with its vertices at corners</a>
+<span class="sourceLineNo">017</span><a id="line.17">   of the cube with vertices {@code (±1, ±1, ±1)}.</a>
+<span class="sourceLineNo">018</span><a id="line.18">&lt;p&gt;</a>
+<span class="sourceLineNo">019</span><a id="line.19">   See &lt;a href="https://en.wikipedia.org/wiki/Tetrahedron" target="_top"&gt;</a>
+<span class="sourceLineNo">020</span><a id="line.20">                https://en.wikipedia.org/wiki/Tetrahedron&lt;/a&gt;</a>
+<span class="sourceLineNo">021</span><a id="line.21"></a>
+<span class="sourceLineNo">022</span><a id="line.22">   @see Cube</a>
+<span class="sourceLineNo">023</span><a id="line.23">   @see Octahedron</a>
+<span class="sourceLineNo">024</span><a id="line.24">   @see Icosahedron</a>
+<span class="sourceLineNo">025</span><a id="line.25">   @see Dodecahedron</a>
+<span class="sourceLineNo">026</span><a id="line.26">*/</a>
+<span class="sourceLineNo">027</span><a id="line.27">public class Tetrahedron extends Model implements MeshMaker</a>
+<span class="sourceLineNo">028</span><a id="line.28">{</a>
+<span class="sourceLineNo">029</span><a id="line.29">   public final int n1;</a>
+<span class="sourceLineNo">030</span><a id="line.30">   public final int n2;</a>
+<span class="sourceLineNo">031</span><a id="line.31">   public final boolean useTwoParameterConstructor;</a>
+<span class="sourceLineNo">032</span><a id="line.32"></a>
+<span class="sourceLineNo">033</span><a id="line.33">   /**</a>
+<span class="sourceLineNo">034</span><a id="line.34">      Create a regular tetrahedron with its center at</a>
+<span class="sourceLineNo">035</span><a id="line.35">      the origin, having edge length {@code 2*sqrt(2)},</a>
+<span class="sourceLineNo">036</span><a id="line.36">      and with its vertices at corners of the cube with</a>
+<span class="sourceLineNo">037</span><a id="line.37">      vertices {@code (±1, ±1, ±1)}.</a>
+<span class="sourceLineNo">038</span><a id="line.38">   */</a>
+<span class="sourceLineNo">039</span><a id="line.39">   public Tetrahedron()</a>
+<span class="sourceLineNo">040</span><a id="line.40">   {</a>
+<span class="sourceLineNo">041</span><a id="line.41">      this(false);</a>
+<span class="sourceLineNo">042</span><a id="line.42">   }</a>
+<span class="sourceLineNo">043</span><a id="line.43"></a>
+<span class="sourceLineNo">044</span><a id="line.44"></a>
+<span class="sourceLineNo">045</span><a id="line.45">   /**</a>
+<span class="sourceLineNo">046</span><a id="line.46">      Create a regular tetrahedron or its dual tetrahedron</a>
+<span class="sourceLineNo">047</span><a id="line.47">      (the dual of a tetrahedron is another tetrahedron).</a>
+<span class="sourceLineNo">048</span><a id="line.48">   &lt;p&gt;</a>
+<span class="sourceLineNo">049</span><a id="line.49">      &lt;a href="https://en.wikipedia.org/wiki/Tetrahedron#Regular_tetrahedron" target="_top"&gt;</a>
+<span class="sourceLineNo">050</span><a id="line.50">               https://en.wikipedia.org/wiki/Tetrahedron#Regular_tetrahedron&lt;/a&gt;</a>
+<span class="sourceLineNo">051</span><a id="line.51">   &lt;p&gt;</a>
+<span class="sourceLineNo">052</span><a id="line.52">      The combination of these two dual tetrahedrons is a stellated octahedron.</a>
+<span class="sourceLineNo">053</span><a id="line.53">   &lt;p&gt;</a>
+<span class="sourceLineNo">054</span><a id="line.54">      &lt;a href="https://en.wikipedia.org/wiki/Stellated_octahedron" target="_top"&gt;</a>
+<span class="sourceLineNo">055</span><a id="line.55">               https://en.wikipedia.org/wiki/Stellated_octahedron&lt;/a&gt;</a>
+<span class="sourceLineNo">056</span><a id="line.56"></a>
+<span class="sourceLineNo">057</span><a id="line.57">      @param dual  choose between the two dual tetrahedrons</a>
+<span class="sourceLineNo">058</span><a id="line.58">   */</a>
+<span class="sourceLineNo">059</span><a id="line.59">   public Tetrahedron(final boolean dual)</a>
+<span class="sourceLineNo">060</span><a id="line.60">   {</a>
+<span class="sourceLineNo">061</span><a id="line.61">      super("Tetrahedron");</a>
+<span class="sourceLineNo">062</span><a id="line.62"></a>
+<span class="sourceLineNo">063</span><a id="line.63">      this.n1 = 0;</a>
+<span class="sourceLineNo">064</span><a id="line.64">      this.n2 = 0;</a>
+<span class="sourceLineNo">065</span><a id="line.65">      useTwoParameterConstructor = true;</a>
+<span class="sourceLineNo">066</span><a id="line.66"></a>
+<span class="sourceLineNo">067</span><a id="line.67">      // Create the tetrahedron's geometry.</a>
+<span class="sourceLineNo">068</span><a id="line.68">      // It has 4 vertices and 6 edges.</a>
+<span class="sourceLineNo">069</span><a id="line.69">      if (! dual)</a>
+<span class="sourceLineNo">070</span><a id="line.70">      {</a>
+<span class="sourceLineNo">071</span><a id="line.71">         addVertex(new Vertex( 1,  1,  1),</a>
+<span class="sourceLineNo">072</span><a id="line.72">                   new Vertex(-1,  1, -1),</a>
+<span class="sourceLineNo">073</span><a id="line.73">                   new Vertex( 1, -1, -1),</a>
+<span class="sourceLineNo">074</span><a id="line.74">                   new Vertex(-1, -1,  1));</a>
+<span class="sourceLineNo">075</span><a id="line.75">      }</a>
+<span class="sourceLineNo">076</span><a id="line.76">      else // Create the dual tetrahedron by</a>
+<span class="sourceLineNo">077</span><a id="line.77">      {    // inverting the coordinates given above.</a>
+<span class="sourceLineNo">078</span><a id="line.78">         addVertex(new Vertex(-1, -1, -1),</a>
+<span class="sourceLineNo">079</span><a id="line.79">                   new Vertex( 1, -1,  1),</a>
+<span class="sourceLineNo">080</span><a id="line.80">                   new Vertex(-1,  1,  1),</a>
+<span class="sourceLineNo">081</span><a id="line.81">                   new Vertex( 1,  1, -1));</a>
+<span class="sourceLineNo">082</span><a id="line.82">      }</a>
+<span class="sourceLineNo">083</span><a id="line.83"></a>
+<span class="sourceLineNo">084</span><a id="line.84">      addPrimitive(new LineSegment(0, 1),  //top (bottom) edge</a>
+<span class="sourceLineNo">085</span><a id="line.85">                   new LineSegment(2, 3),  //bottom (top) edge</a>
+<span class="sourceLineNo">086</span><a id="line.86">                   new LineSegment(0, 2),</a>
+<span class="sourceLineNo">087</span><a id="line.87">                   new LineSegment(0, 3),</a>
+<span class="sourceLineNo">088</span><a id="line.88">                   new LineSegment(1, 2),</a>
+<span class="sourceLineNo">089</span><a id="line.89">                   new LineSegment(1, 3));</a>
+<span class="sourceLineNo">090</span><a id="line.90">   }</a>
+<span class="sourceLineNo">091</span><a id="line.91"></a>
+<span class="sourceLineNo">092</span><a id="line.92"></a>
+<span class="sourceLineNo">093</span><a id="line.93">   /**</a>
+<span class="sourceLineNo">094</span><a id="line.94">      Create a regular tetrahedron with its center at</a>
+<span class="sourceLineNo">095</span><a id="line.95">      the origin, having edge length {@code 2*sqrt(2)},</a>
+<span class="sourceLineNo">096</span><a id="line.96">      and with its vertices at corners of the cube with</a>
+<span class="sourceLineNo">097</span><a id="line.97">      vertices {@code (±1, ±1, ±1)}.</a>
+<span class="sourceLineNo">098</span><a id="line.98">      &lt;p&gt;</a>
+<span class="sourceLineNo">099</span><a id="line.99">      Add line segments fanning out from each vertex to</a>
+<span class="sourceLineNo">100</span><a id="line.100">      its opposite edge.</a>
+<span class="sourceLineNo">101</span><a id="line.101"></a>
+<span class="sourceLineNo">102</span><a id="line.102">      @param n1 number of lines fanning out from v0 and v1 towards the edge (v2, v3)</a>
+<span class="sourceLineNo">103</span><a id="line.103">      @param n2 number of lines fanning out from v2 and v3 towards the edge (v0, v1)</a>
+<span class="sourceLineNo">104</span><a id="line.104">      @throws IllegalArgumentException if {@code n1} is less than 0</a>
+<span class="sourceLineNo">105</span><a id="line.105">      @throws IllegalArgumentException if {@code n2} is less than 0</a>
+<span class="sourceLineNo">106</span><a id="line.106">   */</a>
+<span class="sourceLineNo">107</span><a id="line.107">   public Tetrahedron(final int n1, final int n2)</a>
+<span class="sourceLineNo">108</span><a id="line.108">   {</a>
+<span class="sourceLineNo">109</span><a id="line.109">      super(String.format("Tetrahedron(%d,%d)", n1, n2));</a>
+<span class="sourceLineNo">110</span><a id="line.110"></a>
+<span class="sourceLineNo">111</span><a id="line.111">      if (n1 &lt; 0)</a>
+<span class="sourceLineNo">112</span><a id="line.112">         throw new IllegalArgumentException("n1 must be greater than or equal to 0");</a>
+<span class="sourceLineNo">113</span><a id="line.113">      if (n2 &lt; 0)</a>
+<span class="sourceLineNo">114</span><a id="line.114">         throw new IllegalArgumentException("n2 must be greater than or equal to 0");</a>
+<span class="sourceLineNo">115</span><a id="line.115"></a>
+<span class="sourceLineNo">116</span><a id="line.116">      this.n1 = n1;</a>
+<span class="sourceLineNo">117</span><a id="line.117">      this.n2 = n2;</a>
+<span class="sourceLineNo">118</span><a id="line.118">      useTwoParameterConstructor = true;</a>
+<span class="sourceLineNo">119</span><a id="line.119"></a>
+<span class="sourceLineNo">120</span><a id="line.120">      // Create the tetrahedron's geometry.</a>
+<span class="sourceLineNo">121</span><a id="line.121">      // It has 4 vertices and 6 edges.</a>
+<span class="sourceLineNo">122</span><a id="line.122">      final Vertex v0 = new Vertex( 1,  1,  1),</a>
+<span class="sourceLineNo">123</span><a id="line.123">                   v1 = new Vertex(-1,  1, -1),</a>
+<span class="sourceLineNo">124</span><a id="line.124">                   v2 = new Vertex( 1, -1, -1),</a>
+<span class="sourceLineNo">125</span><a id="line.125">                   v3 = new Vertex(-1, -1,  1);</a>
+<span class="sourceLineNo">126</span><a id="line.126"></a>
+<span class="sourceLineNo">127</span><a id="line.127">      addVertex(v0, v1, v2, v3);</a>
+<span class="sourceLineNo">128</span><a id="line.128"></a>
+<span class="sourceLineNo">129</span><a id="line.129">      addPrimitive(new LineSegment(0, 1),  //top (bottom) edge</a>
+<span class="sourceLineNo">130</span><a id="line.130">                   new LineSegment(2, 3),  //bottom (top) edge</a>
+<span class="sourceLineNo">131</span><a id="line.131">                   new LineSegment(0, 2),</a>
+<span class="sourceLineNo">132</span><a id="line.132">                   new LineSegment(0, 3),</a>
+<span class="sourceLineNo">133</span><a id="line.133">                   new LineSegment(1, 2),</a>
+<span class="sourceLineNo">134</span><a id="line.134">                   new LineSegment(1, 3));</a>
+<span class="sourceLineNo">135</span><a id="line.135"></a>
+<span class="sourceLineNo">136</span><a id="line.136">      fan(n1, 0, v2, v3); // fan out from v0</a>
+<span class="sourceLineNo">137</span><a id="line.137">      fan(n1, 1, v2, v3); // fan out from v1</a>
+<span class="sourceLineNo">138</span><a id="line.138">      fan(n2, 2, v0, v1); // fan out from v2</a>
+<span class="sourceLineNo">139</span><a id="line.139">      fan(n2, 3, v0, v1); // fan out from v3</a>
+<span class="sourceLineNo">140</span><a id="line.140">   }</a>
+<span class="sourceLineNo">141</span><a id="line.141"></a>
+<span class="sourceLineNo">142</span><a id="line.142"></a>
+<span class="sourceLineNo">143</span><a id="line.143">   /**</a>
+<span class="sourceLineNo">144</span><a id="line.144">      Create a regular tetrahedron with its center at</a>
+<span class="sourceLineNo">145</span><a id="line.145">      the origin, having edge length {@code 2*sqrt(2)},</a>
+<span class="sourceLineNo">146</span><a id="line.146">      and with its vertices at corners of the cube with</a>
+<span class="sourceLineNo">147</span><a id="line.147">      vertices {@code (±1, ±1, ±1)}.</a>
+<span class="sourceLineNo">148</span><a id="line.148">      &lt;p&gt;</a>
+<span class="sourceLineNo">149</span><a id="line.149">      Add line segments fanning out from each vertex onto</a>
+<span class="sourceLineNo">150</span><a id="line.150">      its three adjacent sides.</a>
+<span class="sourceLineNo">151</span><a id="line.151"></a>
+<span class="sourceLineNo">152</span><a id="line.152">      @param m0 number of lines fanning out from v0 onto each adjacent side of the tetrahedron</a>
+<span class="sourceLineNo">153</span><a id="line.153">      @param m1 number of lines fanning out from v1 onto each adjacent side of the tetrahedron</a>
+<span class="sourceLineNo">154</span><a id="line.154">      @param m2 number of lines fanning out from v2 onto each adjacent side of the tetrahedron</a>
+<span class="sourceLineNo">155</span><a id="line.155">      @param m3 number of lines fanning out from v3 onto each adjacent side of the tetrahedron</a>
+<span class="sourceLineNo">156</span><a id="line.156">      @throws IllegalArgumentException if {@code m0} is less than 0</a>
+<span class="sourceLineNo">157</span><a id="line.157">      @throws IllegalArgumentException if {@code m1} is less than 0</a>
+<span class="sourceLineNo">158</span><a id="line.158">      @throws IllegalArgumentException if {@code m2} is less than 0</a>
+<span class="sourceLineNo">159</span><a id="line.159">      @throws IllegalArgumentException if {@code m3} is less than 0</a>
+<span class="sourceLineNo">160</span><a id="line.160">   */</a>
+<span class="sourceLineNo">161</span><a id="line.161">   public Tetrahedron(final int m0, final int m1, final int m2, final int m3)</a>
+<span class="sourceLineNo">162</span><a id="line.162">   {</a>
+<span class="sourceLineNo">163</span><a id="line.163">      super(String.format("Tetrahedron(%d,%d,%d,%d)", m0, m1, m2, m3));</a>
+<span class="sourceLineNo">164</span><a id="line.164"></a>
+<span class="sourceLineNo">165</span><a id="line.165">      if (m0 &lt; 0)</a>
+<span class="sourceLineNo">166</span><a id="line.166">         throw new IllegalArgumentException("m0 must be greater than or equal to 0");</a>
+<span class="sourceLineNo">167</span><a id="line.167">      if (m1 &lt; 0)</a>
+<span class="sourceLineNo">168</span><a id="line.168">         throw new IllegalArgumentException("m1 must be greater than or equal to 0");</a>
+<span class="sourceLineNo">169</span><a id="line.169">      if (m2 &lt; 0)</a>
+<span class="sourceLineNo">170</span><a id="line.170">         throw new IllegalArgumentException("m2 must be greater than or equal to 0");</a>
+<span class="sourceLineNo">171</span><a id="line.171">      if (m3 &lt; 0)</a>
+<span class="sourceLineNo">172</span><a id="line.172">         throw new IllegalArgumentException("m3 must be greater than or equal to 0");</a>
+<span class="sourceLineNo">173</span><a id="line.173"></a>
+<span class="sourceLineNo">174</span><a id="line.174">      this.n1 = m0;</a>
+<span class="sourceLineNo">175</span><a id="line.175">      this.n2 = m1;</a>
+<span class="sourceLineNo">176</span><a id="line.176">      useTwoParameterConstructor = false;</a>
+<span class="sourceLineNo">177</span><a id="line.177"></a>
+<span class="sourceLineNo">178</span><a id="line.178">      // Create the tetrahedron's geometry.</a>
+<span class="sourceLineNo">179</span><a id="line.179">      // It has 4 vertices and 6 edges.</a>
+<span class="sourceLineNo">180</span><a id="line.180">      final Vertex v0 = new Vertex( 1,  1,  1),</a>
+<span class="sourceLineNo">181</span><a id="line.181">                   v1 = new Vertex(-1,  1, -1),</a>
+<span class="sourceLineNo">182</span><a id="line.182">                   v2 = new Vertex( 1, -1, -1),</a>
+<span class="sourceLineNo">183</span><a id="line.183">                   v3 = new Vertex(-1, -1,  1);</a>
+<span class="sourceLineNo">184</span><a id="line.184"></a>
+<span class="sourceLineNo">185</span><a id="line.185">      addVertex(v0, v1, v2, v3);</a>
+<span class="sourceLineNo">186</span><a id="line.186"></a>
+<span class="sourceLineNo">187</span><a id="line.187">      addPrimitive(new LineSegment(0, 1),  //top (bottom) edge</a>
+<span class="sourceLineNo">188</span><a id="line.188">                   new LineSegment(2, 3),  //bottom (top) edge</a>
+<span class="sourceLineNo">189</span><a id="line.189">                   new LineSegment(0, 2),</a>
+<span class="sourceLineNo">190</span><a id="line.190">                   new LineSegment(0, 3),</a>
+<span class="sourceLineNo">191</span><a id="line.191">                   new LineSegment(1, 2),</a>
+<span class="sourceLineNo">192</span><a id="line.192">                   new LineSegment(1, 3));</a>
+<span class="sourceLineNo">193</span><a id="line.193"></a>
+<span class="sourceLineNo">194</span><a id="line.194">      fan(m0, 0, v1, v2, v3); // fan out from v0</a>
+<span class="sourceLineNo">195</span><a id="line.195">      fan(m1, 1, v0, v2, v3); // fan out from v1</a>
+<span class="sourceLineNo">196</span><a id="line.196">      fan(m2, 2, v0, v1, v3); // fan out from v2</a>
+<span class="sourceLineNo">197</span><a id="line.197">      fan(m3, 3, v0, v1, v2); // fan out from v3</a>
+<span class="sourceLineNo">198</span><a id="line.198">   }</a>
+<span class="sourceLineNo">199</span><a id="line.199"></a>
+<span class="sourceLineNo">200</span><a id="line.200"></a>
+<span class="sourceLineNo">201</span><a id="line.201">   /**</a>
+<span class="sourceLineNo">202</span><a id="line.202">      Create {@code n} line segments fanning out from {@link Vertex}</a>
+<span class="sourceLineNo">203</span><a id="line.203">      {@code v0} towards the three edges spanned by the other three</a>
+<span class="sourceLineNo">204</span><a id="line.204">      vertices.</a>
+<span class="sourceLineNo">205</span><a id="line.205"></a>
+<span class="sourceLineNo">206</span><a id="line.206">      @param n   number of lines fanning out from {@link Vertex} {@code v0}</a>
+<span class="sourceLineNo">207</span><a id="line.207">      @param v0  index in the {@link Vertex} list of the vertex to fan out from</a>
+<span class="sourceLineNo">208</span><a id="line.208">      @param v1  a {@link Vertex} opposite to {@code v0}</a>
+<span class="sourceLineNo">209</span><a id="line.209">      @param v2  a {@link Vertex} opposite to {@code v0}</a>
+<span class="sourceLineNo">210</span><a id="line.210">      @param v3  a {@link Vertex} opposite to {@code v0}</a>
+<span class="sourceLineNo">211</span><a id="line.211">   */</a>
+<span class="sourceLineNo">212</span><a id="line.212">   private void fan(final int n, final int v0, final Vertex v1,</a>
+<span class="sourceLineNo">213</span><a id="line.213">                                               final Vertex v2,</a>
+<span class="sourceLineNo">214</span><a id="line.214">                                               final Vertex v3)</a>
+<span class="sourceLineNo">215</span><a id="line.215">   {</a>
+<span class="sourceLineNo">216</span><a id="line.216">      fan(n, v0, v1, v2);</a>
+<span class="sourceLineNo">217</span><a id="line.217">      fan(n, v0, v2, v3);</a>
+<span class="sourceLineNo">218</span><a id="line.218">      fan(n, v0, v3, v1);</a>
+<span class="sourceLineNo">219</span><a id="line.219">   }</a>
+<span class="sourceLineNo">220</span><a id="line.220"></a>
+<span class="sourceLineNo">221</span><a id="line.221"></a>
+<span class="sourceLineNo">222</span><a id="line.222">   /**</a>
+<span class="sourceLineNo">223</span><a id="line.223">      Create {@code n} line segments fanning out from {@link Vertex}</a>
+<span class="sourceLineNo">224</span><a id="line.224">      {@code v0} towards the edge spanned by the other two vertices.</a>
+<span class="sourceLineNo">225</span><a id="line.225"></a>
+<span class="sourceLineNo">226</span><a id="line.226">      @param n   number of lines fanning out from {@link Vertex} {@code v0}</a>
+<span class="sourceLineNo">227</span><a id="line.227">      @param v0  index in the {@link Vertex} list of the vertex to fan out from</a>
+<span class="sourceLineNo">228</span><a id="line.228">      @param v1  a {@link Vertex} opposite to {@code v0}</a>
+<span class="sourceLineNo">229</span><a id="line.229">      @param v2  a {@link Vertex} opposite to {@code v0}</a>
+<span class="sourceLineNo">230</span><a id="line.230">   */</a>
+<span class="sourceLineNo">231</span><a id="line.231">   private void fan(final int n, final int v0, final Vertex v1,</a>
+<span class="sourceLineNo">232</span><a id="line.232">                                               final Vertex v2)</a>
+<span class="sourceLineNo">233</span><a id="line.233">   {</a>
+<span class="sourceLineNo">234</span><a id="line.234">      for (int i = 0; i &lt; n; ++i)</a>
+<span class="sourceLineNo">235</span><a id="line.235">      {</a>
+<span class="sourceLineNo">236</span><a id="line.236">         // Use linear interpolation (lerp).</a>
+<span class="sourceLineNo">237</span><a id="line.237">         final double t = (double)(i+1) / (double)(n+1);</a>
+<span class="sourceLineNo">238</span><a id="line.238">         final double x = (1-t) * v1.x + t * v2.x;</a>
+<span class="sourceLineNo">239</span><a id="line.239">         final double y = (1-t) * v1.y + t * v2.y;</a>
+<span class="sourceLineNo">240</span><a id="line.240">         final double z = (1-t) * v1.z + t * v2.z;</a>
+<span class="sourceLineNo">241</span><a id="line.241">         final Vertex v = new Vertex(x, y, z);</a>
+<span class="sourceLineNo">242</span><a id="line.242">         final int index = vertexList.size();</a>
+<span class="sourceLineNo">243</span><a id="line.243">         addVertex(v);</a>
+<span class="sourceLineNo">244</span><a id="line.244">         addPrimitive(new LineSegment(v0, index));</a>
+<span class="sourceLineNo">245</span><a id="line.245">      }</a>
+<span class="sourceLineNo">246</span><a id="line.246">   }</a>
+<span class="sourceLineNo">247</span><a id="line.247"></a>
+<span class="sourceLineNo">248</span><a id="line.248"></a>
+<span class="sourceLineNo">249</span><a id="line.249"></a>
+<span class="sourceLineNo">250</span><a id="line.250">   // Implement the MeshMaker interface (three methods).</a>
+<span class="sourceLineNo">251</span><a id="line.251">   @Override public int getHorzCount() {return this.n1;}</a>
+<span class="sourceLineNo">252</span><a id="line.252"></a>
+<span class="sourceLineNo">253</span><a id="line.253">   @Override public int getVertCount() {return this.n2;}</a>
+<span class="sourceLineNo">254</span><a id="line.254"></a>
+<span class="sourceLineNo">255</span><a id="line.255">   @Override</a>
+<span class="sourceLineNo">256</span><a id="line.256">   public Tetrahedron remake(final int n, final int k)</a>
+<span class="sourceLineNo">257</span><a id="line.257">   {</a>
+<span class="sourceLineNo">258</span><a id="line.258">      if (useTwoParameterConstructor)</a>
+<span class="sourceLineNo">259</span><a id="line.259">         return new Tetrahedron(n, k);</a>
+<span class="sourceLineNo">260</span><a id="line.260">      else</a>
+<span class="sourceLineNo">261</span><a id="line.261">         return new Tetrahedron(n, k, k, n);</a>
+<span class="sourceLineNo">262</span><a id="line.262">   }</a>
+<span class="sourceLineNo">263</span><a id="line.263">}//Tetrahedron</a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</main>
+</body>
+</html>

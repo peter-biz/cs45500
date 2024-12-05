@@ -1,0 +1,180 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CS 45500 / CS 51580 - Homework 4</title>
+  <meta name="description" content="CS 45500 Homework 4">
+  <meta name="author" content="Roger L. Kraft">
+  <link rel="stylesheet" href="http://math.pnw.edu/~rlkraft/roger-v2.css">
+  <!--[if lt IE 9]>
+    <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+</head>
+
+<body>
+<!--
+<header>
+  <a href="http://math.pnw.edu/~rlkraft/" title="Roger L. Kraft">Roger L. Kraft</a>
+</header>
+ -->
+<nav>
+  <ul class="nav-list" role="navigation">
+    <li><a href="../cs45500.html">CS 45500</a></li>
+    <li><a href="../syllabus.html">Syllabus</a></li>
+    <li><a href="../class.html">Lectures and Readings</a></li>
+    <li><a href="../homework.html">Homework Assignments</a></li>
+  </ul>
+  <ul class="nav-list" role="navigation">
+    <li><a href="http://math.pnw.edu/~rlkraft/roger.html">Roger Kraft</a></li>
+    <li><a href="https://pnw.edu/computer-science/">Computer Science Department</a></li>
+    <li><a href="https://pnw.edu/engineering/">School of Engineering</a></li>
+    <li><a href="https://pnw.edu/college-of-engineering-sciences/">College of Engineering & Sciences</a></li>
+    <li><a href="https://pnw.edu/">Purdue University Northwest</a></li>
+  </ul>
+</nav>
+
+<section id="Content">
+<h1>
+Programming Assignment 4<br>
+CS 45500 / CS 51580<br>
+Computer Graphics<br>
+Fall, 2024
+</h1>
+
+<p>
+This assignment makes use of the files contained in this <a href="http://cs.pnw.edu/~rlkraft/cs45500/homework/hw4.zip">zip file</a>.
+This assignment is due Friday, December 6.
+</p>
+
+<p>
+This assignment has two parts. The first part is based on <a href="http://cs.pnw.edu/~rlkraft/cs45500/for-class/renderer_7.zip">renderer_7.zip</a> and specifically on the sub-folder "<code>clients_r7\aspect_ratio_examples</code>". The second part is based on <a href="http://cs.pnw.edu/~rlkraft/cs45500/for-class/renderer_9.zip">renderer_9.zip</a> and specifically on the sub-folder "<code>basic_transformation_examples</code>".
+</p>
+
+<p>
+For the first part of this assignment you will write code that uses the <a href="http://math.pnw.edu/~rlkraft/cs45500/for-class/API_view-rectangle_to_viewport.png">Camera and Viewport APIs</a> to handle changes in the program window's size and <a href="https://en.wikipedia.org/wiki/Aspect_ratio_(image)">aspect ratio</a>. For the second part of this assignment you will use <a href="https://www.diag.uniroma1.it/~degiacom/didattica/informatica_grafica/geom_sn.pdf#page=3">linear transformations</a> from <a href="http://cs.pnw.edu/~rlkraft/cs45500/for-class/renderer_9.zip">renderer_9</a> to create an animation of the letter models from <a href="http://cs.pnw.edu/~rlkraft/cs45500/homework/hw2.html">hw2</A>.
+</p>
+
+<p>
+In the <a href="http://cs.pnw.edu/~rlkraft/cs45500/homework/hw4.zip">zip file</a> there is an executable jar file, <code>hw4_demo.jar</code>, that you can run. Also in the zip file is a program file, <code>Hw4.java</code>, that you need to complete so that it runs the same way as the demo program.
+</p>
+
+<p>
+For the first part of this assignment you need to write code that reacts to the user changing the size and aspect ratio of the program's window. Play around with the demo program to get a sense of what your code should implement.
+</p>
+
+<p>
+When the demo program starts up, the dimensions of the window are 800 pixels wide and 400 pixels high, so the program begins with an aspect ratio of 2.0. Start the demo program and drag the bottom edge of the program window down to decrease the window's aspect ratio to be less than 2.0. Notice that the program begins to letterbox the scene into a viewport. Also notice that there is a scrollbar along the right edge of the program window. Use the scrollbar to move the letterboxed viewport up and down within the framebuffer.
+<p>
+
+<p>
+Next, move the bottom edge of the window up so that there is no letterbox. Then drag the right edge of the program window to the right to increase the aspect ratio to be more than 2.0. Notice that the program scales the scene horizontally and begins to crop the scene vertically. You can use the scrollbar to pan the cropped area up and down within the framebuffer.
+</p>
+
+<p>
+in general,  when the user makes the program window's aspect ratio less than 2.0, than the program should letterbox a maximally sized viewport with aspect ratio 2.0 within the framebuffer. The scrollbar lets the user move the letterbox up and down within the framebuffer.
+</p>
+
+<p>
+When the user makes the program window's aspect ratio greater than 2.0, than the program should crop the scene in the camera's image-plane with a view-rectangle that has the same aspect ratio as that of the framebuffer. The scrollbar lets the user move the view-rectangle up and down within the view-plane.
+</p>
+
+<p>
+When the program starts up, the dimensions of the framebuffer (and its viewport) are 800 pixels wide by 400 pixels high and the view-rectangle in the camera's image plane has the boundaries <code>left = -2</code>, <code>right = 2</code>, <code>bottom = -1</code>, and <code>top = 1</code>. Both the initial viewport and the initial view-rectangle have aspect ratio 2.0. We will refer to this initial view-rectangle as the <em>reference view-rectangle</em>. When the framebuffer's aspect ratio is greater than 2.0, you should crop the reference view-rectangle, so that its aspect ratio is the same as the framebuffer's, by moving reference view-rectangle's top edge down and its bottom edge up, but leaving its left and right edges at -2 and 2, respectively. The scrollbar value determines how much each of the top and bottom edges are moved.
+</p>
+
+<p>
+A <a href="https://docs.oracle.com/en/java/javase/21/docs//api/java.desktop/javax/swing/JScrollBar.html">JScrollBar</a> component represents a user adjustable value between 0 and 100. A <a href="https://docs.oracle.com/en/java/javase/21/docs//api/java.desktop/javax/swing/JScrollBar.html">JScrollBar</a> generates <a href="https://docs.oracle.com/en/java/javase/21/docs//api/java.desktop/java/awt/event/AdjustmentEvent.html">AdjustmentEvent</a>s which must be handled by an <a href="https://docs.oracle.com/en/java/javase/21/docs//api/java.desktop/java/awt/event/AdjustmentListener.html">AdjustmentListener</a> object. The <a href="https://docs.oracle.com/en/java/javase/21/docs//api/java.desktop/java/awt/event/AdjustmentListener.html#adjustmentValueChanged(java.awt.event.AdjustmentEvent)">adjustmentValueChanged()</a> method in the <a href="https://docs.oracle.com/en/java/javase/21/docs//api/java.desktop/java/awt/event/AdjustmentListener.html">AdjustmentListener</a> object can call the <a href="https://docs.oracle.com/en/java/javase/21/docs//api/java.desktop/java/awt/event/AdjustmentEvent.html#getValue()">getValue()</a> method from the <a href="https://docs.oracle.com/en/java/javase/21/docs//api/java.desktop/java/awt/event/AdjustmentEvent.html">AdjustmentEvent</a> object to find out the current (user set) value of the scrollbar.
+</p>
+<p>Since the scrollbar value  is a number between 0 and 100, you can think of it as the percentage of the empty letterbox space that is above the viewport (when the program window's aspect ratio is less than 2.0) or you can think of the scrollbar value as the percentage of the reference view-rectangle that is being cropped off from the top (when the aspect ratio is greater than 2.0).
+</p>
+<p>
+For a simple example that uses a JScrollBar, look at <code>Watch_Adjustment.java</code> from the sub-folder <code>watch-events</code> from <a href="http://math.pnw.edu/~rlkraft/cs45500/for-class/JavaGuiEvents.zip">JavaGuiEvents.zip</a>.
+</p>
+
+<p>
+As the user changes the program's window, the scene's image should always remain undistorted; the circle should always appear circular and never elliptical.
+</p>
+
+
+<p>
+For the second part of this assignment you need to use <a href="https://www.diag.uniroma1.it/~degiacom/didattica/informatica_grafica/geom_sls.pdf#page=3">transformation matrices</a> on the <code>P</code>, <code>N</code>, and <code>W</code> models to create an animation.
+</p>
+
+<p>
+In the <a href="http://cs.pnw.edu/~rlkraft/cs45500/for-class/renderer_9.zip">renderer_9</a> zip file there is a sub folder "<code>basic transformation examples</code>" containing several examples using translations and rotations to create animations. Build the Javadoc for that folder and open the <code>html</code> sub-folder's <code>index.html</code> file using a web browser. The Javadocs combine each example's explanation with it animated gif file.
+</p>
+
+<p>
+Also look at <code>RotationExample.java</code> from the <code>clients_r9</code> sub-folder of <a href="http://cs.pnw.edu/~rlkraft/cs45500/for-class/renderer_9.zip">renderer_9.zip</a>.
+</p>
+
+<p>
+Here is the most important thing to remember from those examples. If you want to rotate a model around the point <code>(a, b, c)</code> in the model's coordinate system, and you want this rotation to happen at the point <code>(u, v, w)</code> in the world coordinate system, then you would do that with the following three transformations (where <code>position</code> is the <code>Position</code> object holding the <code>Model</code> object).
+</p>
+<pre>
+      position.transform( Matrix.translate(u, v, w)
+                  .times( Matrix.rotate_(theta) ) // choose any axis
+                  .times( Matrix.translate(-a, -b, -c) ) );
+</pre>
+
+<p>
+In the demo program, the <code>P</code> model is rotating around the x-axis. The <code>N</code> model is rotating around the y-axis. The <code>W</code> model is rotating around both the y-axis and the z-axis. Quickly start and stop the animation many times so that you can figure out what the points <code>(a, b, c)</code> and <code>(u, v, w)</code> are for each model.
+</p>
+
+<p>
+The two parts of this assignment are independent of each other. You can solve them in ether order.
+</p>
+
+<p>
+For the first part, I think you should first get it working for windows that have an aspect ratio less than 2.0. That uses letterboxing without any cropping. So you only need to adjust the viewport. Then do windows with aspect ratio greater than 2.0. The viewport will be all of the framebuffer, but you will need to adjust the view-rectangle.
+</p>
+
+<p>
+For the second part, the rotations of the three letters are independent of each other. So work on one letter at a time.
+</p>
+
+<p>
+<a href="http://cs.pnw.edu/~rlkraft/cs45500/handin.html">Turn in</a> a zip file called <code>CS455Hw4Surname.zip</code> (where <code>Surname</code> is your last name) containing only your version of <code>Hw4.java</code>.
+</p>
+
+<p>
+This assignment is due Friday, December 6.
+</p>
+
+<p>
+Here are references to some relevant classes in the Java API.
+<ul>
+<li><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.desktop/javax/swing/Timer.html">Timer</a></li>
+<li><a href="https://docs.oracle.com/javase/tutorial/uiswing/misc/timer.html">How to Use Swing Timers</a></li>
+<li><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.desktop/java/awt/event/ActionListener.html">ActionListener</a></li>
+<li><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.desktop/java/awt/event/ActionEvent.html">ActionEvent</a></li>
+
+<li><a href="https://docs.oracle.com/en/java/javase/21/docs//api/java.desktop/javax/swing/JScrollBar.html">JScrollBar</a></li>
+<li><a href="https://docs.oracle.com/en/java/javase/21/docs//api/java.desktop/java/awt/Adjustable.html">Adjustable</a>
+<li><a href="https://docs.oracle.com/en/java/javase/21/docs//api/java.desktop/java/awt/event/AdjustmentListener.html">AdjustmentListener</a></li>
+<li><a href="https://docs.oracle.com/en/java/javase/21/docs//api/java.desktop/java/awt/event/AdjustmentEvent.html">AdjustmentEvent</a></li>
+</li>
+
+<li><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.desktop/java/awt/event/ComponentListener.html">ComponentListener</a></li>
+<li><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.desktop/java/awt/event/ComponentEvent.html">ComponentEvent</a></li>
+
+<li><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.desktop/java/awt/event/KeyListener.html">KeyListener</a></li>
+<li><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.desktop/java/awt/event/KeyEvent.html">KeyEvent</a></li>
+</ul>
+</p>
+
+</section>
+
+<footer>
+  <script language="JavaScript" type="text/javascript">
+    document.write("<font size=\"-2\"><i>Last modified on " + document.lastModified + ".<\/i><\/font>");
+  </script>
+  <br>
+  <a href="mailto:rlkraft@pnw.edu"><font size="-2"><i>compliments and criticisms</i></font></a>
+</footer>
+
+</body>
+</html>

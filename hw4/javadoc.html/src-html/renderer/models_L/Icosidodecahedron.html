@@ -1,0 +1,233 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<main role="main">
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span><a id="line.1">/*</a>
+<span class="sourceLineNo">002</span><a id="line.2"> * Renderer Models. The MIT License.</a>
+<span class="sourceLineNo">003</span><a id="line.3"> * Copyright (c) 2022 rlkraft@pnw.edu</a>
+<span class="sourceLineNo">004</span><a id="line.4"> * See LICENSE for details.</a>
+<span class="sourceLineNo">005</span><a id="line.5">*/</a>
+<span class="sourceLineNo">006</span><a id="line.6"></a>
+<span class="sourceLineNo">007</span><a id="line.7">package renderer.models_L;</a>
+<span class="sourceLineNo">008</span><a id="line.8"></a>
+<span class="sourceLineNo">009</span><a id="line.9">import renderer.scene.*;</a>
+<span class="sourceLineNo">010</span><a id="line.10">import renderer.scene.primitives.*;</a>
+<span class="sourceLineNo">011</span><a id="line.11"></a>
+<span class="sourceLineNo">012</span><a id="line.12">/**</a>
+<span class="sourceLineNo">013</span><a id="line.13">   Create a wireframe model of a icosidodecahedron</a>
+<span class="sourceLineNo">014</span><a id="line.14">   with its center at the origin, having edge length</a>
+<span class="sourceLineNo">015</span><a id="line.15">   &lt;pre&gt;{@code</a>
+<span class="sourceLineNo">016</span><a id="line.16">     4/(1+sqrt(5)) = 1.2361,</a>
+<span class="sourceLineNo">017</span><a id="line.17">   }&lt;/pre&gt;</a>
+<span class="sourceLineNo">018</span><a id="line.18">   and with its vertices on a sphere of radius</a>
+<span class="sourceLineNo">019</span><a id="line.19">   &lt;pre&gt;{@code</a>
+<span class="sourceLineNo">020</span><a id="line.20">     4/(1+sqrt(5)) * sin(2Pi/5) = 1.1756.</a>
+<span class="sourceLineNo">021</span><a id="line.21">   }&lt;/pre&gt;</a>
+<span class="sourceLineNo">022</span><a id="line.22">&lt;p&gt;</a>
+<span class="sourceLineNo">023</span><a id="line.23">   See &lt;a href="https://en.wikipedia.org/wiki/Icosidodecahedron" target="_top"&gt;</a>
+<span class="sourceLineNo">024</span><a id="line.24">                https://en.wikipedia.org/wiki/Icosidodecahedron&lt;/a&gt;</a>
+<span class="sourceLineNo">025</span><a id="line.25"></a>
+<span class="sourceLineNo">026</span><a id="line.26">   @see Tetrahedron</a>
+<span class="sourceLineNo">027</span><a id="line.27">   @see Cube</a>
+<span class="sourceLineNo">028</span><a id="line.28">   @see Octahedron</a>
+<span class="sourceLineNo">029</span><a id="line.29">   @see Dodecahedron</a>
+<span class="sourceLineNo">030</span><a id="line.30">   @see Icosahedron</a>
+<span class="sourceLineNo">031</span><a id="line.31">*/</a>
+<span class="sourceLineNo">032</span><a id="line.32">public class Icosidodecahedron extends Model</a>
+<span class="sourceLineNo">033</span><a id="line.33">{</a>
+<span class="sourceLineNo">034</span><a id="line.34">   /**</a>
+<span class="sourceLineNo">035</span><a id="line.35">      Create a icosidodecahedron with its center at</a>
+<span class="sourceLineNo">036</span><a id="line.36">      the origin, having edge length</a>
+<span class="sourceLineNo">037</span><a id="line.37">      &lt;pre&gt;{@code</a>
+<span class="sourceLineNo">038</span><a id="line.38">        4/(1+sqrt(5)) = 1.2361,</a>
+<span class="sourceLineNo">039</span><a id="line.39">      }&lt;/pre&gt;</a>
+<span class="sourceLineNo">040</span><a id="line.40">      and with its vertices on a sphere of radius</a>
+<span class="sourceLineNo">041</span><a id="line.41">      &lt;pre&gt;{@code</a>
+<span class="sourceLineNo">042</span><a id="line.42">        4/(1+sqrt(5)) * sin(2Pi/5) = 1.1756.</a>
+<span class="sourceLineNo">043</span><a id="line.43">      }&lt;/pre&gt;</a>
+<span class="sourceLineNo">044</span><a id="line.44">   */</a>
+<span class="sourceLineNo">045</span><a id="line.45">   public Icosidodecahedron()</a>
+<span class="sourceLineNo">046</span><a id="line.46">   {</a>
+<span class="sourceLineNo">047</span><a id="line.47">      super("Icosidodecahedron");</a>
+<span class="sourceLineNo">048</span><a id="line.48"></a>
+<span class="sourceLineNo">049</span><a id="line.49">      // Create the icosidodecahedron's geometry.</a>
+<span class="sourceLineNo">050</span><a id="line.50">      // It has 30 vertices and 60 edges.</a>
+<span class="sourceLineNo">051</span><a id="line.51">      //https://en.wikipedia.org/wiki/Icosidodecahedron#Cartesian_coordinates</a>
+<span class="sourceLineNo">052</span><a id="line.52">      //http://www.georgehart.com/virtual-polyhedra/vrml/icosidodecahedron.wrl</a>
+<span class="sourceLineNo">053</span><a id="line.53">      final double t = (1 + Math.sqrt(5))/2;  // golden ratio</a>
+<span class="sourceLineNo">054</span><a id="line.54">      final double r = t - 1; // (-1 + Math.sqrt(5))/2;</a>
+<span class="sourceLineNo">055</span><a id="line.55">      addVertex(new Vertex( 0,          0,          1.051462),</a>
+<span class="sourceLineNo">056</span><a id="line.56">                new Vertex( r,          0,          0.8506508),</a>
+<span class="sourceLineNo">057</span><a id="line.57">                new Vertex( 0.2763932,  0.5527864,  0.8506508),</a>
+<span class="sourceLineNo">058</span><a id="line.58">                new Vertex(-r,          0,          0.8506508),</a>
+<span class="sourceLineNo">059</span><a id="line.59">                new Vertex(-0.2763932, -0.5527864,  0.8506508),</a>
+<span class="sourceLineNo">060</span><a id="line.60">                new Vertex( 1,          0,          0.3249197),</a>
+<span class="sourceLineNo">061</span><a id="line.61">                new Vertex( 0.7236068, -0.5527864,  0.5257311),</a>
+<span class="sourceLineNo">062</span><a id="line.62">                new Vertex(-0.1708204,  0.8944272,  0.5257311),</a>
+<span class="sourceLineNo">063</span><a id="line.63">                new Vertex( 0.4472136,  0.8944272,  0.3249197),</a>
+<span class="sourceLineNo">064</span><a id="line.64">                new Vertex(-1,          0,          0.3249197),</a>
+<span class="sourceLineNo">065</span><a id="line.65">                new Vertex(-0.7236068,  0.5527864,  0.5257311),</a>
+<span class="sourceLineNo">066</span><a id="line.66">                new Vertex( 0.1708204, -0.8944272,  0.5257311),</a>
+<span class="sourceLineNo">067</span><a id="line.67">                new Vertex(-0.4472136, -0.8944272,  0.3249197),</a>
+<span class="sourceLineNo">068</span><a id="line.68">                new Vertex( 1,          0,         -0.3249197),</a>
+<span class="sourceLineNo">069</span><a id="line.69">                new Vertex( 0.8944272,  0.5527864,  0),</a>
+<span class="sourceLineNo">070</span><a id="line.70">                new Vertex( 0.5527864, -0.8944272,  0),</a>
+<span class="sourceLineNo">071</span><a id="line.71">                new Vertex(-0.5527864,  0.8944272,  0),</a>
+<span class="sourceLineNo">072</span><a id="line.72">                new Vertex( 0.4472136,  0.8944272, -0.3249197),</a>
+<span class="sourceLineNo">073</span><a id="line.73">                new Vertex(-1,          0,         -0.3249197),</a>
+<span class="sourceLineNo">074</span><a id="line.74">                new Vertex(-0.8944272, -0.5527864,  0),</a>
+<span class="sourceLineNo">075</span><a id="line.75">                new Vertex(-0.4472136, -0.8944272, -0.3249197),</a>
+<span class="sourceLineNo">076</span><a id="line.76">                new Vertex( r,          0,         -0.8506508),</a>
+<span class="sourceLineNo">077</span><a id="line.77">                new Vertex( 0.7236068, -0.5527864, -0.5257311),</a>
+<span class="sourceLineNo">078</span><a id="line.78">                new Vertex( 0.1708204, -0.8944272, -0.5257311),</a>
+<span class="sourceLineNo">079</span><a id="line.79">                new Vertex(-0.7236068,  0.5527864, -0.5257311),</a>
+<span class="sourceLineNo">080</span><a id="line.80">                new Vertex(-0.1708204,  0.8944272, -0.5257311),</a>
+<span class="sourceLineNo">081</span><a id="line.81">                new Vertex( 0.2763932,  0.5527864, -0.8506508),</a>
+<span class="sourceLineNo">082</span><a id="line.82">                new Vertex(-r,          0,         -0.8506508),</a>
+<span class="sourceLineNo">083</span><a id="line.83">                new Vertex(-0.2763932, -0.5527864, -0.8506508),</a>
+<span class="sourceLineNo">084</span><a id="line.84">                new Vertex( 0,          0,         -1.051462));</a>
+<span class="sourceLineNo">085</span><a id="line.85"></a>
+<span class="sourceLineNo">086</span><a id="line.86">      // Create 60 line segments (as 12 pentagon faces).</a>
+<span class="sourceLineNo">087</span><a id="line.87">      addPrimitive(new LineSegment( 0,  2),</a>
+<span class="sourceLineNo">088</span><a id="line.88">                   new LineSegment( 2,  7),</a>
+<span class="sourceLineNo">089</span><a id="line.89">                   new LineSegment( 7, 10),</a>
+<span class="sourceLineNo">090</span><a id="line.90">                   new LineSegment(10,  3),</a>
+<span class="sourceLineNo">091</span><a id="line.91">                   new LineSegment( 3,  0),</a>
+<span class="sourceLineNo">092</span><a id="line.92"></a>
+<span class="sourceLineNo">093</span><a id="line.93">                   new LineSegment( 0,  4),</a>
+<span class="sourceLineNo">094</span><a id="line.94">                   new LineSegment( 4, 11),</a>
+<span class="sourceLineNo">095</span><a id="line.95">                   new LineSegment(11,  6),</a>
+<span class="sourceLineNo">096</span><a id="line.96">                   new LineSegment( 6,  1),</a>
+<span class="sourceLineNo">097</span><a id="line.97">                   new LineSegment( 1,  0),</a>
+<span class="sourceLineNo">098</span><a id="line.98"></a>
+<span class="sourceLineNo">099</span><a id="line.99">                   new LineSegment( 1,  5),</a>
+<span class="sourceLineNo">100</span><a id="line.100">                   new LineSegment( 5, 14),</a>
+<span class="sourceLineNo">101</span><a id="line.101">                   new LineSegment(14,  8),</a>
+<span class="sourceLineNo">102</span><a id="line.102">                   new LineSegment( 8,  2),</a>
+<span class="sourceLineNo">103</span><a id="line.103">                   new LineSegment( 2,  1),</a>
+<span class="sourceLineNo">104</span><a id="line.104"></a>
+<span class="sourceLineNo">105</span><a id="line.105">                   new LineSegment( 3,  9),</a>
+<span class="sourceLineNo">106</span><a id="line.106">                   new LineSegment( 9,  19),</a>
+<span class="sourceLineNo">107</span><a id="line.107">                   new LineSegment(19, 12),</a>
+<span class="sourceLineNo">108</span><a id="line.108">                   new LineSegment(12,  4),</a>
+<span class="sourceLineNo">109</span><a id="line.109">                   new LineSegment( 4,  3),</a>
+<span class="sourceLineNo">110</span><a id="line.110"></a>
+<span class="sourceLineNo">111</span><a id="line.111">                   new LineSegment( 5,  6),</a>
+<span class="sourceLineNo">112</span><a id="line.112">                   new LineSegment( 6, 15),</a>
+<span class="sourceLineNo">113</span><a id="line.113">                   new LineSegment(15, 22),</a>
+<span class="sourceLineNo">114</span><a id="line.114">                   new LineSegment(22, 13),</a>
+<span class="sourceLineNo">115</span><a id="line.115">                   new LineSegment(13,  5),</a>
+<span class="sourceLineNo">116</span><a id="line.116"></a>
+<span class="sourceLineNo">117</span><a id="line.117">                   new LineSegment( 7,  8),</a>
+<span class="sourceLineNo">118</span><a id="line.118">                   new LineSegment( 8, 17),</a>
+<span class="sourceLineNo">119</span><a id="line.119">                   new LineSegment(17, 25),</a>
+<span class="sourceLineNo">120</span><a id="line.120">                   new LineSegment(25, 16),</a>
+<span class="sourceLineNo">121</span><a id="line.121">                   new LineSegment(16,  7),</a>
+<span class="sourceLineNo">122</span><a id="line.122"></a>
+<span class="sourceLineNo">123</span><a id="line.123">                   new LineSegment( 9, 10),</a>
+<span class="sourceLineNo">124</span><a id="line.124">                   new LineSegment(10, 16),</a>
+<span class="sourceLineNo">125</span><a id="line.125">                   new LineSegment(16, 24),</a>
+<span class="sourceLineNo">126</span><a id="line.126">                   new LineSegment(24, 18),</a>
+<span class="sourceLineNo">127</span><a id="line.127">                   new LineSegment(18,  9),</a>
+<span class="sourceLineNo">128</span><a id="line.128"></a>
+<span class="sourceLineNo">129</span><a id="line.129">                   new LineSegment(11, 12),</a>
+<span class="sourceLineNo">130</span><a id="line.130">                   new LineSegment(12, 20),</a>
+<span class="sourceLineNo">131</span><a id="line.131">                   new LineSegment(20, 23),</a>
+<span class="sourceLineNo">132</span><a id="line.132">                   new LineSegment(23, 15),</a>
+<span class="sourceLineNo">133</span><a id="line.133">                   new LineSegment(15, 11),</a>
+<span class="sourceLineNo">134</span><a id="line.134"></a>
+<span class="sourceLineNo">135</span><a id="line.135">                   new LineSegment(13, 21),</a>
+<span class="sourceLineNo">136</span><a id="line.136">                   new LineSegment(21, 26),</a>
+<span class="sourceLineNo">137</span><a id="line.137">                   new LineSegment(26, 17),</a>
+<span class="sourceLineNo">138</span><a id="line.138">                   new LineSegment(17, 14),</a>
+<span class="sourceLineNo">139</span><a id="line.139">                   new LineSegment(14, 13),</a>
+<span class="sourceLineNo">140</span><a id="line.140"></a>
+<span class="sourceLineNo">141</span><a id="line.141">                   new LineSegment(18, 27),</a>
+<span class="sourceLineNo">142</span><a id="line.142">                   new LineSegment(27, 28),</a>
+<span class="sourceLineNo">143</span><a id="line.143">                   new LineSegment(28, 20),</a>
+<span class="sourceLineNo">144</span><a id="line.144">                   new LineSegment(20, 19),</a>
+<span class="sourceLineNo">145</span><a id="line.145">                   new LineSegment(19, 18),</a>
+<span class="sourceLineNo">146</span><a id="line.146"></a>
+<span class="sourceLineNo">147</span><a id="line.147">                   new LineSegment(21, 22),</a>
+<span class="sourceLineNo">148</span><a id="line.148">                   new LineSegment(22, 23),</a>
+<span class="sourceLineNo">149</span><a id="line.149">                   new LineSegment(23, 28),</a>
+<span class="sourceLineNo">150</span><a id="line.150">                   new LineSegment(28, 29),</a>
+<span class="sourceLineNo">151</span><a id="line.151">                   new LineSegment(29, 21),</a>
+<span class="sourceLineNo">152</span><a id="line.152"></a>
+<span class="sourceLineNo">153</span><a id="line.153">                   new LineSegment(24, 25),</a>
+<span class="sourceLineNo">154</span><a id="line.154">                   new LineSegment(25, 26),</a>
+<span class="sourceLineNo">155</span><a id="line.155">                   new LineSegment(26, 29),</a>
+<span class="sourceLineNo">156</span><a id="line.156">                   new LineSegment(29, 27),</a>
+<span class="sourceLineNo">157</span><a id="line.157">                   new LineSegment(27, 24));</a>
+<span class="sourceLineNo">158</span><a id="line.158">   }</a>
+<span class="sourceLineNo">159</span><a id="line.159">}//Icosidodecahedron</a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</main>
+</body>
+</html>
